@@ -297,6 +297,24 @@ class Imagem(tk.Frame):
         return self.tem
 
 
+def _estilo_fichas(widget):
+    """Estilo das tabelas com ficha de cor/bandeira na 1ª coluna: lista sem hierarquia, então sem o espaço da
+    seta de expandir (que empurrava a ficha para cima do nome da coluna seguinte)."""
+    def sem_indicador(layout):
+        out = []
+        for nome, opc in layout:
+            if "indicator" in nome:
+                continue
+            opc = dict(opc)
+            if "children" in opc:
+                opc["children"] = sem_indicador(opc["children"])
+            out.append((nome, opc))
+        return out
+    st = ttk.Style(widget)
+    st.layout("Fichas.Treeview.Item", sem_indicador(st.layout("Treeview.Item")))
+    return "Fichas.Treeview"
+
+
 def tabela(master, colunas, alturas=10, larguras=None, ancoras=None, estica=None, cores=False):
     """Treeview com barra de rolagem. colunas: lista de (id, título).
     cores=True: primeira coluna estreita para a ficha de cor da equipe e a bandeira
@@ -306,6 +324,7 @@ def tabela(master, colunas, alturas=10, larguras=None, ancoras=None, estica=None
     tv = ttk.Treeview(frame, columns=[c for c, _ in colunas], show="tree headings" if cores else "headings",
                       height=alturas, selectmode="browse")
     if cores:
+        tv.configure(style=_estilo_fichas(tv))
         tv.heading("#0", text="")
         tv.column("#0", width=largura_ficha, minwidth=largura_ficha, stretch=False, anchor="w")
     for i, (cid, titulo) in enumerate(colunas):
