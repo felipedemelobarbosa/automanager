@@ -207,7 +207,13 @@ class Esquemas:
                 F("duracao_pitstop", "Perda no pit stop (s)", "real", minimo=0),
                 F("prob_chuva", "Chance de chuva", "real", "0 a 1 por sessão.", minimo=0, maximo=1),
                 F("prob_inativar", "Chance de sair do calendário", "real", minimo=0, maximo=1),
-                F("prob_ativar", "Chance de entrar no calendário", "real", minimo=0, maximo=1)]
+                F("prob_ativar", "Chance de entrar no calendário", "real", minimo=0, maximo=1),
+                dict(F("anos_entrada", "Anos em que entra no calendário", "lista_num",
+                       "Ex.: 2028, 2033. Pista de reserva que entra nesses anos (anos depois do ano do arquivo). "
+                       "Nesses anos a chance sorteada não vale."), vazio_remove=True),
+                dict(F("anos_saida", "Anos em que sai do calendário", "lista_num",
+                       "Ex.: 2030, 2035. A pista sai nesses anos e fica fora até um ano de entrada (ou o sorteio). "
+                       "Pode entrar e sair várias vezes."), vazio_remove=True)]
 
 
 NOVOS = {

@@ -185,6 +185,18 @@ def validar_dados(d):
             erros.append(f"calendário {ev.get('id')}: espécie deve ser 'corrida' ou 'treino'")
         if ev.get("tipo_pista") not in ("mista", "oval", "rua"):
             erros.append(f"calendário {ev.get('id')}: tipo_pista deve ser 'mista', 'oval' ou 'rua'")
+        anos = {}
+        for k in ("anos_entrada", "anos_saida"):
+            v = ev.get(k) or []
+            if not isinstance(v, list) or any(not isinstance(a, int) or isinstance(a, bool) for a in v):
+                erros.append(f"calendário {ev.get('id')}: '{k}' deve ser uma lista de anos")
+                v = []
+            anos[k] = set(v)
+            if isinstance(cat.get("ano"), int) and any(a <= cat["ano"] for a in v):
+                erros.append(f"calendário {ev.get('id')}: '{k}' deve ter anos depois de {cat['ano']} "
+                             f"(no ano do arquivo vale 'ativo')")
+        if anos["anos_entrada"] & anos["anos_saida"]:
+            erros.append(f"calendário {ev.get('id')}: o mesmo ano não pode estar em anos_entrada e anos_saida")
     erros.extend(validar_escalacao(d))
     for p in d["patrocinadores"]:
         c = p.get("contrato")

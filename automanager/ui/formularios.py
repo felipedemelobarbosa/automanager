@@ -456,7 +456,7 @@ class FormGenerico(tk.Frame):
                             wd2["var"][0].set(str(len(v)))
                             wd2["var"][1].set("corridas")
                             self._carregando = False
-            if c["t"] == "lista_ref" and not v and c.get("vazio_remove"):
+            if c["t"] in ("lista_ref", "lista_num") and not v and c.get("vazio_remove"):
                 pai = obter(it, c["c"][:-1]) if len(c["c"]) > 1 else it
                 if isinstance(pai, dict):
                     pai.pop(c["c"][-1], None)

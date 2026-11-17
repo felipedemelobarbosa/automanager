@@ -336,14 +336,18 @@ def _ativar_equipe(st, cid, eq, rng):
 
 
 def _virada_calendario(st, cid, rng):
+    """Entrada e saída de pistas do calendário. Anos fixados no evento (anos_entrada / anos_saida) valem no lugar
+    do sorteio naquele ano; nos outros anos, prob_ativar / prob_inativar."""
     c = st["categorias"][cid]
     for ev in c["calendario"]:
+        entra = st["ano"] in (ev.get("anos_entrada") or [])
+        sai = st["ano"] in (ev.get("anos_saida") or [])
         if ev.get("ativo"):
-            if rng.random() < ev.get("prob_inativar", 0):
+            if sai or (not entra and rng.random() < ev.get("prob_inativar", 0)):
                 ev["ativo"] = False
                 noticia(st, f"{c['categoria']['nome']}: {ev['nome']} ({ev['local']}) sai do calendário {st['ano']}.",
                         cid, "calendario")
-        elif rng.random() < ev.get("prob_ativar", 0):
+        elif entra or (not sai and rng.random() < ev.get("prob_ativar", 0)):
             if ev["especie"] == "corrida" and any(
                     o is not ev and o.get("ativo") and o["especie"] == "corrida"
                     and (o["nome"], o.get("local")) == (ev["nome"], ev.get("local")) for o in c["calendario"]):
