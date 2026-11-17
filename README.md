@@ -19,6 +19,23 @@ python -m unittest discover tests
 O importador da Wikipedia (Editor > Importar da Wikipedia) e a busca de imagens precisam de acesso à internet.
 O jogo em si só usa arquivos locais.
 
+## Instaladores (.exe, .dmg, .deb)
+
+Gerados no GitHub Actions (`.github/workflows/build.yml`), com PyInstaller, nas máquinas Windows, macOS e Linux
+do GitHub:
+
+- Manualmente: aba **Actions** > **Build** > **Run workflow**. Ao terminar, os arquivos ficam em **Artifacts**, na
+  página da execução.
+- Criando uma tag `v*` (ex.: `v0.1` em Releases > Draft a new release): além disso, publica uma Release com os três
+  arquivos.
+
+Os testes rodam antes; se falharem, nada é gerado. No programa instalado, jogos salvos, ligas, configurações, a
+database editada e as imagens baixadas ficam na pasta do usuário (Windows: `%APPDATA%\AutoManager`; macOS:
+`~/Library/Application Support/AutoManager`; Linux: `~/.local/share/automanager`); a database que vem com o jogo
+é copiada para lá na 1ª execução (numa versão nova, só os arquivos novos). Rodando pelo código (`python main.py`),
+tudo continua na pasta do jogo. Os programas não são assinados: o Windows (SmartScreen) e o macOS (Gatekeeper)
+avisam na 1ª vez (no macOS: botão direito no app > Abrir). O `.dmg` é para Macs com chip Apple (M1 ou mais novo).
+
 ## Idiomas
 
 Português, inglês e espanhol: escolha no menu inicial ("Idioma / Language / Idioma"). A escolha fica em

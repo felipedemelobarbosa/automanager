@@ -35,9 +35,9 @@ import unicodedata
 
 from . import state, routines, acoes
 from .event import planos as planos_evento
-from .util import RAIZ
+from .util import PASTA_DADOS
 
-PASTA_LIGAS = os.path.join(RAIZ, "ligas")
+PASTA_LIGAS = os.path.join(PASTA_DADOS, "ligas")
 POLITICAS = ("ia", "repetir", "bloquear")
 FORMATO_ORDENS = "automanager-ordens"
 SECRETOS = ("recebidas", "ultimas", "ultimo_plano", "planos_semana")

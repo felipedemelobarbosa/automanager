@@ -13,11 +13,11 @@ import os
 import re
 import string
 
-from .util import RAIZ
+from .util import PASTA_RECURSOS, PASTA_DADOS
 
 IDIOMAS = {"en": "English", "pt": "Português", "es": "Español"}
-PASTA = os.path.join(RAIZ, "lang")
-CONFIG = os.path.join(RAIZ, "config.json")
+PASTA = os.path.join(PASTA_RECURSOS, "lang")
+CONFIG = os.path.join(PASTA_DADOS, "config.json")
 
 _atual = "pt"
 _exato = {}

@@ -3,3 +3,6 @@ __pycache__/
 saves/*.json
 saves/*.tmp
 automanager.zip
+build/
+dist/
+*.spec
