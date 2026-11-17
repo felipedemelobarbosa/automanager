@@ -193,7 +193,8 @@ class FormGenerico(tk.Frame):
             lb.bind("<<ListboxSelect>>", self._avisar)
             return lb, [lb]
         v = tk.StringVar()
-        en = ttk.Entry(f, textvariable=v, width=34 if t in ("texto", "texto_opcional", "lista_num", "auto") else 16)
+        en = ttk.Entry(f, textvariable=v, width=34 if t in ("texto", "texto_opcional", "lista_num", "auto", "tempos_ano")
+                       else 16)
         en.grid(row=linha, column=1, sticky="w")
         en.bind("<KeyRelease>", self._avisar)
         return v, [en]
@@ -305,6 +306,8 @@ class FormGenerico(tk.Frame):
                         var.selection_set(i)
             elif t == "lista_num":
                 var.set(", ".join(str(x) for x in (v or [])))
+            elif t == "tempos_ano":                  # {"2028": [treino, corrida]} -> "2028: 88.4 / 90.1; ..."
+                var.set("; ".join(f"{a}: {x[0]} / {x[1]}" for a, x in sorted((v or {}).items())))
             else:
                 var.set("" if v is None else str(v))
         self._grupos()
@@ -367,7 +370,17 @@ class FormGenerico(tk.Frame):
         if t == "lista_ref":
             return True, [wd["mapa"][i] for i in var.curselection()]
         bruto = str(var.get()).strip()
-        if t == "lista_num":
+        if t == "tempos_ano":
+            out = {}
+            try:
+                for parte in [x for x in bruto.split(";") if x.strip()]:
+                    ano, tempos = parte.split(":")
+                    treino, corrida = tempos.split("/")
+                    out[str(int(ano.strip()))] = [float(treino.strip().replace(",", ".")),
+                                                  float(corrida.strip().replace(",", "."))]
+            except ValueError:
+                return False, "use ano: treino / corrida; separados por ponto e vírgula"
+            return True, out
             try:
                 return True, [float(x) if "." in x else int(x) for x in bruto.replace(";", ",").split(",") if x.strip()]
             except ValueError:
@@ -456,7 +469,7 @@ class FormGenerico(tk.Frame):
                             wd2["var"][0].set(str(len(v)))
                             wd2["var"][1].set("corridas")
                             self._carregando = False
-            if c["t"] in ("lista_ref", "lista_num") and not v and c.get("vazio_remove"):
+            if c["t"] in ("lista_ref", "lista_num", "tempos_ano") and not v and c.get("vazio_remove"):
                 pai = obter(it, c["c"][:-1]) if len(c["c"]) > 1 else it
                 if isinstance(pai, dict):
                     pai.pop(c["c"][-1], None)

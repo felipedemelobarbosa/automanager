@@ -118,6 +118,14 @@ tempo_base_treino, tempo_base_corrida, voltas_corrida, retas, curvas_alta, curva
 dificuldade, duracao_pitstop, prob_chuva, prob_inativar, prob_ativar, anos_entrada, anos_saida, wikipedia, imagem}`
 
 - tempos em segundos; `retas`/`curvas_*` são proporções (a soma é normalizada)
+- tempo base por ano: opcional `tempos_por_ano` (`{"2028": [treino, corrida], ...}`, anos depois do ano do arquivo;
+  no editor: "2028: 88.4 / 90.1; 2031: 87.2 / 88.9"). Anos sem valor seguem a evolução automática a partir do
+  último ano informado (ou dos tempos do arquivo), com `categoria.evolucao_tempo_base`: `ganho_por_temporada`
+  (0,012: −1,2% por temporada de regras estáveis), `grande_mudanca` (0,03: +3% no ano de uma grande mudança de
+  regulamento), `ganho_sem_regulamento` (0,002: −0,2% por temporada com o regulamento desligado, a média de longo
+  prazo da F1) e `ativa` (true). A nota de chassis, motor e pilotos também entra no tempo de volta (nota 50 = tempo
+  base), mas o nível médio fica perto do da database (calibração), então só mexe ±0,5% ao longo dos anos; na grande
+  mudança, o chassis mais fraco já soma ~0,5% (por isso 3% e não 3,5%)
 - entrada e saída do calendário: a cada virada de temporada, `prob_inativar` (evento ativo) e `prob_ativar`
   (evento de reserva, inativo) são sorteados. Opcionais `anos_entrada` e `anos_saida` (listas de anos, depois do
   ano do arquivo; no ano do arquivo vale `ativo`): nesses anos a pista entra ou sai com certeza, no lugar do

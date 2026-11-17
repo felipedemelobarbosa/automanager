@@ -50,14 +50,16 @@ class DialogoMapaPista(w.Dialogo):
         self.v_crit = tk.StringVar(value=self.cfg["criterio"])
         for val, rot in (("raio", "raio (m)"), ("velocidade", "velocidade (km/h)")):
             ttk.Radiobutton(f2, text=rot, value=val, variable=self.v_crit, command=self.desenhar).pack(side="left")
+        w.Botao(f2, "Recalcular", self.calcular, padx=6).pack(side="left", padx=12)
+        f3 = tk.Frame(self.corpo)                     # limites numa linha própria (não empurram o botão)
+        f3.pack(fill="x", pady=2)
         self.v_lim = {}
-        for k, rot in (("raio_reta", "  Reta se raio ≥"), ("raio_baixa", "baixa se <"), ("vel_reta", "  Reta se vel. ≥"),
+        for k, rot in (("raio_reta", "Reta se raio ≥"), ("raio_baixa", "baixa se <"), ("vel_reta", "  Reta se vel. ≥"),
                        ("vel_baixa", "baixa se <"), ("aderencia", "  Aderência (g)")):
-            tk.Label(f2, text=rot).pack(side="left")
+            tk.Label(f3, text=rot).pack(side="left")
             v = tk.StringVar(value=str(self.cfg[k]))
-            ttk.Entry(f2, textvariable=v, width=5).pack(side="left", padx=1)
+            ttk.Entry(f3, textvariable=v, width=5).pack(side="left", padx=1)
             self.v_lim[k] = v
-        w.Botao(f2, "Recalcular", self.calcular, padx=6).pack(side="left", padx=6)
 
         # --- mapa + resultado
         meio = tk.Frame(self.corpo)

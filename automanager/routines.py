@@ -10,7 +10,7 @@ Ordem da semana:
 import random
 
 from . import saude, campeonato, carreira, contratos, desenvolvimento, economia, mercado, state, regulamento, \
-    fornecedores
+    fornecedores, tempo_base
 from .state import financas_zeradas, lancar, noticia, pilotos_da_equipe
 
 SEMANAS_POR_TEMPORADA = 52
@@ -180,6 +180,7 @@ def nova_temporada(st, rng=random):
     desenvolvimento.evoluir_fabricantes(st, rng)
     fornecedores.evoluir(st, rng)
     for cid in st["categorias"]:
+        tempo_base.virada(st, cid)                     # antes do regulamento: usa a grande mudança anunciada
         regulamento.virada(st, cid)
     desenvolvimento.ajustar_calibracao(st)
     _virada_contratos_pilotos(st)

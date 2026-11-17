@@ -113,8 +113,9 @@ def novo_jogo(caminhos, semente=None):
     from . import desenvolvimento
     desenvolvimento.calibrar_custos(st)
     desenvolvimento.calibrar_fabricantes(st)
-    from . import fornecedores, regulamento
+    from . import fornecedores, regulamento, tempo_base
     fornecedores.iniciar(st)
+    tempo_base.iniciar(st)
     from . import mercado
     mercado.atualizar_precos_chassis(st)
     for c in st["categorias"].values():

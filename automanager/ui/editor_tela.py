@@ -199,6 +199,10 @@ class Esquemas:
                 F("tempo_base_treino", "Tempo base treino/classif. (s)", "real", "Volta de referência nos treinos.",
                   minimo=1),
                 F("tempo_base_corrida", "Tempo base corrida (s)", "real", minimo=1),
+                dict(F("tempos_por_ano", "Tempos base por ano (s)", "tempos_ano",
+                       "Opcional. Ano: treino / corrida, separados por ponto e vírgula (ex.: 2028: 88.4 / 90.1; "
+                       "2031: 87.2 / 88.9). Anos sem valor seguem a evolução automática a partir do último ano "
+                       "informado (ou do ano do arquivo)."), vazio_remove=True),
                 F("voltas_corrida", "Voltas da corrida", "int", minimo=0),
                 F("retas", "Retas", "atr", "Proporção de retas (a soma com as curvas é normalizada)."),
                 F("curvas_alta", "Curvas de alta", "atr"), F("curvas_baixa", "Curvas de baixa", "atr"),
@@ -757,7 +761,16 @@ class AbaCategoria(ttk.Notebook):
             F(("regulamento", "importancia_carro_min"), "Importância do carro: mínima", "real", "Padrão 0,3.",
               minimo=0, maximo=1),
             F(("regulamento", "importancia_carro_max"), "Importância do carro: máxima", "real", "Padrão 0,8.",
-              minimo=0, maximo=1)])
+              minimo=0, maximo=1),
+            F(("evolucao_tempo_base", "ativa"), "Tempo base das pistas evolui por ano", "bool",
+              "Padrão ligado. Anos com tempos informados na pista usam esses tempos."),
+            F(("evolucao_tempo_base", "ganho_por_temporada"), "Tempo base: queda por temporada (regras estáveis)",
+              "real", "Fração. Padrão 0,012 (−1,2%; F1: 1 a 2% por ano).", minimo=0, maximo=0.2),
+            F(("evolucao_tempo_base", "grande_mudanca"), "Tempo base: aumento na grande mudança", "real",
+              "Fração. Padrão 0,03 (+3%; o chassis mais fraco já soma ~0,5%).", minimo=0, maximo=0.5),
+            F(("evolucao_tempo_base", "ganho_sem_regulamento"), "Tempo base: queda por temporada sem regulamento",
+              "real", "Com as mudanças de regulamento desligadas. Padrão 0,002 (−0,2%, média de longo prazo da F1).",
+              minimo=0, maximo=0.2)])
         self._form("Pontuação e pit stop", [
             F(("pontuacao", "posicoes"), "Pontos por posição", "lista_num", "1º, 2º, 3º... separados por vírgula."),
             F(("pontuacao", "volta_mais_rapida"), "Volta mais rápida", "int", minimo=0),

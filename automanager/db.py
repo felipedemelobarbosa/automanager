@@ -195,6 +195,17 @@ def validar_dados(d):
             if isinstance(cat.get("ano"), int) and any(a <= cat["ano"] for a in v):
                 erros.append(f"calendário {ev.get('id')}: '{k}' deve ter anos depois de {cat['ano']} "
                              f"(no ano do arquivo vale 'ativo')")
+        tpa = ev.get("tempos_por_ano")
+        if tpa is not None:
+            ok = isinstance(tpa, dict) and all(
+                str(a).isdigit() and isinstance(t, list) and len(t) == 2
+                and all(isinstance(x, (int, float)) and not isinstance(x, bool) and x > 0 for x in t)
+                for a, t in tpa.items())
+            if not ok:
+                erros.append(f"calendário {ev.get('id')}: 'tempos_por_ano' deve ser {{ano: [treino, corrida]}}")
+            elif isinstance(cat.get("ano"), int) and any(int(a) <= cat["ano"] for a in tpa):
+                erros.append(f"calendário {ev.get('id')}: 'tempos_por_ano' deve ter anos depois de {cat['ano']} "
+                             f"(no ano do arquivo valem os tempos base)")
         if anos["anos_entrada"] & anos["anos_saida"]:
             erros.append(f"calendário {ev.get('id')}: o mesmo ano não pode estar em anos_entrada e anos_saida")
     erros.extend(validar_escalacao(d))
