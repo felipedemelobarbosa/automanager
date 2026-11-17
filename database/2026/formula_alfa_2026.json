@@ -1,0 +1,3294 @@
+{
+ "versao_formato": 1,
+ "categoria": {
+  "id": "formula_alfa",
+  "nome": "Fórmula Alfa",
+  "ano": 2026,
+  "moeda": "USD",
+  "regras": {
+   "pilotos_de_teste": true,
+   "pilotos_principais_por_equipe": 2,
+   "pilotos_de_teste_por_equipe": 1,
+   "desenvolvimento_chassis_por_equipe": true,
+   "desenvolvimento_motor_por_equipe": true,
+   "equipes_com_desenvolvimento_de_motor": [
+    "vortex",
+    "ventura",
+    "hanazono"
+   ],
+   "_comentario_motor": "lista vazia = todas as equipes podem desenvolver motor próprio.",
+   "fontes_de_motor_permitidas": [
+    "proprio",
+    "equipe",
+    "fabricante"
+   ],
+   "testes_coletivos": true,
+   "orcamento_medio": 60000000,
+   "inflacao_media_anual": 0.03,
+   "patrocinios": true,
+   "renda_tv": {
+    "ativa": true,
+    "valor_medio_por_equipe": 15000000,
+    "fator_por_posicao_campeonato": [
+     1.4,
+     1.3,
+     1.2,
+     1.1,
+     1.05,
+     1.0,
+     0.95,
+     0.9,
+     0.8,
+     0.7
+    ]
+   },
+   "importancia_carro": 0.6,
+   "importancia_piloto": 0.4,
+   "bandeira_vermelha": {
+    "relogio_durante_suspensao": "parado",
+    "limite_espera_sessao_min": 60,
+    "limite_espera_corrida_min": 120,
+    "_comentario": "Oval com chuva = bandeira vermelha. relogio_durante_suspensao: 'parado' (a espera não tira tempo de pista nem conta para o tempo máximo da corrida) ou 'corre' (conta). Limites de espera em minutos: passou sem secar, a sessão é encerrada (valem os tempos feitos) e a corrida termina (se nem largou, é cancelada e ninguém pontua). 0 = sem limite."
+   },
+   "batida_grave": {
+    "prob_por_volta": 0.0015,
+    "fator_treinos": 0.5,
+    "carros_min": 2,
+    "carros_max": 5,
+    "prob_encerrar_sessao": 0.2,
+    "prob_lesao": 0.06,
+    "prob_morte": 0.002,
+    "lesao_corridas": [
+     1,
+     6
+    ],
+    "lesao_perda_atributos": [
+     1,
+     6
+    ],
+    "atributos_afetados": [
+     "fisico",
+     "concentracao",
+     "conducao"
+    ],
+    "_comentario": "Batida grave = vários carros abandonam juntos. prob_por_volta: chance por volta do líder na corrida (×3 na 1ª volta, × acidentes do clima, × dificuldade da pista); treinos/classificação usam fator_treinos. prob_encerrar_sessao: chance de a bandeira vermelha encerrar a sessão. prob_lesao / prob_morte: por piloto envolvido. Lesão: fica fora de lesao_corridas [mín, máx] corridas e perde lesao_perda_atributos [mín, máx] pontos em cada atributo de atributos_afetados."
+   },
+   "idade_pilotos": {
+    "idade_maxima": null,
+    "preferida_ate": null,
+    "penalidade_por_ano": 0,
+    "_comentario": "idade_maxima: acima dela a categoria não contrata e o contrato termina na virada de temporada (vazio = sem limite). preferida_ate / penalidade_por_ano: na escolha das equipes do PC, cada ano acima da idade preferida tira esses pontos da nota do piloto (categorias de base preferem pilotos jovens)."
+   },
+   "clientes_por_chassis": 2
+  },
+  "tier": 1,
+  "novas_equipes": [
+   {
+    "equipe": "danubio",
+    "ano": 2028
+   },
+   {
+    "equipe": "iberia",
+    "ano": null
+   }
+  ],
+  "_comentario_novas_equipes": "equipes (inativas no arquivo) que podem surgir; com 'ano', surgem nesse ano; sem ano, por sorteio (prob_surgimento da equipe). A equipe também pode ter o campo 'ano_surgimento'.",
+  "mobilidade": {
+   "de_tier_inferior": 1.0,
+   "de_tier_superior": 0.3,
+   "mesmo_tier": 0.6,
+   "_comentario": "multiplicadores da chance de um piloto vir de outra categoria para esta: de um tier inferior (subindo), de um tier superior (descendo) ou do mesmo tier. Tier 1 = topo.",
+   "retorno": {
+    "prob_anual": 0.04,
+    "anos_maximos_fora": 6,
+    "idade_maxima": 40,
+    "_comentario": "Aposentado pode voltar à categoria de onde saiu: chance por temporada (cai quanto mais tempo fora; zero depois de anos_maximos_fora ou acima de idade_maxima). Base real: na F1, ~1 piloto por temporada volta depois de 1+ temporada parado, entre ~25 ex-pilotos dos últimos 6 anos (≈4% ao ano por ex-piloto)."
+   }
+  },
+  "mercado_patrocinio": {
+   "prob_busca_semanal": 0.1,
+   "peso_desempenho": 0.4,
+   "validade_oferta_semanas": 4,
+   "_comentario": "patrocinador livre procura equipe: índice carro x pilotos com aleatoriedade; depois da 1ª corrida o desempenho (posição no campeonato) entra com peso_desempenho."
+  },
+  "financas": {
+   "reserva_minima": 0.15,
+   "uso_do_excedente": 0.5,
+   "juros_anual": 0.08,
+   "limite_emprestimo": 0.5,
+   "prazo_temporadas": 3,
+   "semanas_para_falencia": 8,
+   "_comentario": "reserva_minima e limite_emprestimo são frações do orçamento médio; o limite é multiplicado por (0,5 + recursos/100) da equipe."
+  },
+  "contratos": {
+   "fator_multa": 0.5,
+   "_comentario": "multa de rescisão = fator_multa × valor por corrida × corridas restantes"
+  },
+  "desenvolvimento_inicial": {
+   "chassis": {
+    "custo_por_ponto": 120000,
+    "atributo_base": 35,
+    "atributo_maximo": 85
+   },
+   "motor": {
+    "custo_por_ponto": 260000,
+    "atributo_base": 40,
+    "atributo_maximo": 85
+   }
+  },
+  "desenvolvimento": {
+   "perda_manutencao": 0.3,
+   "chassis": {
+    "custo_por_ponto": 20000,
+    "limite_custo_fixo": 55,
+    "escala_progressiva": 9
+   },
+   "motor": {
+    "custo_por_ponto": 80000,
+    "limite_custo_fixo": 55,
+    "escala_progressiva": 9
+   },
+   "_comentario": "custo de +1 ponto = custo_por_ponto até limite_custo_fixo; acima disso é multiplicado por 1 + ((valor - limite) / escala_progressiva)^2. Próxima temporada: OU manutenção (carro atual com perda_manutencao em cada atributo, sem investimento) OU projeto novo (parte do zero)."
+  },
+  "pontuacao": {
+   "posicoes": [
+    25,
+    18,
+    15,
+    12,
+    10,
+    8,
+    6,
+    4,
+    2,
+    1
+   ],
+   "volta_mais_rapida": 1,
+   "pole": 0,
+   "corrida_interrompida": {
+    "distancia_minima": 0.5,
+    "pontos_parciais": "metade",
+    "_comentario": "Corrida encerrada antes do fim (chuva que não para, batida grave): a partir de distancia_minima (fração das voltas) vale a pontuação integral; abaixo, 'metade' dos pontos ou 'proporcional' à distância. Sem nenhuma volta completa, ninguém pontua."
+   }
+  },
+  "regras_pitstop": {
+   "obrigatorio": true,
+   "paradas_minimas": 1,
+   "reabastecimento": false,
+   "troca_de_pneus": true,
+   "segundos_por_volta_de_combustivel": 0.0
+  },
+  "pneus": {
+   "compostos": {
+    "super_macio": {
+     "nome": "Super macio",
+     "tipo": "seco",
+     "ritmo": 0.9915,
+     "degradacao": 0.0019,
+     "vida": 11,
+     "cliff": 0.006,
+     "aquecimento_voltas": 0,
+     "sensibilidade_termica": 1.4
+    },
+    "macio": {
+     "nome": "Macio",
+     "tipo": "seco",
+     "ritmo": 0.994,
+     "degradacao": 0.0012,
+     "vida": 17,
+     "cliff": 0.005,
+     "aquecimento_voltas": 1,
+     "sensibilidade_termica": 1.2
+    },
+    "medio": {
+     "nome": "Médio",
+     "tipo": "seco",
+     "ritmo": 0.9968,
+     "degradacao": 0.0007,
+     "vida": 26,
+     "cliff": 0.0045,
+     "aquecimento_voltas": 1,
+     "sensibilidade_termica": 1.0
+    },
+    "duro": {
+     "nome": "Duro",
+     "tipo": "seco",
+     "ritmo": 1.0,
+     "degradacao": 0.00045,
+     "vida": 36,
+     "cliff": 0.004,
+     "aquecimento_voltas": 2,
+     "sensibilidade_termica": 0.8
+    },
+    "muito_duro": {
+     "nome": "Muito duro",
+     "tipo": "seco",
+     "ritmo": 1.003,
+     "degradacao": 0.0003,
+     "vida": 48,
+     "cliff": 0.0035,
+     "aquecimento_voltas": 3,
+     "sensibilidade_termica": 0.6
+    },
+    "chuva_leve": {
+     "nome": "Chuva leve",
+     "tipo": "chuva_leve",
+     "ritmo": 1.0,
+     "degradacao": 0.0005,
+     "vida": 30,
+     "cliff": 0.004,
+     "aquecimento_voltas": 1,
+     "sensibilidade_termica": 1.0
+    },
+    "chuva_pesada": {
+     "nome": "Chuva pesada",
+     "tipo": "chuva_pesada",
+     "ritmo": 1.0,
+     "degradacao": 0.0004,
+     "vida": 35,
+     "cliff": 0.004,
+     "aquecimento_voltas": 1,
+     "sensibilidade_termica": 1.0
+    }
+   },
+   "_comentario_compostos": "ritmo = multiplicador do tempo com pneu ideal; degradacao = fração do tempo perdida por volta de uso; vida = voltas (pista e carro de referência) até o cliff; cliff = perda extra por (voltas além da vida)^1.5; aquecimento_voltas = voltas até o pneu entrar na temperatura; sensibilidade_termica = quanto agressividade/uso do carro aumentam a degradação. Pista (desgaste_pneus), carro (atributo pneus) e piloto (consistência) multiplicam a degradação e dividem a vida.",
+   "adequacao_clima": {
+    "seco": {
+     "seco": 1.0,
+     "chuva_leve": 1.05,
+     "chuva_pesada": 1.09
+    },
+    "chuva_leve": {
+     "seco": 1.09,
+     "chuva_leve": 1.0,
+     "chuva_pesada": 1.025
+    },
+    "chuva_pesada": {
+     "seco": 1.28,
+     "chuva_leve": 1.04,
+     "chuva_pesada": 1.0
+    }
+   },
+   "_comentario_adequacao": "linha = clima atual, coluna = tipo de pneu. Multiplicador do tempo de volta.",
+   "penalidade_aquecimento": 0.008,
+   "desgaste_critico": 100,
+   "desgaste_quebra": 140,
+   "_comentario_desgaste": "desgaste = % da vida usada. Acima de desgaste_critico o pneu pode furar; a partir de desgaste_quebra o furo tende a causar abandono.",
+   "compostos_disponiveis": [
+    "super_macio",
+    "macio",
+    "medio",
+    "duro",
+    "muito_duro",
+    "chuva_leve",
+    "chuva_pesada"
+   ]
+  },
+  "clima": {
+   "efeitos": {
+    "seco": {
+     "tempo": 1.0,
+     "peso_chassis": 1.0,
+     "peso_motor": 1.0,
+     "peso_piloto": 1.0,
+     "acidentes": 1.0,
+     "aleatoriedade": 1.0,
+     "ultrapassagem": 1.0
+    },
+    "chuva_leve": {
+     "tempo": 1.07,
+     "peso_chassis": 1.15,
+     "peso_motor": 0.75,
+     "peso_piloto": 1.25,
+     "acidentes": 2.0,
+     "aleatoriedade": 1.5,
+     "ultrapassagem": 0.85
+    },
+    "chuva_pesada": {
+     "tempo": 1.15,
+     "peso_chassis": 1.25,
+     "peso_motor": 0.55,
+     "peso_piloto": 1.5,
+     "acidentes": 3.5,
+     "aleatoriedade": 2.0,
+     "ultrapassagem": 0.7
+    }
+   },
+   "proporcao_chuva_forte": 0.35,
+   "estabilidade_por_10min": 0.94,
+   "_comentario": "estabilidade = probabilidade de o clima não tentar mudar a cada 10 minutos simulados (muda um passo por vez: seco ↔ chuva leve ↔ chuva forte). prob_chuva de cada pista = fração das sessões com chuva, a longo prazo."
+  },
+  "formato_teste_coletivo": {
+   "dias": 3,
+   "minutos_por_dia": 240
+  },
+  "formato_evento": {
+   "treinos_livres": [
+    {
+     "nome": "Treino Livre 1",
+     "limite": "tempo",
+     "valor": 60
+    },
+    {
+     "nome": "Treino Livre 2",
+     "limite": "tempo",
+     "valor": 60
+    },
+    {
+     "nome": "Treino Livre 3",
+     "limite": "voltas",
+     "valor": 20
+    }
+   ],
+   "classificacao": {
+    "nome": "Classificação",
+    "modelo": "tempo",
+    "fases": [
+     {
+      "nome": "Q1",
+      "limite": "tempo",
+      "valor": 18,
+      "eliminados": 4
+     },
+     {
+      "nome": "Q2",
+      "limite": "tempo",
+      "valor": 15,
+      "eliminados": 4
+     },
+     {
+      "nome": "Q3",
+      "limite": "tempo",
+      "valor": 12,
+      "eliminados": 0
+     }
+    ]
+   },
+   "corrida": {
+    "nome": "Corrida",
+    "tempo_maximo_min": 120
+   },
+   "_comentario": "limite = 'tempo' (minutos) ou 'voltas'. O nº de voltas da corrida fica em cada pista. classificacao pode ser um dict ou uma lista de etapas; modelos: tempo (fases com ou sem eliminados), grupos, volta_unica, corrida_classificatoria, campeonato. Veja docs/DATABASE.md."
+  },
+  "ponderacao": {
+   "peso_caracteristicas": {
+    "retas": 1.0,
+    "curvas_alta": 1.0,
+    "curvas_baixa": 1.0,
+    "desgaste": 0.35,
+    "dificuldade": 0.35,
+    "chuva": 1.6,
+    "sessao": 0.7
+   },
+   "piloto": {
+    "retas": {
+     "aceleracao": 0.5,
+     "conducao": 0.3,
+     "concentracao": 0.2
+    },
+    "curvas_alta": {
+     "conducao": 0.5,
+     "concentracao": 0.3,
+     "fisico": 0.2
+    },
+    "curvas_baixa": {
+     "conducao": 0.45,
+     "aceleracao": 0.3,
+     "concentracao": 0.25
+    },
+    "desgaste": {
+     "consistencia": 0.6,
+     "conducao": 0.4
+    },
+    "dificuldade": {
+     "concentracao": 0.5,
+     "consistencia": 0.3,
+     "conducao": 0.2
+    },
+    "chuva": {
+     "chuva": 1.0
+    },
+    "sessao_treino": {
+     "acerto_carro": 0.5,
+     "ritmo_corrida": 0.5
+    },
+    "sessao_classificacao": {
+     "classificacao": 1.0
+    },
+    "sessao_corrida": {
+     "ritmo_corrida": 0.5,
+     "consistencia": 0.3,
+     "fisico": 0.2
+    }
+   },
+   "chassis": {
+    "retas": {
+     "aerodinamica": 0.35,
+     "cambio": 0.4,
+     "eletrica": 0.25
+    },
+    "curvas_alta": {
+     "aerodinamica": 0.6,
+     "grip": 0.2,
+     "dirigibilidade": 0.2
+    },
+    "curvas_baixa": {
+     "grip": 0.4,
+     "freio": 0.35,
+     "dirigibilidade": 0.25
+    },
+    "desgaste": {
+     "pneus": 1.0
+    },
+    "dificuldade": {
+     "dirigibilidade": 0.6,
+     "freio": 0.4
+    },
+    "chuva": {
+     "chuva": 0.6,
+     "grip": 0.4
+    },
+    "sessao_treino": {
+     "dirigibilidade": 1.0
+    },
+    "sessao_classificacao": {
+     "classificacao": 1.0
+    },
+    "sessao_corrida": {
+     "pneus": 0.6,
+     "confiabilidade": 0.4
+    }
+   },
+   "motor": {
+    "retas": {
+     "potencia": 1.0
+    },
+    "curvas_alta": {
+     "potencia": 1.0
+    },
+    "curvas_baixa": {
+     "potencia": 1.0
+    }
+   },
+   "importancia_motor_por_caracteristica": {
+    "retas": 0.65,
+    "curvas_alta": 0.3,
+    "curvas_baixa": 0.15
+   }
+  },
+  "simulacao": {
+   "amplitude_desempenho": 0.075,
+   "_comentario_amplitude": "diferença máxima de tempo de volta entre nota 0 e nota 100 (fração).",
+   "aleatoriedade_volta": 0.004,
+   "evolucao_pista": 0.012,
+   "aprendizado_por_volta": 0.03,
+   "penalidade_maxima_acerto": 0.018,
+   "reducao_maxima_acerto_piloto": 0.6,
+   "efeito_combustivel_por_volta": 0.00055,
+   "taxa_erro_volta": 0.03,
+   "taxa_acidente_base": 0.0012,
+   "taxa_quebra_base": 0.001,
+   "ultrapassagem_base": 0.3,
+   "fator_ultrapassagem_rua": 0.6,
+   "ultrapassagem_retas_referencia": 0.4,
+   "ultrapassagem_expoente_retas": 2.0,
+   "ultrapassagem_sensibilidade_ritmo": 1.2,
+   "ultrapassagem_expoente_ritmo": 2.0,
+   "variacao_estrategia_s": 6.0,
+   "variacao_stint": 0.1,
+   "risco_colisao_disputa": 0.008,
+   "distancia_minima_s": 0.25,
+   "intervalo_grid_s": 0.25,
+   "ordens": {
+    "agressividade_tempo": 0.0018,
+    "agressividade_risco": 0.4,
+    "agressividade_desgaste": 0.12,
+    "uso_motor_tempo": 0.0015,
+    "uso_motor_quebra": 0.45,
+    "uso_motor_combustivel": 0.04,
+    "uso_carro_tempo": 0.0012,
+    "uso_carro_quebra": 0.3,
+    "uso_carro_desgaste": 0.1
+   },
+   "_comentario_pitstop": "não cumprir a parada obrigatória não gera penalidade de tempo: a consequência é o desgaste extremo do pneu / falta de combustível (provável abandono).",
+   "mercado_pilotos": {
+    "salario_minimo_por_corrida": 15000,
+    "salario_maximo_por_corrida": 450000,
+    "fracao_orcamento_pilotos": 0.2,
+    "peso_salario_na_escolha": 0.55,
+    "peso_perspectiva_na_escolha": 0.45,
+    "semana_inicio_propostas": 20
+   },
+   "oval": {
+    "alcance_relargada_s": 0.8,
+    "alcance_vacuo_s": 1.5,
+    "amarelas_detritos_por_corrida": 6.0,
+    "carros_max_pelotao": 12,
+    "colisao_oval_curto": 2.5,
+    "compressao_pelotao": 0.6,
+    "custo_disputa_pelotao": 0.3,
+    "efeito_largada": 0.3,
+    "multiplicador_batida_pelotao": 6.0,
+    "piso_relargada": 0.6,
+    "piso_ultrapassagem_pelotao": 0.4,
+    "prob_amarela_acidente": 0.9,
+    "prob_amarela_quebra": 0.35,
+    "respeitar_tempo_maximo": false,
+    "retas_pelotao": [
+     0.5,
+     0.75
+    ],
+    "tentativas_relargada": 3,
+    "vacuo": 0.012,
+    "voltas_amarela": [
+     4,
+     7
+    ],
+    "_comentario": "Corrida em oval (tipo_pista 'oval'). O tipo sai das retas/curvas da pista: 'pelotão' cresce com as retas entre retas_pelotao [mín, máx] (superspeedway, pack racing) e 'curto' com poucas retas ou curvas lentas (short track); o intermediário fica entre os dois. vacuo: ganho no vácuo (fração do tempo) até alcance_vacuo_s; compressao_pelotao: aproxima o ritmo dos carros no pelotão; piso_ultrapassagem_pelotao e custo_disputa_pelotao: passa-se fácil e sem perder muito tempo no pelotão; multiplicador_batida_pelotao e carros_max_pelotao: o 'Big One'; prob_amarela_acidente/quebra e amarelas_detritos_por_corrida (por corrida, independe do nº de voltas): bandeira amarela (safety car, nunca VSC); voltas_amarela [mín, máx]; colisao_oval_curto: contato no oval curto; efeito_largada: largada lançada; tentativas_relargada e piso_relargada: relargada em fila dupla (alcance_relargada_s: lado a lado, disputa quem está até essa distância). respeitar_tempo_maximo: false = no oval a corrida cumpre a distância (sem limite de tempo, como na IndyCar/NASCAR)."
+   }
+  },
+  "carreira": {
+   "calibracao_automatica": true,
+   "_comentario": "Mantém o nível dos pilotos perto da database: estreantes com nível e potencial da database do início do jogo e correção suave por temporada do potencial (pelo tier mais alto)."
+  },
+  "regulamento": {
+   "ativo": true,
+   "semana_anuncio": 30,
+   "prob_grande_mudanca": 0.2,
+   "perda_grande_mudanca": [
+    0.15,
+    0.3
+   ],
+   "aumento_importancia_carro": [
+    0.05,
+    0.1
+   ],
+   "convergencia_por_temporada": 0.02,
+   "prob_limite_desenvolvimento": 0.15,
+   "limite_duracao": [
+    2,
+    4
+   ],
+   "prob_congelamento": 0.5,
+   "limite_pontos_por_temporada": [
+    2,
+    5
+   ],
+   "prob_ajuste_importancia": 0.15,
+   "ajuste_importancia": 0.03,
+   "importancia_carro_min": 0.3,
+   "importancia_carro_max": 0.8,
+   "_comentario": "Mudanças de regulamento, anunciadas na semana_anuncio para a temporada seguinte: grande mudança (chassis perdem mais na manutenção; importância do carro sobe e depois volta aos poucos ao valor da database), limite de desenvolvimento de uma parte (congelado ou pontos por temporada) e ajuste pequeno da importância do carro. Referência F1: grande mudança ~1 a cada 4 anos."
+  }
+ },
+ "pilotos": [
+  {
+   "id": "p001",
+   "nome": "Tomás Ibarra",
+   "nacionalidade": "Argentina",
+   "idade": 34,
+   "atributos": {
+    "consistencia": 95,
+    "ritmo_corrida": 93,
+    "concentracao": 70,
+    "chuva": 88,
+    "aceleracao": 79,
+    "acerto_carro": 72,
+    "trabalho_equipe": 85,
+    "classificacao": 89,
+    "fisico": 99,
+    "conducao": 81,
+    "largada": 94
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor_por_corrida": 320000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 84,
+   "ano_aposentadoria": 2027
+  },
+  {
+   "id": "p002",
+   "nome": "James Dalton",
+   "nacionalidade": "Reino Unido",
+   "idade": 29,
+   "atributos": {
+    "consistencia": 53,
+    "ritmo_corrida": 81,
+    "concentracao": 73,
+    "chuva": 96,
+    "aceleracao": 85,
+    "acerto_carro": 78,
+    "trabalho_equipe": 90,
+    "classificacao": 75,
+    "fisico": 90,
+    "conducao": 80,
+    "largada": 84
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor_por_corrida": 320000,
+    "temporadas": 2,
+    "situacao": "principal"
+   },
+   "ano_pico": 2027,
+   "potencial": 86
+  },
+  {
+   "id": "p003",
+   "nome": "Sem Bakker",
+   "nacionalidade": "Holanda",
+   "idade": 22,
+   "atributos": {
+    "consistencia": 62,
+    "ritmo_corrida": 71,
+    "concentracao": 71,
+    "chuva": 58,
+    "aceleracao": 61,
+    "acerto_carro": 62,
+    "trabalho_equipe": 63,
+    "classificacao": 67,
+    "fisico": 74,
+    "conducao": 66,
+    "largada": 65
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2034,
+   "potencial": 80
+  },
+  {
+   "id": "p004",
+   "nome": "Théo Marchand",
+   "nacionalidade": "França",
+   "idade": 36,
+   "atributos": {
+    "consistencia": 79,
+    "ritmo_corrida": 78,
+    "concentracao": 86,
+    "chuva": 91,
+    "aceleracao": 82,
+    "acerto_carro": 72,
+    "trabalho_equipe": 74,
+    "classificacao": 70,
+    "fisico": 78,
+    "conducao": 85,
+    "largada": 77
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor_por_corrida": 255000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 80,
+   "ano_aposentadoria": 2031
+  },
+  {
+   "id": "p005",
+   "nome": "Sem Mulder",
+   "nacionalidade": "Holanda",
+   "idade": 33,
+   "atributos": {
+    "consistencia": 87,
+    "ritmo_corrida": 82,
+    "concentracao": 78,
+    "chuva": 70,
+    "aceleracao": 75,
+    "acerto_carro": 83,
+    "trabalho_equipe": 99,
+    "classificacao": 79,
+    "fisico": 89,
+    "conducao": 76,
+    "largada": 89
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor_por_corrida": 320000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 84,
+   "ano_aposentadoria": 2027
+  },
+  {
+   "id": "p006",
+   "nome": "Jonas Vogt",
+   "nacionalidade": "Alemanha",
+   "idade": 24,
+   "atributos": {
+    "consistencia": 63,
+    "ritmo_corrida": 64,
+    "concentracao": 59,
+    "chuva": 51,
+    "aceleracao": 64,
+    "acerto_carro": 66,
+    "trabalho_equipe": 51,
+    "classificacao": 62,
+    "fisico": 64,
+    "conducao": 70,
+    "largada": 63
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2032,
+   "potencial": 70
+  },
+  {
+   "id": "p007",
+   "nome": "Noah Bouchard",
+   "nacionalidade": "Canadá",
+   "idade": 36,
+   "atributos": {
+    "consistencia": 79,
+    "ritmo_corrida": 80,
+    "concentracao": 79,
+    "chuva": 66,
+    "aceleracao": 69,
+    "acerto_carro": 76,
+    "trabalho_equipe": 85,
+    "classificacao": 88,
+    "fisico": 62,
+    "conducao": 91,
+    "largada": 74
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor_por_corrida": 210000,
+    "temporadas": 2,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 77,
+   "ano_aposentadoria": 2029
+  },
+  {
+   "id": "p008",
+   "nome": "Diego Rezende",
+   "nacionalidade": "Brasil",
+   "idade": 36,
+   "atributos": {
+    "consistencia": 84,
+    "ritmo_corrida": 80,
+    "concentracao": 85,
+    "chuva": 91,
+    "aceleracao": 78,
+    "acerto_carro": 83,
+    "trabalho_equipe": 77,
+    "classificacao": 73,
+    "fisico": 80,
+    "conducao": 76,
+    "largada": 91
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor_por_corrida": 285000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 82,
+   "ano_aposentadoria": 2027
+  },
+  {
+   "id": "p009",
+   "nome": "Connor Brooks",
+   "nacionalidade": "Estados Unidos",
+   "idade": 18,
+   "atributos": {
+    "consistencia": 44,
+    "ritmo_corrida": 41,
+    "concentracao": 71,
+    "chuva": 60,
+    "aceleracao": 50,
+    "acerto_carro": 48,
+    "trabalho_equipe": 55,
+    "classificacao": 54,
+    "fisico": 52,
+    "conducao": 51,
+    "largada": 68
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2036,
+   "potencial": 68
+  },
+  {
+   "id": "p010",
+   "nome": "Haruto Tachibana",
+   "nacionalidade": "Japão",
+   "idade": 36,
+   "atributos": {
+    "consistencia": 77,
+    "ritmo_corrida": 77,
+    "concentracao": 56,
+    "chuva": 73,
+    "aceleracao": 90,
+    "acerto_carro": 79,
+    "trabalho_equipe": 63,
+    "classificacao": 59,
+    "fisico": 78,
+    "conducao": 77,
+    "largada": 61
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor_por_corrida": 135000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 71,
+   "ano_aposentadoria": 2029
+  },
+  {
+   "id": "p011",
+   "nome": "Joonas Virtanen",
+   "nacionalidade": "Finlândia",
+   "idade": 26,
+   "atributos": {
+    "consistencia": 59,
+    "ritmo_corrida": 65,
+    "concentracao": 70,
+    "chuva": 75,
+    "aceleracao": 67,
+    "acerto_carro": 79,
+    "trabalho_equipe": 74,
+    "classificacao": 72,
+    "fisico": 73,
+    "conducao": 67,
+    "largada": 63
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor_por_corrida": 115000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2031,
+   "potencial": 81
+  },
+  {
+   "id": "p012",
+   "nome": "Andrea Moretti",
+   "nacionalidade": "Itália",
+   "idade": 23,
+   "atributos": {
+    "consistencia": 47,
+    "ritmo_corrida": 57,
+    "concentracao": 75,
+    "chuva": 58,
+    "aceleracao": 66,
+    "acerto_carro": 59,
+    "trabalho_equipe": 62,
+    "classificacao": 45,
+    "fisico": 69,
+    "conducao": 61,
+    "largada": 51
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2030,
+   "potencial": 64
+  },
+  {
+   "id": "p013",
+   "nome": "George Whitmore",
+   "nacionalidade": "Reino Unido",
+   "idade": 26,
+   "atributos": {
+    "consistencia": 64,
+    "ritmo_corrida": 56,
+    "concentracao": 63,
+    "chuva": 54,
+    "aceleracao": 56,
+    "acerto_carro": 83,
+    "trabalho_equipe": 62,
+    "classificacao": 81,
+    "fisico": 69,
+    "conducao": 71,
+    "largada": 68
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor_por_corrida": 135000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2030,
+   "potencial": 82
+  },
+  {
+   "id": "p014",
+   "nome": "Antoine Lemoine",
+   "nacionalidade": "França",
+   "idade": 33,
+   "atributos": {
+    "consistencia": 70,
+    "ritmo_corrida": 82,
+    "concentracao": 75,
+    "chuva": 99,
+    "aceleracao": 86,
+    "acerto_carro": 79,
+    "trabalho_equipe": 80,
+    "classificacao": 86,
+    "fisico": 79,
+    "conducao": 59,
+    "largada": 64
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor_por_corrida": 210000,
+    "temporadas": 2,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 77,
+   "ano_aposentadoria": 2030
+  },
+  {
+   "id": "p015",
+   "nome": "Noah Gagnon",
+   "nacionalidade": "Canadá",
+   "idade": 20,
+   "atributos": {
+    "consistencia": 52,
+    "ritmo_corrida": 60,
+    "concentracao": 52,
+    "chuva": 56,
+    "aceleracao": 40,
+    "acerto_carro": 48,
+    "trabalho_equipe": 63,
+    "classificacao": 47,
+    "fisico": 47,
+    "conducao": 55,
+    "largada": 53
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2036,
+   "potencial": 67
+  },
+  {
+   "id": "p016",
+   "nome": "Bram de Vries",
+   "nacionalidade": "Holanda",
+   "idade": 30,
+   "atributos": {
+    "consistencia": 66,
+    "ritmo_corrida": 48,
+    "concentracao": 72,
+    "chuva": 62,
+    "aceleracao": 54,
+    "acerto_carro": 84,
+    "trabalho_equipe": 61,
+    "classificacao": 51,
+    "fisico": 81,
+    "conducao": 74,
+    "largada": 67
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor_por_corrida": 115000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 69
+  },
+  {
+   "id": "p017",
+   "nome": "Sota Tachibana",
+   "nacionalidade": "Japão",
+   "idade": 31,
+   "atributos": {
+    "consistencia": 73,
+    "ritmo_corrida": 79,
+    "concentracao": 78,
+    "chuva": 82,
+    "aceleracao": 82,
+    "acerto_carro": 64,
+    "trabalho_equipe": 75,
+    "classificacao": 58,
+    "fisico": 72,
+    "conducao": 58,
+    "largada": 75
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor_por_corrida": 115000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 69
+  },
+  {
+   "id": "p018",
+   "nome": "Matteo Rinaldi",
+   "nacionalidade": "Itália",
+   "idade": 23,
+   "atributos": {
+    "consistencia": 64,
+    "ritmo_corrida": 64,
+    "concentracao": 76,
+    "chuva": 51,
+    "aceleracao": 55,
+    "acerto_carro": 68,
+    "trabalho_equipe": 58,
+    "classificacao": 70,
+    "fisico": 58,
+    "conducao": 58,
+    "largada": 57
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2030,
+   "potencial": 69
+  },
+  {
+   "id": "p019",
+   "nome": "Felix Lindner",
+   "nacionalidade": "Alemanha",
+   "idade": 20,
+   "atributos": {
+    "consistencia": 67,
+    "ritmo_corrida": 71,
+    "concentracao": 67,
+    "chuva": 71,
+    "aceleracao": 71,
+    "acerto_carro": 77,
+    "trabalho_equipe": 46,
+    "classificacao": 61,
+    "fisico": 62,
+    "conducao": 62,
+    "largada": 57
+   },
+   "contrato": {
+    "equipe": "andes",
+    "valor_por_corrida": 65000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2036,
+   "potencial": 77
+  },
+  {
+   "id": "p020",
+   "nome": "Maximilian Brandt",
+   "nacionalidade": "Alemanha",
+   "idade": 24,
+   "atributos": {
+    "consistencia": 68,
+    "ritmo_corrida": 72,
+    "concentracao": 53,
+    "chuva": 54,
+    "aceleracao": 70,
+    "acerto_carro": 58,
+    "trabalho_equipe": 57,
+    "classificacao": 66,
+    "fisico": 60,
+    "conducao": 48,
+    "largada": 61
+   },
+   "contrato": {
+    "equipe": "andes",
+    "valor_por_corrida": 65000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2031,
+   "potencial": 74
+  },
+  {
+   "id": "p021",
+   "nome": "Facundo Ibarra",
+   "nacionalidade": "Argentina",
+   "idade": 22,
+   "atributos": {
+    "consistencia": 64,
+    "ritmo_corrida": 60,
+    "concentracao": 57,
+    "chuva": 64,
+    "aceleracao": 64,
+    "acerto_carro": 58,
+    "trabalho_equipe": 59,
+    "classificacao": 72,
+    "fisico": 55,
+    "conducao": 79,
+    "largada": 61
+   },
+   "contrato": {
+    "equipe": "andes",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "temporadas": 1
+   },
+   "ano_pico": 2033,
+   "potencial": 76
+  },
+  {
+   "id": "p022",
+   "nome": "Gustavo Barros",
+   "nacionalidade": "Brasil",
+   "idade": 23,
+   "atributos": {
+    "consistencia": 68,
+    "ritmo_corrida": 71,
+    "concentracao": 73,
+    "chuva": 67,
+    "aceleracao": 86,
+    "acerto_carro": 61,
+    "trabalho_equipe": 63,
+    "classificacao": 62,
+    "fisico": 73,
+    "conducao": 63,
+    "largada": 65
+   },
+   "contrato": {
+    "equipe": "tucano",
+    "valor_por_corrida": 80000,
+    "temporadas": 2,
+    "situacao": "principal"
+   },
+   "ano_pico": 2032,
+   "potencial": 79
+  },
+  {
+   "id": "p023",
+   "nome": "Harry Dalton",
+   "nacionalidade": "Reino Unido",
+   "idade": 35,
+   "atributos": {
+    "consistencia": 60,
+    "ritmo_corrida": 84,
+    "concentracao": 68,
+    "chuva": 67,
+    "aceleracao": 63,
+    "acerto_carro": 66,
+    "trabalho_equipe": 63,
+    "classificacao": 78,
+    "fisico": 57,
+    "conducao": 76,
+    "largada": 52
+   },
+   "contrato": {
+    "equipe": "tucano",
+    "valor_por_corrida": 115000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 69,
+   "ano_aposentadoria": 2027
+  },
+  {
+   "id": "p024",
+   "nome": "Bram Mulder",
+   "nacionalidade": "Holanda",
+   "idade": 23,
+   "atributos": {
+    "consistencia": 55,
+    "ritmo_corrida": 46,
+    "concentracao": 65,
+    "chuva": 55,
+    "aceleracao": 43,
+    "acerto_carro": 47,
+    "trabalho_equipe": 47,
+    "classificacao": 48,
+    "fisico": 51,
+    "conducao": 55,
+    "largada": 30
+   },
+   "contrato": {
+    "equipe": "tucano",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "corridas": 7
+   },
+   "ano_pico": 2030,
+   "potencial": 58
+  },
+  {
+   "id": "p025",
+   "nome": "Caio Cardoso",
+   "nacionalidade": "Brasil",
+   "idade": 25,
+   "atributos": {
+    "consistencia": 55,
+    "ritmo_corrida": 70,
+    "concentracao": 61,
+    "chuva": 78,
+    "aceleracao": 63,
+    "acerto_carro": 60,
+    "trabalho_equipe": 60,
+    "classificacao": 62,
+    "fisico": 64,
+    "conducao": 56,
+    "largada": 62
+   },
+   "contrato": {
+    "equipe": "maple",
+    "valor_por_corrida": 55000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2031,
+   "potencial": 69
+  },
+  {
+   "id": "p026",
+   "nome": "Tobias Lindner",
+   "nacionalidade": "Alemanha",
+   "idade": 21,
+   "atributos": {
+    "consistencia": 63,
+    "ritmo_corrida": 69,
+    "concentracao": 62,
+    "chuva": 65,
+    "aceleracao": 69,
+    "acerto_carro": 59,
+    "trabalho_equipe": 68,
+    "classificacao": 65,
+    "fisico": 75,
+    "conducao": 66,
+    "largada": 73
+   },
+   "contrato": {
+    "equipe": "maple",
+    "valor_por_corrida": 115000,
+    "temporadas": 3,
+    "situacao": "principal"
+   },
+   "ano_pico": 2032,
+   "potencial": 86
+  },
+  {
+   "id": "p027",
+   "nome": "Santiago Villaseñor",
+   "nacionalidade": "México",
+   "idade": 19,
+   "atributos": {
+    "consistencia": 81,
+    "ritmo_corrida": 51,
+    "concentracao": 67,
+    "chuva": 63,
+    "aceleracao": 47,
+    "acerto_carro": 68,
+    "trabalho_equipe": 65,
+    "classificacao": 65,
+    "fisico": 70,
+    "conducao": 51,
+    "largada": 61
+   },
+   "contrato": {
+    "equipe": "maple",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "corridas": 7
+   },
+   "ano_pico": 2036,
+   "potencial": 85
+  },
+  {
+   "id": "p028",
+   "nome": "Lucas Barros",
+   "nacionalidade": "Brasil",
+   "idade": 28,
+   "atributos": {
+    "consistencia": 71,
+    "ritmo_corrida": 79,
+    "concentracao": 65,
+    "chuva": 71,
+    "aceleracao": 71,
+    "acerto_carro": 63,
+    "trabalho_equipe": 55,
+    "classificacao": 64,
+    "fisico": 60,
+    "conducao": 55,
+    "largada": 55
+   },
+   "contrato": {
+    "equipe": "atlas",
+    "valor_por_corrida": 105000,
+    "temporadas": 2,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 68
+  },
+  {
+   "id": "p029",
+   "nome": "Wyatt Harlan",
+   "nacionalidade": "Estados Unidos",
+   "idade": 31,
+   "atributos": {
+    "consistencia": 63,
+    "ritmo_corrida": 57,
+    "concentracao": 50,
+    "chuva": 59,
+    "aceleracao": 66,
+    "acerto_carro": 62,
+    "trabalho_equipe": 66,
+    "classificacao": 49,
+    "fisico": 62,
+    "conducao": 53,
+    "largada": 69
+   },
+   "contrato": {
+    "equipe": "atlas",
+    "valor_por_corrida": 45000,
+    "temporadas": 1,
+    "situacao": "principal"
+   },
+   "ano_pico": 2026,
+   "potencial": 60
+  },
+  {
+   "id": "p030",
+   "nome": "James Ashby",
+   "nacionalidade": "Reino Unido",
+   "idade": 23,
+   "atributos": {
+    "consistencia": 57,
+    "ritmo_corrida": 56,
+    "concentracao": 67,
+    "chuva": 48,
+    "aceleracao": 56,
+    "acerto_carro": 40,
+    "trabalho_equipe": 52,
+    "classificacao": 54,
+    "fisico": 47,
+    "conducao": 52,
+    "largada": 60
+   },
+   "contrato": {
+    "equipe": "atlas",
+    "valor_por_corrida": 10000,
+    "situacao": "teste",
+    "corridas": 7
+   },
+   "ano_pico": 2033,
+   "potencial": 67
+  },
+  {
+   "id": "p031",
+   "nome": "Théo Lemoine",
+   "nacionalidade": "França",
+   "idade": 31,
+   "atributos": {
+    "consistencia": 56,
+    "ritmo_corrida": 64,
+    "concentracao": 48,
+    "chuva": 81,
+    "aceleracao": 66,
+    "acerto_carro": 65,
+    "trabalho_equipe": 64,
+    "classificacao": 70,
+    "fisico": 54,
+    "conducao": 70,
+    "largada": 74
+   },
+   "contrato": null,
+   "ano_pico": 2026,
+   "potencial": 63
+  },
+  {
+   "id": "p032",
+   "nome": "Bram Bakker",
+   "nacionalidade": "Holanda",
+   "idade": 21,
+   "atributos": {
+    "consistencia": 63,
+    "ritmo_corrida": 68,
+    "concentracao": 42,
+    "chuva": 62,
+    "aceleracao": 53,
+    "acerto_carro": 62,
+    "trabalho_equipe": 61,
+    "classificacao": 51,
+    "fisico": 58,
+    "conducao": 71,
+    "largada": 69
+   },
+   "contrato": null,
+   "ano_pico": 2035,
+   "potencial": 83
+  },
+  {
+   "id": "p033",
+   "nome": "Nicolás Ibarra",
+   "nacionalidade": "Argentina",
+   "idade": 34,
+   "atributos": {
+    "consistencia": 78,
+    "ritmo_corrida": 72,
+    "concentracao": 78,
+    "chuva": 84,
+    "aceleracao": 73,
+    "acerto_carro": 71,
+    "trabalho_equipe": 84,
+    "classificacao": 68,
+    "fisico": 58,
+    "conducao": 69,
+    "largada": 75
+   },
+   "contrato": null,
+   "ano_pico": 2026,
+   "potencial": 71,
+   "ano_aposentadoria": 2030
+  },
+  {
+   "id": "p034",
+   "nome": "Maximilian Kessler",
+   "nacionalidade": "Alemanha",
+   "idade": 33,
+   "atributos": {
+    "consistencia": 56,
+    "ritmo_corrida": 46,
+    "concentracao": 60,
+    "chuva": 53,
+    "aceleracao": 66,
+    "acerto_carro": 54,
+    "trabalho_equipe": 57,
+    "classificacao": 63,
+    "fisico": 51,
+    "conducao": 54,
+    "largada": 57
+   },
+   "contrato": null,
+   "ano_pico": 2026,
+   "potencial": 62,
+   "ano_aposentadoria": 2028
+  },
+  {
+   "id": "p035",
+   "nome": "Javier Navarro",
+   "nacionalidade": "Espanha",
+   "idade": 33,
+   "atributos": {
+    "consistencia": 57,
+    "ritmo_corrida": 47,
+    "concentracao": 54,
+    "chuva": 37,
+    "aceleracao": 46,
+    "acerto_carro": 49,
+    "trabalho_equipe": 56,
+    "classificacao": 49,
+    "fisico": 42,
+    "conducao": 51,
+    "largada": 56
+   },
+   "contrato": null,
+   "ano_pico": 2026,
+   "potencial": 53,
+   "ano_aposentadoria": 2030
+  },
+  {
+   "id": "p036",
+   "nome": "Marcos Ortega",
+   "nacionalidade": "Espanha",
+   "idade": 22,
+   "atributos": {
+    "consistencia": 45,
+    "ritmo_corrida": 55,
+    "concentracao": 57,
+    "chuva": 55,
+    "aceleracao": 50,
+    "acerto_carro": 54,
+    "trabalho_equipe": 62,
+    "classificacao": 54,
+    "fisico": 73,
+    "conducao": 67,
+    "largada": 57
+   },
+   "contrato": null,
+   "ano_pico": 2034,
+   "potencial": 73
+  },
+  {
+   "id": "p037",
+   "nome": "Riley Fraser",
+   "nacionalidade": "Austrália",
+   "idade": 22,
+   "atributos": {
+    "consistencia": 88,
+    "ritmo_corrida": 73,
+    "concentracao": 81,
+    "chuva": 67,
+    "aceleracao": 74,
+    "acerto_carro": 60,
+    "trabalho_equipe": 87,
+    "classificacao": 60,
+    "fisico": 86,
+    "conducao": 56,
+    "largada": 56
+   },
+   "contrato": null,
+   "ano_pico": 2034,
+   "potencial": 77
+  },
+  {
+   "id": "p038",
+   "nome": "James Whitmore",
+   "nacionalidade": "Reino Unido",
+   "idade": 21,
+   "atributos": {
+    "consistencia": 39,
+    "ritmo_corrida": 54,
+    "concentracao": 68,
+    "chuva": 50,
+    "aceleracao": 58,
+    "acerto_carro": 66,
+    "trabalho_equipe": 48,
+    "classificacao": 62,
+    "fisico": 66,
+    "conducao": 51,
+    "largada": 54
+   },
+   "contrato": null,
+   "ano_pico": 2034,
+   "potencial": 78
+  },
+  {
+   "id": "p039",
+   "nome": "Wyatt Sutton",
+   "nacionalidade": "Estados Unidos",
+   "idade": 26,
+   "atributos": {
+    "consistencia": 64,
+    "ritmo_corrida": 64,
+    "concentracao": 54,
+    "chuva": 68,
+    "aceleracao": 52,
+    "acerto_carro": 67,
+    "trabalho_equipe": 65,
+    "classificacao": 67,
+    "fisico": 67,
+    "conducao": 75,
+    "largada": 44
+   },
+   "contrato": null,
+   "ano_pico": 2031,
+   "potencial": 74
+  }
+ ],
+ "chassis": [
+  {
+   "id": "ch_vortex",
+   "nome": "Vortex C26",
+   "nacionalidade": "Reino Unido",
+   "equipe": "vortex",
+   "atributos": {
+    "aerodinamica": 89,
+    "grip": 88,
+    "cambio": 72,
+    "freio": 83,
+    "eletrica": 87,
+    "dirigibilidade": 86,
+    "confiabilidade": 77,
+    "classificacao": 79,
+    "chuva": 85,
+    "pneus": 76
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_ventura",
+   "nome": "Scuderia C26",
+   "nacionalidade": "Itália",
+   "equipe": "ventura",
+   "atributos": {
+    "aerodinamica": 79,
+    "grip": 74,
+    "cambio": 82,
+    "freio": 82,
+    "eletrica": 93,
+    "dirigibilidade": 76,
+    "confiabilidade": 76,
+    "classificacao": 67,
+    "chuva": 83,
+    "pneus": 88
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_hanazono",
+   "nome": "Hanazono C26",
+   "nacionalidade": "Japão",
+   "equipe": "hanazono",
+   "atributos": {
+    "aerodinamica": 76,
+    "grip": 70,
+    "cambio": 84,
+    "freio": 76,
+    "eletrica": 63,
+    "dirigibilidade": 69,
+    "confiabilidade": 81,
+    "classificacao": 68,
+    "chuva": 82,
+    "pneus": 73
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_lumiere",
+   "nome": "Lumière L26",
+   "nacionalidade": "França",
+   "equipe": "lumiere",
+   "atributos": {
+    "aerodinamica": 63,
+    "grip": 69,
+    "cambio": 68,
+    "freio": 70,
+    "eletrica": 79,
+    "dirigibilidade": 75,
+    "confiabilidade": 67,
+    "classificacao": 73,
+    "chuva": 75,
+    "pneus": 49
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_kestrel",
+   "nome": "Kestrel C26",
+   "nacionalidade": "Reino Unido",
+   "equipe": "kestrel",
+   "atributos": {
+    "aerodinamica": 71,
+    "grip": 70,
+    "cambio": 76,
+    "freio": 76,
+    "eletrica": 57,
+    "dirigibilidade": 63,
+    "confiabilidade": 63,
+    "classificacao": 78,
+    "chuva": 63,
+    "pneus": 64
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_nordwind",
+   "nome": "Nordwind C26",
+   "nacionalidade": "Alemanha",
+   "equipe": "nordwind",
+   "atributos": {
+    "aerodinamica": 67,
+    "grip": 61,
+    "cambio": 66,
+    "freio": 60,
+    "eletrica": 79,
+    "dirigibilidade": 56,
+    "confiabilidade": 59,
+    "classificacao": 57,
+    "chuva": 63,
+    "pneus": 72
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_andes",
+   "nome": "Andes C26",
+   "nacionalidade": "Argentina",
+   "equipe": "andes",
+   "atributos": {
+    "aerodinamica": 70,
+    "grip": 66,
+    "cambio": 59,
+    "freio": 66,
+    "eletrica": 69,
+    "dirigibilidade": 64,
+    "confiabilidade": 62,
+    "classificacao": 58,
+    "chuva": 60,
+    "pneus": 69
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_tucano",
+   "nome": "Tucano C26",
+   "nacionalidade": "Brasil",
+   "equipe": "tucano",
+   "atributos": {
+    "aerodinamica": 48,
+    "grip": 64,
+    "cambio": 69,
+    "freio": 61,
+    "eletrica": 69,
+    "dirigibilidade": 53,
+    "confiabilidade": 68,
+    "classificacao": 50,
+    "chuva": 65,
+    "pneus": 57
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_maple",
+   "nome": "Maple C26",
+   "nacionalidade": "Canadá",
+   "equipe": "maple",
+   "atributos": {
+    "aerodinamica": 71,
+    "grip": 54,
+    "cambio": 59,
+    "freio": 65,
+    "eletrica": 56,
+    "dirigibilidade": 54,
+    "confiabilidade": 50,
+    "classificacao": 60,
+    "chuva": 54,
+    "pneus": 55
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_atlas",
+   "nome": "Atlas C26",
+   "nacionalidade": "Estados Unidos",
+   "equipe": "atlas",
+   "atributos": {
+    "aerodinamica": 50,
+    "grip": 57,
+    "cambio": 49,
+    "freio": 49,
+    "eletrica": 47,
+    "dirigibilidade": 53,
+    "confiabilidade": 50,
+    "classificacao": 46,
+    "chuva": 48,
+    "pneus": 55
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_iberia",
+   "nome": "Iberia C26",
+   "nacionalidade": "Espanha",
+   "equipe": "iberia",
+   "atributos": {
+    "aerodinamica": 53,
+    "grip": 41,
+    "cambio": 48,
+    "freio": 52,
+    "eletrica": 57,
+    "dirigibilidade": 52,
+    "confiabilidade": 58,
+    "classificacao": 64,
+    "chuva": 49,
+    "pneus": 62
+   },
+   "contrato": null
+  },
+  {
+   "id": "ch_danubio",
+   "nome": "Danúbio C26",
+   "nacionalidade": "Holanda",
+   "equipe": "danubio",
+   "atributos": {
+    "aerodinamica": 55,
+    "grip": 54,
+    "cambio": 40,
+    "freio": 57,
+    "eletrica": 58,
+    "dirigibilidade": 50,
+    "confiabilidade": 48,
+    "classificacao": 51,
+    "chuva": 58,
+    "pneus": 46
+   },
+   "contrato": null
+  }
+ ],
+ "motores": [
+  {
+   "id": "mot_vortex",
+   "nome": "Vortex V-26",
+   "nacionalidade": "Reino Unido",
+   "potencia": 88,
+   "fabricante": {
+    "tipo": "equipe",
+    "equipe": "vortex"
+   },
+   "exclusividade": {
+    "exclusivo": false,
+    "equipe": null
+   },
+   "contrato": {
+    "valor_por_corrida": 520000,
+    "temporadas": 2
+   }
+  },
+  {
+   "id": "mot_ventura",
+   "nome": "Ventura Tipo 26",
+   "nacionalidade": "Itália",
+   "potencia": 86,
+   "fabricante": {
+    "tipo": "equipe",
+    "equipe": "ventura"
+   },
+   "exclusividade": {
+    "exclusivo": true,
+    "equipe": "Andes Racing"
+   },
+   "contrato": {
+    "valor_por_corrida": 480000,
+    "temporadas": 2
+   }
+  },
+  {
+   "id": "mot_hanazono",
+   "nome": "Hanazono RA-26",
+   "nacionalidade": "Japão",
+   "potencia": 82,
+   "fabricante": {
+    "tipo": "equipe",
+    "equipe": "hanazono"
+   },
+   "exclusividade": {
+    "exclusivo": false,
+    "equipe": null
+   },
+   "contrato": {
+    "valor_por_corrida": 420000,
+    "temporadas": 2
+   }
+  },
+  {
+   "id": "mot_kraft",
+   "nome": "Kraft KM-8",
+   "nacionalidade": "Alemanha",
+   "potencia": 78,
+   "fabricante": {
+    "tipo": "fabricante"
+   },
+   "exclusividade": {
+    "exclusivo": false,
+    "equipe": null
+   },
+   "contrato": {
+    "valor_por_corrida": 350000,
+    "temporadas": 1
+   }
+  },
+  {
+   "id": "mot_rhone",
+   "nome": "Rhône R26",
+   "nacionalidade": "França",
+   "potencia": 74,
+   "fabricante": {
+    "tipo": "fabricante"
+   },
+   "exclusividade": {
+    "exclusivo": false,
+    "equipe": null
+   },
+   "contrato": {
+    "valor_por_corrida": 300000,
+    "temporadas": 1
+   }
+  }
+ ],
+ "equipes": [
+  {
+   "id": "vortex",
+   "nome": "Vortex Racing",
+   "ativa": true,
+   "nacionalidade": "Reino Unido",
+   "recursos": 92,
+   "cor": "#0b1f4b",
+   "cor_secundaria": "#d4af37",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_vortex",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_vortex",
+    "origem": "proprio"
+   },
+   "prob_fechamento": 0.003,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "ventura",
+   "nome": "Scuderia Ventura",
+   "ativa": true,
+   "nacionalidade": "Itália",
+   "recursos": 88,
+   "cor": "#c8102e",
+   "cor_secundaria": "#ffd100",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_ventura",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_ventura",
+    "origem": "proprio"
+   },
+   "prob_fechamento": 0.003,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "hanazono",
+   "nome": "Hanazono Motorsport",
+   "ativa": true,
+   "nacionalidade": "Japão",
+   "recursos": 80,
+   "cor": "#ffffff",
+   "cor_secundaria": "#e4002b",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_hanazono",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_hanazono",
+    "origem": "proprio"
+   },
+   "prob_fechamento": 0.005,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "lumiere",
+   "nome": "Équipe Lumière",
+   "ativa": true,
+   "nacionalidade": "França",
+   "recursos": 70,
+   "cor": "#0055a4",
+   "cor_secundaria": "#ffffff",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_lumiere",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_rhone",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 300000,
+     "temporadas": 2
+    }
+   },
+   "prob_fechamento": 0.007,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "kestrel",
+   "nome": "Kestrel Grand Prix",
+   "ativa": true,
+   "nacionalidade": "Reino Unido",
+   "recursos": 65,
+   "cor": "#ff8200",
+   "cor_secundaria": "#1a1a1a",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_kestrel",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_vortex",
+    "origem": "equipe",
+    "contrato": {
+     "valor_por_corrida": 520000,
+     "temporadas": 1
+    }
+   },
+   "prob_fechamento": 0.009,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "nordwind",
+   "nome": "Nordwind Racing",
+   "ativa": true,
+   "nacionalidade": "Alemanha",
+   "recursos": 60,
+   "cor": "#7a7a7a",
+   "cor_secundaria": "#00a3e0",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_nordwind",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_kraft",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 350000,
+     "temporadas": 2
+    }
+   },
+   "prob_fechamento": 0.01,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "andes",
+   "nome": "Andes Racing",
+   "ativa": true,
+   "nacionalidade": "Argentina",
+   "recursos": 50,
+   "cor": "#6cace4",
+   "cor_secundaria": "#ffffff",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_andes",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_ventura",
+    "origem": "equipe",
+    "contrato": {
+     "valor_por_corrida": 480000,
+     "temporadas": 2
+    }
+   },
+   "prob_fechamento": 0.013,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "tucano",
+   "nome": "Tucano Racing",
+   "ativa": true,
+   "nacionalidade": "Brasil",
+   "recursos": 45,
+   "cor": "#009c3b",
+   "cor_secundaria": "#ffdf00",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_tucano",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_kraft",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 350000,
+     "temporadas": 1
+    }
+   },
+   "prob_fechamento": 0.014,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "maple",
+   "nome": "Maple Speed",
+   "ativa": true,
+   "nacionalidade": "Canadá",
+   "recursos": 40,
+   "cor": "#d52b1e",
+   "cor_secundaria": "#ffffff",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_maple",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_hanazono",
+    "origem": "equipe",
+    "contrato": {
+     "valor_por_corrida": 420000,
+     "temporadas": 1
+    }
+   },
+   "prob_fechamento": 0.015,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "atlas",
+   "nome": "Atlas Grand Prix",
+   "ativa": true,
+   "nacionalidade": "Estados Unidos",
+   "recursos": 35,
+   "cor": "#1a1a1a",
+   "cor_secundaria": "#c8102e",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_atlas",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_rhone",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 300000,
+     "temporadas": 1
+    }
+   },
+   "prob_fechamento": 0.016,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "iberia",
+   "nome": "Iberia Racing",
+   "ativa": false,
+   "nacionalidade": "Espanha",
+   "recursos": 40,
+   "cor": "#aa151b",
+   "cor_secundaria": "#f1bf00",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_iberia",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_kraft",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 350000,
+     "temporadas": 1
+    }
+   },
+   "prob_fechamento": 0.015,
+   "prob_surgimento": 0.15
+  },
+  {
+   "id": "danubio",
+   "nome": "Danúbio GP",
+   "ativa": false,
+   "nacionalidade": "Holanda",
+   "recursos": 30,
+   "cor": "#4b0082",
+   "cor_secundaria": "#ff8200",
+   "caixa": null,
+   "chassis": {
+    "id": "ch_danubio",
+    "origem": "proprio"
+   },
+   "motor": {
+    "id": "mot_rhone",
+    "origem": "fabricante",
+    "contrato": {
+     "valor_por_corrida": 300000,
+     "temporadas": 2
+    }
+   },
+   "prob_fechamento": 0.018,
+   "prob_surgimento": 0.15,
+   "ano_surgimento": 2028
+  }
+ ],
+ "patrocinadores": [
+  {
+   "id": "pat01",
+   "nome": "Nimbus Air",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Aviação",
+   "valor_base": 7265000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Reino Unido"
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor": 519000,
+    "pagamento": "por_corrida",
+    "duracao": 21,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat02",
+   "nome": "Fênix Investimentos",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Finanças",
+   "valor_base": 14605000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Reino Unido"
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor": 14605000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat03",
+   "nome": "Atlântico Watches",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Relógios",
+   "valor_base": 16040000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor": 16040000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat04",
+   "nome": "Vega Tech",
+   "ativo": true,
+   "pais": "Canadá",
+   "ramo": "Tecnologia",
+   "valor_base": 17559000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Canadá"
+   },
+   "contrato": {
+    "equipe": "vortex",
+    "valor": 17559000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat05",
+   "nome": "Falcão Motors",
+   "ativo": true,
+   "pais": "Itália",
+   "ramo": "Automotivo",
+   "valor_base": 10571000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 8
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor": 10571000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat06",
+   "nome": "Vega Alimentos",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Alimentos",
+   "valor_base": 9759000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor": 9759000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat07",
+   "nome": "Zênite Telecom",
+   "ativo": true,
+   "pais": "Itália",
+   "ramo": "Telecomunicações",
+   "valor_base": 7337000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 8
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor": 7337000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat08",
+   "nome": "Netuno Motors",
+   "ativo": true,
+   "pais": "Itália",
+   "ramo": "Automotivo",
+   "valor_base": 7684000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Itália"
+   },
+   "contrato": {
+    "equipe": "ventura",
+    "valor": 7684000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat09",
+   "nome": "Aurora Logística",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Logística",
+   "valor_base": 9107000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Japão"
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor": 9107000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat10",
+   "nome": "Rubi Air",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Aviação",
+   "valor_base": 8363000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Japão"
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor": 8363000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat11",
+   "nome": "Cometa Air",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Aviação",
+   "valor_base": 16147000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 8
+   },
+   "contrato": {
+    "equipe": "hanazono",
+    "valor": 16147000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat12",
+   "nome": "Netuno Tech",
+   "ativo": true,
+   "pais": "França",
+   "ramo": "Tecnologia",
+   "valor_base": 8635000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "França"
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor": 8635000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat13",
+   "nome": "Delta Seguros",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Seguros",
+   "valor_base": 12685000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 3
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor": 906000,
+    "pagamento": "por_corrida",
+    "duracao": 14,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat14",
+   "nome": "Horizonte Motors",
+   "ativo": true,
+   "pais": "França",
+   "ramo": "Automotivo",
+   "valor_base": 6489000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "lumiere",
+    "valor": 6489000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat15",
+   "nome": "Kronos Watches",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Relógios",
+   "valor_base": 10604000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor": 757000,
+    "pagamento": "por_corrida",
+    "duracao": 21,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat16",
+   "nome": "Jade Logística",
+   "ativo": true,
+   "pais": "Brasil",
+   "ramo": "Logística",
+   "valor_base": 7615000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 8
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor": 7615000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat17",
+   "nome": "Delta Investimentos",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Finanças",
+   "valor_base": 13515000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Reino Unido"
+   },
+   "contrato": {
+    "equipe": "kestrel",
+    "valor": 13515000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat18",
+   "nome": "Vértice Motors",
+   "ativo": true,
+   "pais": "Holanda",
+   "ramo": "Automotivo",
+   "valor_base": 5378000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Holanda"
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor": 5378000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat19",
+   "nome": "Lumen Investimentos",
+   "ativo": true,
+   "pais": "Alemanha",
+   "ramo": "Finanças",
+   "valor_base": 11509000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor": 822000,
+    "pagamento": "por_corrida",
+    "duracao": 21,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat20",
+   "nome": "Safira Investimentos",
+   "ativo": true,
+   "pais": "Alemanha",
+   "ramo": "Finanças",
+   "valor_base": 12072000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "nordwind",
+    "valor": 12072000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat21",
+   "nome": "Kronos Tech",
+   "ativo": true,
+   "pais": "Alemanha",
+   "ramo": "Tecnologia",
+   "valor_base": 11949000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Alemanha"
+   },
+   "contrato": {
+    "equipe": "andes",
+    "valor": 854000,
+    "pagamento": "por_corrida",
+    "duracao": 21,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat22",
+   "nome": "Hélio Bebidas",
+   "ativo": true,
+   "pais": "Reino Unido",
+   "ramo": "Bebidas",
+   "valor_base": 5538000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Reino Unido"
+   },
+   "contrato": {
+    "equipe": "andes",
+    "valor": 5538000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat23",
+   "nome": "Fênix Air",
+   "ativo": true,
+   "pais": "Brasil",
+   "ramo": "Aviação",
+   "valor_base": 8612000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Brasil"
+   },
+   "contrato": {
+    "equipe": "tucano",
+    "valor": 8612000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat24",
+   "nome": "Delta Bank",
+   "ativo": true,
+   "pais": "Brasil",
+   "ramo": "Bancos",
+   "valor_base": 8156000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Brasil"
+   },
+   "contrato": {
+    "equipe": "tucano",
+    "valor": 8156000,
+    "pagamento": "por_temporada",
+    "duracao": 3,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat25",
+   "nome": "Equinócio Tech",
+   "ativo": true,
+   "pais": "Canadá",
+   "ramo": "Tecnologia",
+   "valor_base": 11200000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": {
+    "equipe": "maple",
+    "valor": 11200000,
+    "pagamento": "por_temporada",
+    "duracao": 1,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat26",
+   "nome": "Meridiano Telecom",
+   "ativo": true,
+   "pais": "Itália",
+   "ramo": "Telecomunicações",
+   "valor_base": 9220000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Itália"
+   },
+   "contrato": {
+    "equipe": "maple",
+    "valor": 659000,
+    "pagamento": "por_corrida",
+    "duracao": 7,
+    "unidade": "corridas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat27",
+   "nome": "Safira Bebidas",
+   "ativo": true,
+   "pais": "Estados Unidos",
+   "ramo": "Bebidas",
+   "valor_base": 4632000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Estados Unidos"
+   },
+   "contrato": {
+    "equipe": "atlas",
+    "valor": 4632000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat28",
+   "nome": "Dínamo Watches",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Relógios",
+   "valor_base": 4666000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Japão"
+   },
+   "contrato": {
+    "equipe": "atlas",
+    "valor": 4666000,
+    "pagamento": "por_temporada",
+    "duracao": 2,
+    "unidade": "temporadas"
+   },
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat29",
+   "nome": "Vértice Air",
+   "ativo": true,
+   "pais": "Brasil",
+   "ramo": "Aviação",
+   "valor_base": 8700000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Brasil"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat30",
+   "nome": "Lumen Energia",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Energia",
+   "valor_base": 8294000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Japão"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat31",
+   "nome": "Quasar Lubrificantes",
+   "ativo": true,
+   "pais": "Canadá",
+   "ramo": "Petróleo",
+   "valor_base": 6748000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Canadá"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat32",
+   "nome": "Aurora Telecom",
+   "ativo": true,
+   "pais": "Japão",
+   "ramo": "Telecomunicações",
+   "valor_base": 9790000,
+   "preferencia": {
+    "tipo": "nacionalidade_piloto",
+    "valor": "Japão"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat33",
+   "nome": "Dínamo Eletrônicos",
+   "ativo": true,
+   "pais": "Argentina",
+   "ramo": "Eletrônicos",
+   "valor_base": 11363000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Argentina"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.03,
+   "prob_surgimento": 0.0
+  },
+  {
+   "id": "pat34",
+   "nome": "Monarca Bebidas",
+   "ativo": false,
+   "pais": "Itália",
+   "ramo": "Bebidas",
+   "valor_base": 8142000,
+   "preferencia": {
+    "tipo": "nacionalidade_equipe",
+    "valor": "Itália"
+   },
+   "contrato": null,
+   "prob_fechamento": 0.0,
+   "prob_surgimento": 0.3
+  },
+  {
+   "id": "pat35",
+   "nome": "Cometa Alimentos",
+   "ativo": false,
+   "pais": "Estados Unidos",
+   "ramo": "Alimentos",
+   "valor_base": 6887000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 5
+   },
+   "contrato": null,
+   "prob_fechamento": 0.0,
+   "prob_surgimento": 0.3
+  },
+  {
+   "id": "pat36",
+   "nome": "Rubi Investimentos",
+   "ativo": false,
+   "pais": "Reino Unido",
+   "ramo": "Finanças",
+   "valor_base": 6627000,
+   "preferencia": {
+    "tipo": "posicao_campeonato",
+    "valor": 8
+   },
+   "contrato": null,
+   "prob_fechamento": 0.0,
+   "prob_surgimento": 0.3
+  }
+ ],
+ "calendario": [
+  {
+   "id": "ev01",
+   "nome": "Teste coletivo de pré-temporada I",
+   "ativo": true,
+   "semana": 5,
+   "especie": "treino",
+   "local": "Costa Blanca, Espanha",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 80.8,
+   "tempo_base_corrida": 82.82,
+   "voltas_corrida": 0,
+   "retas": 35,
+   "curvas_alta": 30,
+   "curvas_baixa": 35,
+   "desgaste_pneus": 75,
+   "dificuldade": 45,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.08,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev02",
+   "nome": "Teste coletivo de pré-temporada II",
+   "ativo": true,
+   "semana": 7,
+   "especie": "treino",
+   "local": "Valtorre, Itália",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 82.1,
+   "tempo_base_corrida": 84.15,
+   "voltas_corrida": 0,
+   "retas": 60,
+   "curvas_alta": 25,
+   "curvas_baixa": 15,
+   "desgaste_pneus": 40,
+   "dificuldade": 40,
+   "duracao_pitstop": 23.5,
+   "prob_chuva": 0.12,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev03",
+   "nome": "Grande Prêmio de Serra Azul",
+   "ativo": true,
+   "semana": 10,
+   "especie": "corrida",
+   "local": "Serra Azul, Brasil",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 78.4,
+   "tempo_base_corrida": 80.36,
+   "voltas_corrida": 64,
+   "retas": 40,
+   "curvas_alta": 30,
+   "curvas_baixa": 30,
+   "desgaste_pneus": 60,
+   "dificuldade": 55,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.3,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev04",
+   "nome": "Grande Prêmio de Westmoor",
+   "ativo": true,
+   "semana": 13,
+   "especie": "corrida",
+   "local": "Westmoor, Reino Unido",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 88.2,
+   "tempo_base_corrida": 90.41,
+   "voltas_corrida": 52,
+   "retas": 35,
+   "curvas_alta": 45,
+   "curvas_baixa": 20,
+   "desgaste_pneus": 55,
+   "dificuldade": 50,
+   "duracao_pitstop": 21.0,
+   "prob_chuva": 0.35,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev05",
+   "nome": "Gran Premio di Valtorre",
+   "ativo": true,
+   "semana": 16,
+   "especie": "corrida",
+   "local": "Valtorre, Itália",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 82.1,
+   "tempo_base_corrida": 84.15,
+   "voltas_corrida": 53,
+   "retas": 60,
+   "curvas_alta": 25,
+   "curvas_baixa": 15,
+   "desgaste_pneus": 40,
+   "dificuldade": 40,
+   "duracao_pitstop": 23.5,
+   "prob_chuva": 0.12,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev06",
+   "nome": "Grand Prix de Port-Lumière",
+   "ativo": true,
+   "semana": 19,
+   "especie": "corrida",
+   "local": "Port-Lumière, Mônaco",
+   "tipo_pista": "rua",
+   "tempo_base_treino": 74.0,
+   "tempo_base_corrida": 75.85,
+   "voltas_corrida": 78,
+   "retas": 15,
+   "curvas_alta": 10,
+   "curvas_baixa": 75,
+   "desgaste_pneus": 30,
+   "dificuldade": 90,
+   "duracao_pitstop": 20.0,
+   "prob_chuva": 0.1,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev07",
+   "nome": "Großer Preis von Eichwald",
+   "ativo": true,
+   "semana": 22,
+   "especie": "corrida",
+   "local": "Eichwald, Alemanha",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 90.5,
+   "tempo_base_corrida": 92.76,
+   "voltas_corrida": 55,
+   "retas": 45,
+   "curvas_alta": 30,
+   "curvas_baixa": 25,
+   "desgaste_pneus": 50,
+   "dificuldade": 45,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.25,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev08",
+   "nome": "Grande Prêmio de Laguna Seca do Sul",
+   "ativo": true,
+   "semana": 25,
+   "especie": "corrida",
+   "local": "Porto Sereno, Brasil",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 71.0,
+   "tempo_base_corrida": 72.77,
+   "voltas_corrida": 71,
+   "retas": 30,
+   "curvas_alta": 25,
+   "curvas_baixa": 45,
+   "desgaste_pneus": 70,
+   "dificuldade": 60,
+   "duracao_pitstop": 24.0,
+   "prob_chuva": 0.25,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev09",
+   "nome": "Kisaragi Grand Prix",
+   "ativo": true,
+   "semana": 28,
+   "especie": "corrida",
+   "local": "Kisaragi, Japão",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 91.3,
+   "tempo_base_corrida": 93.58,
+   "voltas_corrida": 53,
+   "retas": 30,
+   "curvas_alta": 50,
+   "curvas_baixa": 20,
+   "desgaste_pneus": 65,
+   "dificuldade": 70,
+   "duracao_pitstop": 22.5,
+   "prob_chuva": 0.3,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev10",
+   "nome": "Gran Premio de Costa Blanca",
+   "ativo": true,
+   "semana": 31,
+   "especie": "corrida",
+   "local": "Costa Blanca, Espanha",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 80.8,
+   "tempo_base_corrida": 82.82,
+   "voltas_corrida": 66,
+   "retas": 35,
+   "curvas_alta": 30,
+   "curvas_baixa": 35,
+   "desgaste_pneus": 75,
+   "dificuldade": 45,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.08,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev11",
+   "nome": "Lakeshore 300",
+   "ativo": true,
+   "semana": 34,
+   "especie": "corrida",
+   "local": "Lakeshore, Estados Unidos",
+   "tipo_pista": "oval",
+   "tempo_base_treino": 38.5,
+   "tempo_base_corrida": 39.46,
+   "voltas_corrida": 160,
+   "retas": 80,
+   "curvas_alta": 20,
+   "curvas_baixa": 0,
+   "desgaste_pneus": 45,
+   "dificuldade": 35,
+   "duracao_pitstop": 19.0,
+   "prob_chuva": 0.15,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev12",
+   "nome": "Grand Prix de Marais",
+   "ativo": true,
+   "semana": 37,
+   "especie": "corrida",
+   "local": "Marais, Canadá",
+   "tipo_pista": "rua",
+   "tempo_base_treino": 76.2,
+   "tempo_base_corrida": 78.1,
+   "voltas_corrida": 70,
+   "retas": 45,
+   "curvas_alta": 5,
+   "curvas_baixa": 50,
+   "desgaste_pneus": 50,
+   "dificuldade": 65,
+   "duracao_pitstop": 20.0,
+   "prob_chuva": 0.2,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev13",
+   "nome": "Grand Prix of Pemberton Park",
+   "ativo": true,
+   "semana": 40,
+   "especie": "corrida",
+   "local": "Melbourne Sul, Austrália",
+   "tipo_pista": "rua",
+   "tempo_base_treino": 81.0,
+   "tempo_base_corrida": 83.02,
+   "voltas_corrida": 58,
+   "retas": 40,
+   "curvas_alta": 25,
+   "curvas_baixa": 35,
+   "desgaste_pneus": 45,
+   "dificuldade": 55,
+   "duracao_pitstop": 21.0,
+   "prob_chuva": 0.2,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev14",
+   "nome": "Gran Premio de Cerro Alto",
+   "ativo": true,
+   "semana": 43,
+   "especie": "corrida",
+   "local": "Cerro Alto, México",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 79.0,
+   "tempo_base_corrida": 80.97,
+   "voltas_corrida": 71,
+   "retas": 50,
+   "curvas_alta": 20,
+   "curvas_baixa": 30,
+   "desgaste_pneus": 55,
+   "dificuldade": 45,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.1,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev15",
+   "nome": "Grand Prix van Duinwijk",
+   "ativo": true,
+   "semana": 46,
+   "especie": "corrida",
+   "local": "Duinwijk, Holanda",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 73.5,
+   "tempo_base_corrida": 75.34,
+   "voltas_corrida": 72,
+   "retas": 30,
+   "curvas_alta": 45,
+   "curvas_baixa": 25,
+   "desgaste_pneus": 50,
+   "dificuldade": 55,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.35,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev16",
+   "nome": "Grande Prêmio de Atlântica",
+   "ativo": true,
+   "semana": 49,
+   "especie": "corrida",
+   "local": "Atlântica, Brasil",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 72.4,
+   "tempo_base_corrida": 74.21,
+   "voltas_corrida": 71,
+   "retas": 45,
+   "curvas_alta": 25,
+   "curvas_baixa": 30,
+   "desgaste_pneus": 60,
+   "dificuldade": 50,
+   "duracao_pitstop": 22.0,
+   "prob_chuva": 0.4,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.0
+  },
+  {
+   "id": "ev17",
+   "nome": "Grand Prix de Montval",
+   "ativo": false,
+   "semana": 50,
+   "especie": "corrida",
+   "local": "Montval, Bélgica",
+   "tipo_pista": "mista",
+   "tempo_base_treino": 95.0,
+   "tempo_base_corrida": 97.37,
+   "voltas_corrida": 44,
+   "retas": 50,
+   "curvas_alta": 35,
+   "curvas_baixa": 15,
+   "desgaste_pneus": 55,
+   "dificuldade": 60,
+   "duracao_pitstop": 23.0,
+   "prob_chuva": 0.4,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.25
+  },
+  {
+   "id": "ev18",
+   "nome": "Gran Premio de Bahía Serena",
+   "ativo": false,
+   "semana": 50,
+   "especie": "corrida",
+   "local": "Bahía Serena, Chile",
+   "tipo_pista": "rua",
+   "tempo_base_treino": 79.5,
+   "tempo_base_corrida": 81.49,
+   "voltas_corrida": 62,
+   "retas": 35,
+   "curvas_alta": 20,
+   "curvas_baixa": 45,
+   "desgaste_pneus": 45,
+   "dificuldade": 70,
+   "duracao_pitstop": 21.0,
+   "prob_chuva": 0.15,
+   "prob_inativar": 0.02,
+   "prob_ativar": 0.25
+  }
+ ]
+}

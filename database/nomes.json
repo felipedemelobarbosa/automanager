@@ -1,0 +1,736 @@
+{
+ "_comentario": "Nomes e sobrenomes por nacionalidade para a geração de pilotos fictícios. Pode acrescentar países.",
+ "nacionalidades": {
+  "Brasil": {
+   "nomes": [
+    "Rafael",
+    "Thiago",
+    "Lucas",
+    "Bruno",
+    "Diego",
+    "Caio",
+    "Pedro",
+    "Gustavo",
+    "Felipe",
+    "Mateus",
+    "Gabriel",
+    "Enzo",
+    "Arthur",
+    "Vinícius",
+    "Rodrigo",
+    "Leonardo"
+   ],
+   "sobrenomes": [
+    "Almeida",
+    "Ferraz",
+    "Moraes",
+    "Teixeira",
+    "Barros",
+    "Cardoso",
+    "Pires",
+    "Rezende",
+    "Monteiro",
+    "Siqueira",
+    "Fontes",
+    "Bastos",
+    "Lacerda",
+    "Quintela",
+    "Nogueira",
+    "Prado"
+   ]
+  },
+  "Argentina": {
+   "nomes": [
+    "Facundo",
+    "Nicolás",
+    "Tomás",
+    "Agustín",
+    "Franco",
+    "Santino",
+    "Joaquín",
+    "Lautaro"
+   ],
+   "sobrenomes": [
+    "Ibarra",
+    "Quiroga",
+    "Sosa",
+    "Medina",
+    "Aguirre",
+    "Ledesma",
+    "Villalba",
+    "Benítez"
+   ]
+  },
+  "Reino Unido": {
+   "nomes": [
+    "Oliver",
+    "James",
+    "Harry",
+    "Callum",
+    "Alfie",
+    "George",
+    "Jack",
+    "Archie",
+    "Freddie",
+    "Charlie",
+    "Thomas",
+    "William"
+   ],
+   "sobrenomes": [
+    "Whitmore",
+    "Ashby",
+    "Pennington",
+    "Hale",
+    "Crowther",
+    "Dalton",
+    "Fairfax",
+    "Holloway",
+    "Kendrick",
+    "Marlow",
+    "Sinclair",
+    "Thornton"
+   ]
+  },
+  "Itália": {
+   "nomes": [
+    "Matteo",
+    "Lorenzo",
+    "Davide",
+    "Simone",
+    "Andrea",
+    "Riccardo",
+    "Federico",
+    "Gabriele",
+    "Alessio",
+    "Tommaso"
+   ],
+   "sobrenomes": [
+    "Ferrante",
+    "Bellucci",
+    "Moretti",
+    "Galli",
+    "Rinaldi",
+    "Testa",
+    "Fabbri",
+    "Marchetti",
+    "Serra",
+    "Vitale"
+   ]
+  },
+  "Alemanha": {
+   "nomes": [
+    "Lukas",
+    "Jonas",
+    "Felix",
+    "Maximilian",
+    "Tobias",
+    "Leon",
+    "Finn",
+    "Niklas",
+    "Paul",
+    "Moritz"
+   ],
+   "sobrenomes": [
+    "Brandt",
+    "Kessler",
+    "Hoffmann",
+    "Vogt",
+    "Lindner",
+    "Krüger",
+    "Seidel",
+    "Ostermann",
+    "Haas",
+    "Brenner"
+   ]
+  },
+  "França": {
+   "nomes": [
+    "Antoine",
+    "Hugo",
+    "Julien",
+    "Théo",
+    "Mathis",
+    "Louis",
+    "Raphaël",
+    "Gabin",
+    "Victor",
+    "Adrien"
+   ],
+   "sobrenomes": [
+    "Delacroix",
+    "Marchand",
+    "Fontaine",
+    "Girard",
+    "Lemoine",
+    "Rousseau",
+    "Chevalier",
+    "Perrin",
+    "Gauthier",
+    "Moreau"
+   ]
+  },
+  "Espanha": {
+   "nomes": [
+    "Pablo",
+    "Álvaro",
+    "Javier",
+    "Marcos",
+    "Daniel",
+    "Hugo",
+    "Mario",
+    "Iker"
+   ],
+   "sobrenomes": [
+    "Ortega",
+    "Navarro",
+    "Salcedo",
+    "Iglesias",
+    "Herrero",
+    "Cabrera",
+    "Montero",
+    "Ruiz"
+   ]
+  },
+  "Japão": {
+   "nomes": [
+    "Haruto",
+    "Ren",
+    "Daiki",
+    "Sota",
+    "Yuto",
+    "Kaito",
+    "Riku",
+    "Hayato"
+   ],
+   "sobrenomes": [
+    "Kisaragi",
+    "Moriyama",
+    "Tachibana",
+    "Oshiro",
+    "Hasegawa",
+    "Nakamura",
+    "Fujii",
+    "Kobayashi"
+   ]
+  },
+  "Estados Unidos": {
+   "nomes": [
+    "Tyler",
+    "Connor",
+    "Austin",
+    "Wyatt",
+    "Logan",
+    "Hunter",
+    "Mason",
+    "Colton"
+   ],
+   "sobrenomes": [
+    "Brooks",
+    "Harlan",
+    "McCoy",
+    "Sutton",
+    "Weaver",
+    "Dalton",
+    "Prescott",
+    "Granger"
+   ]
+  },
+  "Canadá": {
+   "nomes": [
+    "Liam",
+    "Noah",
+    "Ethan",
+    "Owen",
+    "Félix",
+    "Nathan"
+   ],
+   "sobrenomes": [
+    "Tremblay",
+    "Gagnon",
+    "Bouchard",
+    "Côté",
+    "Lavoie",
+    "Morin"
+   ]
+  },
+  "Finlândia": {
+   "nomes": [
+    "Aleksi",
+    "Eetu",
+    "Joonas",
+    "Onni",
+    "Elias",
+    "Veeti"
+   ],
+   "sobrenomes": [
+    "Lahtinen",
+    "Virtanen",
+    "Koskela",
+    "Mäkinen",
+    "Heikkinen",
+    "Salonen"
+   ]
+  },
+  "Austrália": {
+   "nomes": [
+    "Jack",
+    "Cooper",
+    "Riley",
+    "Lachlan",
+    "Mitchell",
+    "Hamish"
+   ],
+   "sobrenomes": [
+    "Pemberton",
+    "Gallagher",
+    "Fraser",
+    "Doherty",
+    "McKenzie",
+    "Whitlock"
+   ]
+  },
+  "Holanda": {
+   "nomes": [
+    "Daan",
+    "Sem",
+    "Bram",
+    "Lars",
+    "Thijs",
+    "Jesse"
+   ],
+   "sobrenomes": [
+    "de Vries",
+    "Mulder",
+    "Bakker",
+    "van Dijk",
+    "Visser",
+    "Smit"
+   ]
+  },
+  "México": {
+   "nomes": [
+    "Emiliano",
+    "Santiago",
+    "Diego",
+    "Mateo",
+    "Iker",
+    "Sebastián"
+   ],
+   "sobrenomes": [
+    "Villaseñor",
+    "Arriaga",
+    "Domínguez",
+    "Robles",
+    "Treviño",
+    "Salazar"
+   ]
+  },
+  "Bélgica": {
+   "nomes": [
+    "Arthur",
+    "Louis",
+    "Mathis",
+    "Wout"
+   ],
+   "sobrenomes": [
+    "Peeters",
+    "Janssens",
+    "Dubois",
+    "Lambert"
+   ]
+  },
+  "Áustria": {
+   "nomes": [
+    "Lukas",
+    "David",
+    "Elias",
+    "Florian"
+   ],
+   "sobrenomes": [
+    "Gruber",
+    "Huber",
+    "Wagner",
+    "Steiner"
+   ]
+  },
+  "Suíça": {
+   "nomes": [
+    "Luca",
+    "Noah",
+    "Nico",
+    "Gian"
+   ],
+   "sobrenomes": [
+    "Meier",
+    "Keller",
+    "Brunner",
+    "Frei"
+   ]
+  },
+  "Dinamarca": {
+   "nomes": [
+    "Magnus",
+    "Frederik",
+    "Oscar",
+    "Emil"
+   ],
+   "sobrenomes": [
+    "Nielsen",
+    "Jensen",
+    "Kristensen",
+    "Lund"
+   ]
+  },
+  "Suécia": {
+   "nomes": [
+    "Oskar",
+    "Viktor",
+    "Isak",
+    "Linus"
+   ],
+   "sobrenomes": [
+    "Lindqvist",
+    "Berg",
+    "Holm",
+    "Ekström"
+   ]
+  },
+  "Portugal": {
+   "nomes": [
+    "Tiago",
+    "Duarte",
+    "Rodrigo",
+    "Afonso"
+   ],
+   "sobrenomes": [
+    "Monteiro",
+    "Sequeira",
+    "Valente",
+    "Antunes"
+   ]
+  },
+  "China": {
+   "nomes": [
+    "Haoran",
+    "Yuxuan",
+    "Zihan",
+    "Jiahao"
+   ],
+   "sobrenomes": [
+    "Zhou",
+    "Li",
+    "Chen",
+    "Wang"
+   ]
+  },
+  "Índia": {
+   "nomes": [
+    "Arjun",
+    "Rohan",
+    "Kabir",
+    "Vihaan"
+   ],
+   "sobrenomes": [
+    "Chandhok",
+    "Mehta",
+    "Rao",
+    "Kapoor"
+   ]
+  },
+  "Colômbia": {
+   "nomes": [
+    "Juan",
+    "Andrés",
+    "Camilo",
+    "Sebastián"
+   ],
+   "sobrenomes": [
+    "Montoya",
+    "Restrepo",
+    "Gaviria",
+    "Ospina"
+   ]
+  },
+  "Nova Zelândia": {
+   "nomes": [
+    "Liam",
+    "Hunter",
+    "Marcus",
+    "Brendon"
+   ],
+   "sobrenomes": [
+    "Armstrong",
+    "Hartley",
+    "McLaughlin",
+    "Rowe"
+   ]
+  },
+  "Mônaco": {
+   "nomes": [
+    "Charles",
+    "Louis",
+    "Arthur"
+   ],
+   "sobrenomes": [
+    "Leclerc",
+    "Grimaldi",
+    "Rossi"
+   ]
+  },
+  "Polônia": {
+   "nomes": [
+    "Jakub",
+    "Kacper",
+    "Szymon"
+   ],
+   "sobrenomes": [
+    "Kowalski",
+    "Nowak",
+    "Wiśniewski"
+   ]
+  },
+  "Tailândia": {
+   "nomes": [
+    "Alex",
+    "Tasanapol",
+    "Kantadhee"
+   ],
+   "sobrenomes": [
+    "Inthraphuvasak",
+    "Sirisook",
+    "Chaiyasit"
+   ]
+  },
+  "Venezuela": {
+   "nomes": [
+    "Pastor",
+    "Rodolfo",
+    "Johnny"
+   ],
+   "sobrenomes": [
+    "Cecotto",
+    "Maldonado",
+    "González"
+   ]
+  },
+  "Chile": {
+   "nomes": [
+    "Benjamín",
+    "Vicente",
+    "Martín"
+   ],
+   "sobrenomes": [
+    "Saavedra",
+    "Muñoz",
+    "Fuentes"
+   ]
+  },
+  "Uruguai": {
+   "nomes": [
+    "Santiago",
+    "Bruno",
+    "Gonzalo"
+   ],
+   "sobrenomes": [
+    "Pereira",
+    "Rodríguez",
+    "Ferreira"
+   ]
+  },
+  "Irlanda": {
+   "nomes": [
+    "Conor",
+    "Cian",
+    "Darragh"
+   ],
+   "sobrenomes": [
+    "O'Brien",
+    "Murphy",
+    "Kelly"
+   ]
+  },
+  "África do Sul": {
+   "nomes": [
+    "Jordan",
+    "Kelvin",
+    "Liam"
+   ],
+   "sobrenomes": [
+    "van der Merwe",
+    "Botha",
+    "Naidoo"
+   ]
+  },
+  "Rússia": {
+   "nomes": [
+    "Artem",
+    "Daniil",
+    "Nikita"
+   ],
+   "sobrenomes": [
+    "Volkov",
+    "Morozov",
+    "Sokolov"
+   ]
+  },
+  "Hungria": {
+   "nomes": [
+    "Bence",
+    "Levente",
+    "Márk"
+   ],
+   "sobrenomes": [
+    "Nagy",
+    "Kovács",
+    "Szabó"
+   ]
+  },
+  "República Tcheca": {
+   "nomes": [
+    "Jakub",
+    "Tomáš",
+    "Ondřej"
+   ],
+   "sobrenomes": [
+    "Novák",
+    "Svoboda",
+    "Dvořák"
+   ]
+  },
+  "Indonésia": {
+   "nomes": [
+    "Rio",
+    "Sean",
+    "Philo"
+   ],
+   "sobrenomes": [
+    "Haryanto",
+    "Gelael",
+    "Paz"
+   ]
+  },
+  "Malásia": {
+   "nomes": [
+    "Alex",
+    "Nabil",
+    "Jazeman"
+   ],
+   "sobrenomes": [
+    "Yoong",
+    "Jaafar",
+    "Razak"
+   ]
+  },
+  "Israel": {
+   "nomes": [
+    "Roy",
+    "Alon"
+   ],
+   "sobrenomes": [
+    "Nissany",
+    "Day"
+   ]
+  },
+  "Estônia": {
+   "nomes": [
+    "Paul",
+    "Ralf",
+    "Jüri"
+   ],
+   "sobrenomes": [
+    "Aron",
+    "Tamm",
+    "Saar"
+   ]
+  }
+ },
+ "empresas": {
+  "_comentario": "Partes de nomes para patrocinadores fictícios: prefixo + sufixo.",
+  "prefixos": [
+   "Aurora",
+   "Vértice",
+   "Nimbus",
+   "Atlântico",
+   "Boreal",
+   "Cobalto",
+   "Delta",
+   "Equinócio",
+   "Falcão",
+   "Granito",
+   "Horizonte",
+   "Íris",
+   "Jade",
+   "Kronos",
+   "Lumen",
+   "Meridiano",
+   "Netuno",
+   "Órion",
+   "Pórtico",
+   "Quasar",
+   "Rubi",
+   "Safira",
+   "Titã",
+   "Úmbria",
+   "Vega",
+   "Zênite",
+   "Andorinha",
+   "Brisa",
+   "Cometa",
+   "Dínamo",
+   "Estrela",
+   "Fênix",
+   "Galáxia",
+   "Hélio",
+   "Ímpeto",
+   "Lótus",
+   "Monarca",
+   "Norte",
+   "Oásis",
+   "Prisma"
+  ],
+  "sufixos": [
+   "Energia",
+   "Bank",
+   "Telecom",
+   "Seguros",
+   "Logística",
+   "Bebidas",
+   "Tech",
+   "Aviação",
+   "Relógios",
+   "Alimentos",
+   "Têxtil",
+   "Motors",
+   "Pneus",
+   "Lubrificantes",
+   "Eletrônicos",
+   "Cosméticos",
+   "Investimentos",
+   "Mineração",
+   "Farma",
+   "Games"
+  ],
+  "ramos": {
+   "Energia": "Energia",
+   "Bank": "Bancos",
+   "Telecom": "Telecomunicações",
+   "Seguros": "Seguros",
+   "Logística": "Logística",
+   "Bebidas": "Bebidas",
+   "Tech": "Tecnologia",
+   "Aviação": "Aviação",
+   "Relógios": "Relógios",
+   "Alimentos": "Alimentos",
+   "Têxtil": "Moda",
+   "Motors": "Automotivo",
+   "Pneus": "Automotivo",
+   "Lubrificantes": "Petróleo",
+   "Eletrônicos": "Eletrônicos",
+   "Cosméticos": "Cosméticos",
+   "Investimentos": "Finanças",
+   "Mineração": "Mineração",
+   "Farma": "Farmacêutico",
+   "Games": "Entretenimento"
+  }
+ }
+}

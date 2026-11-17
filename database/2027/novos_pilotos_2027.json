@@ -1,0 +1,14 @@
+{
+  "_comentario": "Pilotos que entram no mercado no início da temporada 2027. Mesmo formato dos pilotos; 'categoria' é opcional (padrão: o tier mais baixo carregado).",
+  "pilotos": [
+    {"id": "n01", "nome": "Davi Quintela", "nacionalidade": "Brasil", "idade": 18, "categoria": "formula_beta",
+     "ano_pico": 2036, "potencial": 90,
+     "atributos": {"consistencia": 55, "ritmo_corrida": 60, "concentracao": 52, "chuva": 58, "aceleracao": 64,
+                   "acerto_carro": 45, "trabalho_equipe": 55, "classificacao": 62, "fisico": 60, "conducao": 63,
+                   "largada": 57}},
+    {"id": "n02", "nome": "Oskar Lindqvist", "nacionalidade": "Suécia", "idade": 19,
+     "atributos": {"consistencia": 50, "ritmo_corrida": 54, "concentracao": 50, "chuva": 61, "aceleracao": 57,
+                   "acerto_carro": 48, "trabalho_equipe": 60, "classificacao": 55, "fisico": 58, "conducao": 56,
+                   "largada": 53}}
+  ]
+}
