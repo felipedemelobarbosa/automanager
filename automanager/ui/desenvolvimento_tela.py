@@ -56,7 +56,7 @@ class PainelDev(tk.Frame):
         if proxima:                         # chassis comprado no Mercado (categoria que deixa escolher)
             from .. import state as _st
             prox = st["ano"] + 1
-            fut = eq.get("chassis_futuro")
+            fut = eq.get("chassis_futuro") if dev.comprado_para(st, eq, "chassis", prox) else None
             info = None
             if fut:
                 nome_fut = st["categorias"][cid]["chassis"].get(fut["id"], {}).get("nome", fut["id"])

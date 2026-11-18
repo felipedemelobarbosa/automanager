@@ -71,8 +71,8 @@ class TestTemporadaEntreEventos(unittest.TestCase):
                     if not ct0 or ct0.get("categoria") != cid or not contratos.por_corridas(ct0):
                         continue
                     ct1 = (st["pilotos"].get(pid) or {}).get("contrato")
-                    if not ct1 or ct1.get("equipe") != ct0["equipe"]:
-                        continue
+                    if not ct1 or ct1.get("equipe") != ct0["equipe"] or not contratos.por_corridas(ct1):
+                        continue                       # contrato novo (ex.: recontratado até um contrato futuro)
                     d = ct0["corridas"] - ct1["corridas"]
                     if not houve_corrida and d != 0:
                         cls.falhas.append(f"{pid}: contrato por corrida mudou sem corrida (s{semana})")

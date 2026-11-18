@@ -249,8 +249,9 @@ def _virada_contratos_pilotos(st):
             if c["temporadas"] <= 0:
                 p["categoria_atual"] = c.get("categoria")
                 p["contrato"] = None
-        if p.get("contrato_futuro") and not p.get("contrato"):
-            p["contrato"], p["contrato_futuro"] = p["contrato_futuro"], None
+        f = p.get("contrato_futuro")
+        if f and not p.get("contrato") and int(f.get("inicio_ano") or st["ano"]) <= st["ano"]:
+            p["contrato"], p["contrato_futuro"] = f, None        # o contrato futuro começa no seu ano
             p["categoria_atual"] = p["contrato"].get("categoria")
 
 

@@ -54,7 +54,7 @@ Campos extras que você acrescentar são preservados no savegame.
 | `formato_evento.corrida` | `{nome, tempo_maximo_min, grid_invertido_top}` |
 | `novas_equipes` | `[{equipe: id, ano: n ou null}]` equipes inativas que podem surgir (com ano: naquele ano; sem ano: por sorteio) |
 | `financas` | `{reserva_minima, uso_do_excedente, juros_anual, limite_emprestimo, prazo_temporadas, semanas_para_falencia}` |
-| `contratos` | `{fator_multa}`: multa de rescisão = fator × valor por corrida × corridas restantes |
+| `contratos` | `{fator_multa}`: multa de rescisão = fator × valor por corrida × corridas restantes (contrato novo que começa numa temporada futura: só as corridas que se sobrepõem) |
 | `ponderacao` | matriz de pesos: para `piloto`, `chassis` e `motor`, cada característica (`retas`, `curvas_alta`, `curvas_baixa`, `desgaste`, `dificuldade`, `chuva`, `sessao_treino`, `sessao_classificacao`, `sessao_corrida`) tem pesos sobre os atributos. `peso_caracteristicas` define o peso de cada característica; `importancia_motor_por_caracteristica` quanto o motor pesa em retas e curvas |
 | `pneus.desgaste_quebra` | a partir deste desgaste (%) um furo tende a causar abandono |
 | `simulacao` | constantes do evento (amplitude de desempenho, aleatoriedade, evolução da pista, taxas de acidente/quebra/erro, ultrapassagem, efeitos das ordens, penalidades) e `mercado_pilotos` (salários mínimo/máximo, fração do caixa para pilotos, pesos salário × perspectiva, semana de início das propostas) |
@@ -72,6 +72,8 @@ acerto_carro, trabalho_equipe, classificacao, fisico, conducao, largada}, contra
 
 `contrato`: `null` (piloto livre) ou `{equipe, valor_por_corrida, situacao: "principal"|"teste"}` mais
 `temporadas: n` **ou** `corridas: n`. O mesmo vale para os contratos de chassis/motor.
+O arquivo só tem contratos atuais. Contratos que começam numa temporada futura são feitos no jogo e ficam no save
+(`contrato_futuro` do piloto, `chassis_futuro`/`motor_futuro` da equipe, com `inicio_ano`).
 
 Revezamento: contrato de piloto por corridas pode ter `corridas_definidas: [ids do calendário]`. O piloto só corre
 nessas corridas e o contrato termina depois da última delas (`corridas` = quantidade de corridas da lista; o editor

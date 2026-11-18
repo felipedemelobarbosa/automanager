@@ -5,9 +5,9 @@ certo são gravadas na sessão e vão para o arquivo de ordens; o comissário as
 com aplicar(), no contexto da equipe do jogador (como()).
 
 Ações (campos):
-  proposta_piloto   piloto, situacao, valor, duracao, unidade, inicio ("agora"|"proxima")
+  proposta_piloto   piloto, situacao, valor, duracao, unidade, inicio ("agora"|"proxima"|ano de início)
   rescindir_piloto  piloto
-  contratar_parte   parte ("chassis"|"motor"), id, duracao, unidade, inicio, rescindir (bool)
+  contratar_parte   parte ("chassis"|"motor"), id, duracao, unidade, inicio ("agora"|"proxima"|ano), rescindir (bool)
   proposta_parte    parte, id, valor, duracao, unidade, inicio, rescindir – com negociação de chassis/motor ligada
   rescindir_parte   parte
   patrocinio        patrocinador, aceitar (bool)

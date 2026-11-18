@@ -19,7 +19,7 @@ def _ligar_total(v, label, st, cid, valor_por_corrida):
     def atualizar(*_):
         try:
             valor = valor_por_corrida()
-            n = mercado.corridas_do_contrato(st, cid, int(v["duracao"].get()), v["unidade"].get(), v["inicio"].get())
+            n = mercado.corridas_do_contrato(st, cid, int(v["duracao"].get()), v["unidade"].get(), inicio_de(v))
         except (ValueError, tk.TclError, TypeError):
             label.configure(text="Total do contrato: -")
             return
@@ -27,15 +27,25 @@ def _ligar_total(v, label, st, cid, valor_por_corrida):
             label.configure(text="Total do contrato: -")
             return
         label.configure(text=f"Total do contrato: {dinheiro(valor * n)}  ({n} corrida(s) × {dinheiro(valor)})")
-    for k in ("duracao", "unidade", "inicio"):
+    for k in ("duracao", "unidade", "inicio", "ano"):
         v[k].trace_add("write", atualizar)
     return atualizar
 
 
-def _form_contrato(master, linha, unidades=("temporadas", "corridas"), com_inicio=True):
-    """Campos comuns: duração, unidade e início. Retorna dict de variáveis."""
+def inicio_de(v):
+    """Valor do início para as ações: 'agora', 'proxima' ou o ano escolhido (int)."""
+    if v["inicio"].get() == "ano":
+        try:
+            return int(v["ano"].get())
+        except (ValueError, tk.TclError):
+            return "proxima"
+    return v["inicio"].get()
+
+
+def _form_contrato(master, linha, unidades=("temporadas", "corridas"), com_inicio=True, ano_atual=None):
+    """Campos comuns: duração, unidade e início (agora, próxima temporada ou um ano). Retorna dict de variáveis."""
     v = {"duracao": tk.IntVar(value=1), "unidade": tk.StringVar(value=unidades[0]),
-         "inicio": tk.StringVar(value="proxima")}
+         "inicio": tk.StringVar(value="proxima"), "ano": tk.IntVar(value=(ano_atual or 2000) + 2)}
     tk.Label(master, text="Duração:").grid(row=linha, column=0, sticky="w", pady=2)
     f = tk.Frame(master)
     f.grid(row=linha, column=1, sticky="w")
@@ -43,18 +53,26 @@ def _form_contrato(master, linha, unidades=("temporadas", "corridas"), com_inici
     ttk.Combobox(f, values=list(unidades), textvariable=v["unidade"], state="readonly", width=11).pack(side="left",
                                                                                                         padx=4)
     if com_inicio:
-        tk.Label(master, text="Início:").grid(row=linha + 1, column=0, sticky="w", pady=2)
+        tk.Label(master, text="Início:").grid(row=linha + 1, column=0, sticky="nw", pady=2)
         f2 = tk.Frame(master)
         f2.grid(row=linha + 1, column=1, sticky="w")
-        ttk.Radiobutton(f2, text="Agora", value="agora", variable=v["inicio"]).pack(side="left")
-        ttk.Radiobutton(f2, text="Próxima temporada", value="proxima", variable=v["inicio"]).pack(side="left", padx=6)
+        l1 = tk.Frame(f2)
+        l1.pack(anchor="w")
+        ttk.Radiobutton(l1, text="Agora", value="agora", variable=v["inicio"]).pack(side="left")
+        ttk.Radiobutton(l1, text="Próxima temporada", value="proxima", variable=v["inicio"]).pack(side="left", padx=6)
+        if ano_atual:                                  # qualquer temporada futura (sem limite), numa 2ª linha
+            l2 = tk.Frame(f2)
+            l2.pack(anchor="w")
+            ttk.Radiobutton(l2, text="No ano:", value="ano", variable=v["inicio"]).pack(side="left")
+            ttk.Spinbox(l2, from_=ano_atual + 2, to=ano_atual + 100, textvariable=v["ano"], width=6,
+                        command=lambda: v["inicio"].set("ano")).pack(side="left", padx=(2, 0))
     return v
 
 
 # ====================================================================== pilotos
 class JanelaPilotos(w.Dialogo):
     def __init__(self, master, st):
-        super().__init__(master, "Mercado – Pilotos", 1140, 640)
+        super().__init__(master, "Mercado – Pilotos", 1140, 670)
         self.st = st
         self.cid, self.c, self.eq = _ctx(st)
         self.cat = self.c["categoria"]
@@ -106,7 +124,7 @@ class JanelaPilotos(w.Dialogo):
         tk.Label(g, text="Salário/corrida (USD):").grid(row=1, column=0, sticky="w")
         self.v_sal = tk.StringVar(value="0")
         ttk.Entry(g, textvariable=self.v_sal, width=14).grid(row=1, column=1, sticky="w")
-        self.v_ct = _form_contrato(g, 2)
+        self.v_ct = _form_contrato(g, 2, ano_atual=st["ano"])
         self.lbl_total = tk.Label(g, text="", fg=w.AZUL, font=w.FONTE_NEGRITO, wraplength=240, justify="left")
         self.lbl_total.grid(row=4, column=0, columnspan=2, sticky="w")
         self._total = _ligar_total(self.v_ct, self.lbl_total, st, self.cid, self._valor)
@@ -130,7 +148,7 @@ class JanelaPilotos(w.Dialogo):
             f = self.filtro.get()
             ct = p.get("contrato")
             if f == "agora":
-                ok = mercado.livre_agora(p)
+                ok = not ct                            # inclui quem está livre até um contrato futuro
             elif f == "proxima":
                 ok = mercado.livre_proxima(st, p)
             else:
@@ -147,6 +165,8 @@ class JanelaPilotos(w.Dialogo):
             if ct:
                 eqn = st["categorias"][ct["categoria"]]["equipes"].get(ct["equipe"], {}).get("nome", "?")
                 sit = f"Termina ({eqn})"
+            elif p.get("contrato_futuro"):
+                sit = f"Livre (assinou para {p['contrato_futuro'].get('inicio_ano')})"
             else:
                 sit = "Livre"
             nota = ratings.nota_geral_piloto(p, self.cat)
@@ -169,8 +189,9 @@ class JanelaPilotos(w.Dialogo):
                 continue
             p = st["pilotos"].get(pr.get("piloto", chave))
             if p:
+                quando = "agora" if pr["quando"] == "atual" else str(pr.get("ano_inicio") or self.st["ano"] + 1)
                 self.lb_pend.insert("end", f"{p['nome']} – {dinheiro(pr['valor_por_corrida'])} – "
-                                           f"{pr['duracao']} {pr['unidade']} ({'agora' if pr['quando'] == 'atual' else 'próx. temp.'})")
+                                           f"{pr['duracao']} {pr['unidade']} ({quando})")
 
     def _faixa(self, p):
         _, lo, hi = mercado.pedido_estimado(self.st, p, self.cat, self.eq["id"])
@@ -212,7 +233,7 @@ class JanelaPilotos(w.Dialogo):
             messagebox.showwarning("Proposta", "Valores inválidos.", parent=self)
             return
         erro = acoes.executar(self.st, "proposta_piloto", piloto=sel[0], situacao=self.v_sit.get(), valor=valor,
-                              duracao=dur, unidade=self.v_ct["unidade"].get(), inicio=self.v_ct["inicio"].get())
+                              duracao=dur, unidade=self.v_ct["unidade"].get(), inicio=inicio_de(self.v_ct))
         if erro:
             messagebox.showwarning("Proposta", erro, parent=self)
         else:
@@ -225,7 +246,7 @@ class JanelaPartes(w.Dialogo):
     def __init__(self, master, st, parte):
         nome = "Chassis" if parte == "chassis" else "Motor"
         neg = bool(mercado.negociacao(st["categorias"][st["usuario"]["categoria"]]["categoria"]))
-        super().__init__(master, f"Mercado – {nome}", 820, 560 if neg else 480)
+        super().__init__(master, f"Mercado – {nome}", 820, 590 if neg else 510)
         self.st, self.parte = st, parte
         self.cid, self.c, self.eq = _ctx(st)
         self.neg = bool(mercado.negociacao(self.c["categoria"]))
@@ -244,7 +265,7 @@ class JanelaPartes(w.Dialogo):
         self.tv.bind("<<TreeviewSelect>>", lambda e: (self._logo(), self._oferta_padrao(), self._total()))
         g = w.Grupo(self.corpo, "Proposta ao fornecedor" if self.neg else "Fechar contrato")
         g.pack(fill="x", pady=(6, 0))
-        self.v_ct = _form_contrato(g, 0)
+        self.v_ct = _form_contrato(g, 0, ano_atual=st["ano"])
         self.v_oferta = tk.StringVar()
         if self.neg:
             # negociação: o preço de tabela é referência; o fornecedor responde na semana seguinte
@@ -286,8 +307,12 @@ class JanelaPartes(w.Dialogo):
                    f"{dinheiro(info['contrato']['valor_por_corrida'])}/corrida"
         fut = self.eq.get(f"{self.parte}_futuro")
         if fut:
-            txt += f"\nPróxima temporada: {tabela.get(fut['id'], {}).get('nome', fut['id'])} " \
-                   f"({contratos.descricao(fut['contrato'])})"
+            ano_f = mercado._ano_futuro_parte(self.st, fut)
+            nome_f = tabela.get(fut['id'], {}).get('nome', fut['id'])
+            if ano_f == self.st["ano"] + 1:
+                txt += f"\nPróxima temporada: {nome_f} ({contratos.descricao(fut['contrato'])})"
+            else:
+                txt += f"\nA partir de {ano_f}: {nome_f} ({contratos.descricao(fut['contrato'])})"
         pr = mercado.proposta_parte_pendente(self.st, self.cid, self.eq["id"], self.parte)
         if pr:
             txt += f"\nProposta aguardando resposta: {tabela.get(pr['id'], {}).get('nome', pr['id'])} – " \
@@ -326,17 +351,30 @@ class JanelaPartes(w.Dialogo):
         except (ValueError, tk.TclError):
             return
         rescindir = False
-        if self.parte == "chassis" and self.v_ct["inicio"].get() == "proxima" \
+        inicio = inicio_de(self.v_ct)
+        ano_ini = mercado.ano_de_inicio(self.st, inicio)
+        if self.parte == "chassis" and ano_ini == self.st["ano"] + 1 \
                 and (self.eq.get("chassis") or {}).get("origem") == "proprio" \
                 and not messagebox.askyesno("Comprar chassis", f"Comprar o chassis de {self.st['ano'] + 1} encerra o "
                                                                f"projeto do chassis próprio (o que foi investido nele "
                                                                f"se perde).\n\nContinuar?", parent=self):
             return
-        if self.v_ct["inicio"].get() == "agora" and mercado.tem_parte_ativa(self.eq, self.parte) \
+        if ano_ini == self.st["ano"] and mercado.tem_parte_ativa(self.eq, self.parte) \
                 and (self.eq.get(self.parte) or {}).get("origem") != "proprio":
             valor = mercado.multa_parte(self.st, self.cid, self.eq, self.parte)
             if not messagebox.askyesno("Trocar agora", f"Para trocar agora é preciso rescindir o contrato atual.\n"
                                                        f"Multa: {dinheiro(valor)}\n\nContinuar?", parent=self):
+                return
+            rescindir = True
+        atual = (self.eq.get(self.parte) or {}).get("contrato")
+        if ano_ini > self.st["ano"] and atual and (self.eq.get(self.parte) or {}).get("origem") != "proprio" \
+                and mercado.fim_do_contrato(self.st, atual, self.cid) >= ano_ini:
+            # o contrato atual vai além do início do novo: multa só pelas temporadas que se sobrepõem
+            valor = mercado.multa_parte(self.st, self.cid, self.eq, self.parte, ano_ini)
+            if not messagebox.askyesno("Contrato atual", f"O contrato atual vai até "
+                                       f"{mercado.fim_do_contrato(self.st, atual, self.cid)}. Para o novo começar em "
+                                       f"{ano_ini}, ele termina ao fim de {ano_ini - 1}.\nMulta: {dinheiro(valor)}"
+                                       f"\n\nContinuar?", parent=self):
                 return
             rescindir = True
         if self.neg:
@@ -345,7 +383,7 @@ class JanelaPartes(w.Dialogo):
                 messagebox.showwarning("Proposta", "Informe a oferta por corrida.", parent=self)
                 return
             erro = acoes.executar(self.st, "proposta_parte", parte=self.parte, id=sel[0], valor=valor, duracao=dur,
-                                  unidade=self.v_ct["unidade"].get(), inicio=self.v_ct["inicio"].get(),
+                                  unidade=self.v_ct["unidade"].get(), inicio=inicio,
                                   rescindir=rescindir)
             if erro:
                 messagebox.showwarning("Proposta", erro, parent=self)
@@ -355,7 +393,7 @@ class JanelaPartes(w.Dialogo):
             self.carregar()
             return
         erro = acoes.executar(self.st, "contratar_parte", parte=self.parte, id=sel[0], duracao=dur,
-                              unidade=self.v_ct["unidade"].get(), inicio=self.v_ct["inicio"].get(), rescindir=rescindir)
+                              unidade=self.v_ct["unidade"].get(), inicio=inicio, rescindir=rescindir)
         if erro:
             messagebox.showwarning("Contrato", erro, parent=self)
         else:

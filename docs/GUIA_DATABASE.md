@@ -279,8 +279,8 @@ multiplier), Chassis / Engine / Driver weight `peso_chassis` / `peso_motor` / `p
 | Minimum / Maximum salary per race | `simulacao.mercado_pilotos.salario_minimo_por_corrida` / `salario_maximo_por_corrida` | Range of drivers' asking salaries (by rating). |
 | Share of cash for drivers | `simulacao.mercado_pilotos.fracao_orcamento_pilotos` | AI teams' salary ceiling. |
 | Weight of salary / of prospects in the choice | `simulacao.mercado_pilotos.peso_salario_na_escolha` / `peso_perspectiva_na_escolha` | How drivers choose between offers: salary (compared with the asking price) and the team's prospects (car 60%, resources 40%). Default 0.55 / 0.45. |
-| Week offers start | `simulacao.mercado_pilotos.semana_inicio_propostas` | From this week teams sign for next season. |
-| Fee factor | `contratos.fator_multa` | Termination fee = factor × value per race × races left. |
+| Week offers start | `simulacao.mercado_pilotos.semana_inicio_propostas` | From this week AI teams sign for next season, and may also sign a driver for a later season (a seat that opens in 2+ seasons, through a contract ending or a retirement; small weekly chance, higher for richer teams and nearer seasons; at most one such contract per team). The player can offer for any future season at any time (Market > Start > In year). |
+| Fee factor | `contratos.fator_multa` | Termination fee = factor × value per race × races left. When a contract (driver, chassis or engine) is signed to start in a future season while the current one still runs then, the fee covers only the overlapping races and the current contract is shortened to end the season before. |
 | Sponsorship: search chance/week, performance weight, offer validity | `mercado_patrocinio.prob_busca_semanal`, `peso_desempenho`, `validade_oferta_semanas` | How free sponsors look for teams. |
 | Minimum reserve, Use of surplus cash | `financas.reserva_minima`, `uso_do_excedente` | AI teams' cash management (shares of the average budget). |
 | Loan interest (per year), Loan limit, Default term (seasons) | `financas.juros_anual`, `limite_emprestimo`, `prazo_temporadas` | Limit × average budget × (0.5 + resources/100). |
@@ -348,7 +348,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Retirement | `ano_aposentadoria` **or** `idade_aposentadoria` | By year or by age (form field `aposentadoria`). Random: the game decides (34–40). |
 | Wikipedia article, Photo | `wikipedia`, `imagem` | Article in English (empty = uses the name); photo in `database/imagens`. |
 | Attributes | `atributos.*` | Consistency, Race pace, Concentration, Rain, Acceleration, Car setup, Teamwork, Qualifying, Fitness, Driving, Start (0–100). |
-| Contract | `contrato` | No contract = free driver. Team, Salary per race (USD), Role (`principal` main / `teste` test), Duration in seasons **or** races. |
+| Contract | `contrato` | No contract = free driver. Team, Salary per race (USD), Role (`principal` main / `teste` test), Duration in seasons **or** races. The file holds only current contracts; contracts that start in a future season are made in the game (one per driver and one per part, kept in the save). |
 | Assigned races | `contrato.corridas_definidas` | Optional (rotation): tick the races the driver takes part in; the duration becomes the number ticked. None ticked = all races. Valid only in the file's season. |
 
 ### Chassis (`chassis`)
@@ -470,3 +470,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | Date | Change |
 |---|---|
 | 2026-11-18 | First version of the guide (game as of commit `57de5cf`). |
+| 2026-11-18 | Contracts can start in any future season (drivers, chassis, engines): `semana_inicio_propostas` now also starts the AI's far-ahead offers; `fator_multa` charges only the overlap; note that the file holds only current contracts. |

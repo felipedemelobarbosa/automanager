@@ -361,8 +361,16 @@ class TelaGestao(tk.Frame):
             tv.selection_set(pil[0]["id"])
         self._foto_piloto()
         fut = state.pilotos_da_equipe(self.st, cid, eq["id"], futuro=True)
-        self.lbl_pil_futuro.configure(
-            text=("Contratados para a próxima temporada: " + ", ".join(p["nome"] for p in fut)) if fut else "")
+        por_ano = {}
+        for p in fut:
+            por_ano.setdefault(int(p["contrato_futuro"].get("inicio_ano") or self.st["ano"] + 1), []).append(p["nome"])
+        partes = []
+        for ano in sorted(por_ano):
+            if ano == self.st["ano"] + 1:
+                partes.append("Contratados para a próxima temporada: " + ", ".join(por_ano[ano]))
+            else:
+                partes.append(f"Contratados para {ano}: " + ", ".join(por_ano[ano]))
+        self.lbl_pil_futuro.configure(text="\n".join(partes))
 
     def _foto_piloto(self):
         sel = self.tv_pil.selection()

@@ -35,6 +35,12 @@ def pode(st, cid, eq, parte):
     return state.pode_desenvolver_motor(st, cid, eq["id"])
 
 
+def comprado_para(st, eq, parte, ano):
+    """A equipe já comprou no Mercado a peça para a temporada `ano` (contrato futuro que começa nela)?"""
+    f = eq.get(f"{parte}_futuro")
+    return bool(f) and int((f.get("contrato") or {}).get("inicio_ano") or st["ano"] + 1) == ano
+
+
 def cliente(st, cid, eq, parte):
     """Equipe que compra o chassis numa categoria em que poderia desenvolver o próprio (fontes com 'proprio')."""
     if parte != "chassis":
@@ -51,7 +57,7 @@ def cliente(st, cid, eq, parte):
 def cliente_pode_voltar(st, cid, eq, parte):
     """Cliente cujo contrato termina nesta temporada (e sem contrato para a próxima) pode fazer o próprio chassis."""
     from . import contratos
-    if not cliente(st, cid, eq, parte) or eq.get(f"{parte}_futuro"):
+    if not cliente(st, cid, eq, parte) or comprado_para(st, eq, parte, st["ano"] + 1):
         return False
     ct = (eq.get(parte) or {}).get("contrato")
     return not ct or contratos.termina_nesta_temporada(ct, contratos.corridas_restantes(st, cid))
@@ -59,7 +65,7 @@ def cliente_pode_voltar(st, cid, eq, parte):
 
 def pode_projeto(st, cid, eq, parte):
     """A equipe tem carro da próxima temporada para projetar? (quem já comprou a peça para a próxima, não)."""
-    if eq.get(f"{parte}_futuro"):
+    if comprado_para(st, eq, parte, st["ano"] + 1):
         return False
     return pode(st, cid, eq, parte) or cliente_pode_voltar(st, cid, eq, parte)
 
@@ -214,7 +220,7 @@ def mudar_modo(eq, parte, modo):
 
 
 def investir_projeto(st, cid, eq, parte, alvos):
-    if eq.get(f"{parte}_futuro"):
+    if comprado_para(st, eq, parte, st["ano"] + 1):
         raise ValueError(f"A equipe já comprou o {parte} da próxima temporada no Mercado.")
     if not pode_projeto(st, cid, eq, parte):
         raise ValueError("Esta equipe não pode desenvolver esta parte.")
@@ -244,7 +250,7 @@ def aplicar_projetos(st, ano_novo):
             if not eq.get("ativa"):
                 continue
             for parte in PARTES:
-                if eq.get(f"{parte}_futuro"):
+                if comprado_para(st, eq, parte, ano_novo):
                     (eq.get("projeto") or {}).pop(parte, None)      # comprou no Mercado: vale o contrato
                     continue
                 if cliente(st, cid, eq, parte):
@@ -393,7 +399,7 @@ def reavaliar_ia(st, cid):
             continue
         pesos = _pesos_ia(st, cid, eq)
         for parte in pesos:
-            if eq.get(f"{parte}_futuro"):
+            if comprado_para(st, eq, parte, st["ano"] + 1):
                 continue
             if not projeto_permitido(st, cid, parte):
                 mudar_modo(eq, parte, "manutencao")

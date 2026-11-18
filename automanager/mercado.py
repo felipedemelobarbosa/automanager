@@ -27,37 +27,89 @@ def livre_agora(p):
     return not p.get("contrato") and not p.get("contrato_futuro")
 
 
+def ano_de_inicio(st, inicio):
+    """'agora' = temporada atual, 'proxima' = a seguinte, ou um ano (qualquer temporada futura)."""
+    if inicio in ("agora", "atual"):
+        return st["ano"]
+    if inicio in ("proxima", None, ""):
+        return st["ano"] + 1
+    return int(inicio)
+
+
+def ano_da_oferta(st, o):
+    return st["ano"] if o["quando"] == "atual" else int(o.get("ano_inicio") or st["ano"] + 1)
+
+
+def fim_do_contrato(st, ct, cid=None):
+    """Última temporada coberta por um contrato (em vigor ou futuro, com 'inicio_ano')."""
+    if not ct:
+        return st["ano"] - 1
+    cid = cid or ct.get("categoria")
+    n = corridas_na_temporada(st["categorias"][cid])
+    ini = ct.get("inicio_ano") or st["ano"]
+    if ini > st["ano"]:                                    # contrato futuro: conta a partir do ano de início
+        anos = -(-ct["corridas"] // n) if contratos.por_corridas(ct) else ct.get("temporadas", 1)
+        return ini + max(1, anos) - 1
+    if contratos.por_corridas(ct):
+        rest = contratos.corridas_restantes(st, cid)
+        return st["ano"] if ct["corridas"] <= rest else st["ano"] + -(-(ct["corridas"] - rest) // n)
+    return st["ano"] + ct.get("temporadas", 1) - 1
+
+
+def livre_em(st, p, ano):
+    """Disponível para um contrato que começa em `ano` (futuro): sem contrato futuro, sem se aposentar antes e com
+    o contrato atual terminando antes desse ano."""
+    if p.get("contrato_futuro"):
+        return False                                   # um só contrato futuro por piloto
+    if p.get("ano_aposentadoria") and p["ano_aposentadoria"] <= ano:
+        return False
+    c = p.get("contrato")
+    return not c or fim_do_contrato(st, c) < ano
+
+
 def livre_proxima(st, p):
     """Disponível para a próxima temporada: sem contrato ou com contrato terminando nesta temporada."""
-    if p.get("contrato_futuro"):
-        return False
-    if p.get("ano_aposentadoria") and p["ano_aposentadoria"] <= st["ano"] + 1:
-        return False                                   # vai se aposentar ao fim desta temporada
-    c = p.get("contrato")
-    if not c:
-        return True
-    return contratos.termina_nesta_temporada(c, contratos.corridas_restantes(st, c["categoria"]))
+    return livre_em(st, p, st["ano"] + 1)
+
+
+def temporadas_antes_do_futuro(st, p):
+    """Piloto sem contrato agora mas já assinado para um ano futuro: quantas temporadas um contrato que começa
+    agora pode durar sem chegar ao contrato futuro (None = sem limite)."""
+    f = p.get("contrato_futuro")
+    return None if not f else max(1, int(f.get("inicio_ano") or st["ano"] + 1) - st["ano"])
+
+
+def _vagas_alvo(st, cid):
+    regras = st["categorias"][cid]["categoria"]["regras"]
+    return {"principal": regras.get("pilotos_principais_por_equipe", 2),
+            "teste": regras.get("pilotos_de_teste_por_equipe", 0) if regras.get("pilotos_de_teste") else 0}
+
+
+def vagas_no_ano(st, cid, eq, ano):
+    """{situacao: vagas} da equipe numa temporada futura (contratos atuais que chegam até lá + contratos futuros
+    que cobrem esse ano)."""
+    alvo = _vagas_alvo(st, cid)
+    ocup = {k: 0 for k in alvo}
+    for p in st["pilotos"].values():
+        c, f = p.get("contrato"), p.get("contrato_futuro")
+        if c and c.get("categoria") == cid and c.get("equipe") == eq["id"] and fim_do_contrato(st, c) >= ano:
+            ocup[c["situacao"]] = ocup.get(c["situacao"], 0) + 1
+        if f and f.get("categoria") == cid and f.get("equipe") == eq["id"] \
+                and int(f.get("inicio_ano") or st["ano"] + 1) <= ano <= fim_do_contrato(st, f):
+            ocup[f["situacao"]] = ocup.get(f["situacao"], 0) + 1
+    return {k: max(0, alvo[k] - ocup.get(k, 0)) for k in alvo}
 
 
 def vagas(st, cid, eq):
     """({situacao: vagas agora}, {situacao: vagas na próxima temporada})."""
-    regras = st["categorias"][cid]["categoria"]["regras"]
-    alvo = {"principal": regras.get("pilotos_principais_por_equipe", 2),
-            "teste": regras.get("pilotos_de_teste_por_equipe", 0) if regras.get("pilotos_de_teste") else 0}
-    restantes = contratos.corridas_restantes(st, cid)
+    alvo = _vagas_alvo(st, cid)
     atual = {k: 0 for k in alvo}
-    prox = {k: 0 for k in alvo}
     for p in st["pilotos"].values():
-        c, f = p.get("contrato"), p.get("contrato_futuro")
+        c = p.get("contrato")
         if c and c.get("categoria") == cid and c.get("equipe") == eq["id"]:
             if not (c["situacao"] == "principal" and p.get("lesao")):   # titular lesionado: vaga aberta agora
                 atual[c["situacao"]] = atual.get(c["situacao"], 0) + 1
-            if not contratos.termina_nesta_temporada(c, restantes):
-                prox[c["situacao"]] = prox.get(c["situacao"], 0) + 1
-        if f and f.get("categoria") == cid and f.get("equipe") == eq["id"]:
-            prox[f["situacao"]] = prox.get(f["situacao"], 0) + 1
-    return ({k: max(0, alvo[k] - atual.get(k, 0)) for k in alvo},
-            {k: max(0, alvo[k] - prox.get(k, 0)) for k in alvo})
+    return ({k: max(0, alvo[k] - atual.get(k, 0)) for k in alvo}, vagas_no_ano(st, cid, eq, st["ano"] + 1))
 
 
 def travado(st, p):
@@ -92,7 +144,8 @@ def regras_idade(categoria):
 
 
 def idade_no_inicio(st, p, quando):
-    return p.get("idade", 25) + (0 if quando in ("atual", "agora") else 1)
+    """Idade do piloto no início do contrato ('agora', 'proxima' ou o ano de início)."""
+    return p.get("idade", 25) + ano_de_inicio(st, quando) - st["ano"]
 
 
 def acima_da_idade(categoria, idade):
@@ -121,7 +174,7 @@ def corridas_do_contrato(st, cid, duracao, unidade, inicio):
     if unidade == "corridas":
         return duracao
     por_temp = corridas_na_temporada(st["categorias"][cid])
-    if inicio in ("agora", "atual"):
+    if ano_de_inicio(st, inicio) == st["ano"]:
         return contratos.corridas_restantes(st, cid) + (duracao - 1) * por_temp
     return duracao * por_temp
 
@@ -145,21 +198,37 @@ def fator_multa(st, cid):
     return (st["categorias"][cid]["categoria"].get("contratos") or {}).get("fator_multa", 0.5)
 
 
-def corridas_restantes_contrato(st, ct, cid, so_apos_esta_temporada=False):
-    """Corridas que ainda faltam no contrato (opcionalmente, só as posteriores a esta temporada)."""
+def corridas_restantes_contrato(st, ct, cid, so_apos_esta_temporada=False, a_partir_de=None):
+    """Corridas que ainda faltam no contrato (opcionalmente, só as posteriores a esta temporada, ou só as das
+    temporadas a partir de `a_partir_de` – a parte que se sobrepõe a um contrato futuro)."""
     restam_temp = contratos.corridas_restantes(st, cid)
+    n = corridas_na_temporada(st["categorias"][cid])
     if contratos.por_corridas(ct):
         total = ct["corridas"]
     else:
-        total = restam_temp + (ct.get("temporadas", 1) - 1) * corridas_na_temporada(st["categorias"][cid])
-    return max(0, total - restam_temp) if so_apos_esta_temporada else total
+        total = restam_temp + (ct.get("temporadas", 1) - 1) * n
+    if so_apos_esta_temporada and a_partir_de is None:
+        a_partir_de = st["ano"] + 1
+    if a_partir_de is None or a_partir_de <= st["ano"]:
+        return total
+    return max(0, total - restam_temp - (a_partir_de - st["ano"] - 1) * n)
 
 
-def multa(st, ct, cid, so_apos_esta_temporada=False):
-    """multa = fator × valor por corrida × corridas restantes do contrato."""
+def multa(st, ct, cid, so_apos_esta_temporada=False, a_partir_de=None):
+    """multa = fator × valor por corrida × corridas restantes do contrato (ou só as que se sobrepõem)."""
     if not ct:
         return 0.0
-    return fator_multa(st, cid) * ct.get("valor_por_corrida", 0) *         corridas_restantes_contrato(st, ct, cid, so_apos_esta_temporada)
+    return fator_multa(st, cid) * ct.get("valor_por_corrida", 0) * \
+        corridas_restantes_contrato(st, ct, cid, so_apos_esta_temporada, a_partir_de)
+
+
+def encurtar_contrato(st, ct, cid, ultimo_ano):
+    """O contrato passa a terminar no fim de `ultimo_ano` (o resto foi comprado por outra equipe)."""
+    if contratos.por_corridas(ct):
+        ct["corridas"] = max(1, contratos.corridas_restantes(st, cid)
+                             + (ultimo_ano - st["ano"]) * corridas_na_temporada(st["categorias"][cid]))
+    else:
+        ct["temporadas"] = max(1, ultimo_ano - st["ano"] + 1)
 
 
 def rescindir_piloto(st, pid, futuro=False):
@@ -185,11 +254,11 @@ def rescindir_piloto(st, pid, futuro=False):
     return valor
 
 
-def multa_parte(st, cid, eq, parte):
+def multa_parte(st, cid, eq, parte, a_partir_de=None):
     info = eq.get(parte) or {}
     if info.get("origem") in (None, "proprio"):
         return 0.0
-    return multa(st, info.get("contrato"), cid)
+    return multa(st, info.get("contrato"), cid, a_partir_de=a_partir_de)
 
 
 def rescindir_parte(st, cid, eq, parte):
@@ -212,50 +281,75 @@ def rescindir_parte(st, cid, eq, parte):
 
 # ====================================================================== pilotos – proposta do usuário
 def fazer_proposta(st, pid, situacao, valor, duracao, unidade, inicio):
-    """Registra a proposta da equipe do usuário. O piloto responde na semana seguinte.
-    Retorna None se aceita para análise, ou a mensagem de erro."""
+    """Registra a proposta da equipe do usuário. O piloto responde na semana seguinte. `inicio`: 'agora',
+    'proxima' ou o ano de início (qualquer temporada futura). Retorna None se aceita para análise, ou o erro."""
     cid, eid = st["usuario"]["categoria"], st["usuario"]["equipe"]
     c = st["categorias"][cid]
     eq = c["equipes"][eid]
     p = st["pilotos"][pid]
     regras = c["categoria"]["regras"]
+    try:
+        ano = ano_de_inicio(st, inicio)
+    except (TypeError, ValueError):
+        return "Ano de início inválido."
+    if ano < st["ano"]:
+        return "O contrato não pode começar numa temporada que já passou."
     if situacao == "teste" and not regras.get("pilotos_de_teste"):
         return "Esta categoria não tem pilotos de teste."
-    if acima_da_idade(c["categoria"], idade_no_inicio(st, p, inicio)):
+    if acima_da_idade(c["categoria"], idade_no_inicio(st, p, ano)):
         return f"A categoria não aceita pilotos com mais de {regras_idade(c['categoria'])[0]} anos."
-    vag_atual, vag_prox = vagas(st, cid, eq)
+    vag_atual, _ = vagas(st, cid, eq)
     ct = p.get("contrato")
+    fut = p.get("contrato_futuro")
     da_casa = ct and ct.get("categoria") == cid and ct.get("equipe") == eid
-    if p.get("contrato_futuro"):
-        return "O piloto já assinou com uma equipe para a próxima temporada."
-    if inicio == "agora":
+    if ano == st["ano"]:
         if da_casa:
             return "O piloto já é da equipe."
+        if fut and ct:
+            return "O piloto já assinou com uma equipe para a próxima temporada." \
+                if fut.get("inicio_ano") == st["ano"] + 1 else f"O piloto já assinou com uma equipe para {fut['inicio_ano']}."
         if ct and travado(st, p):
             return "O piloto começou contrato com outra equipe nesta temporada: só pode sair a partir da próxima."
         if vag_atual.get(situacao, 0) <= 0:
             return "A equipe não tem vaga livre agora para essa função."
         compra = bool(ct)
+        limite = temporadas_antes_do_futuro(st, p)
+        if limite is not None:                         # livre agora, mas já assinado para depois: até lá
+            max_corr = contratos.corridas_restantes(st, cid) + (limite - 1) * corridas_na_temporada(c)
+            if (unidade == "corridas" and duracao > max_corr) or (unidade != "corridas" and duracao > limite):
+                return f"O piloto já assinou com outra equipe a partir de {fut['inicio_ano']}: o contrato tem de " \
+                       f"terminar antes."
     else:
-        if p.get("ano_aposentadoria") and p["ano_aposentadoria"] <= st["ano"] + 1:
-            return "O piloto vai se aposentar ao fim desta temporada."
-        if vag_prox.get(situacao, 0) <= 0:
-            return "A equipe não tem vaga para essa função na próxima temporada."
-        compra = bool(ct) and not da_casa and not livre_proxima(st, p)
+        if fut:
+            return "O piloto já assinou com uma equipe para a próxima temporada." \
+                if fut.get("inicio_ano") == st["ano"] + 1 else f"O piloto já assinou com uma equipe para {fut['inicio_ano']}."
+        if p.get("ano_aposentadoria") and p["ano_aposentadoria"] <= ano:
+            return "O piloto vai se aposentar ao fim desta temporada." if ano == st["ano"] + 1 \
+                else f"O piloto vai se aposentar antes de {ano}."
+        if vagas_no_ano(st, cid, eq, ano).get(situacao, 0) <= 0:
+            return "A equipe não tem vaga para essa função na próxima temporada." if ano == st["ano"] + 1 \
+                else f"A equipe não tem vaga para essa função em {ano}."
+        if da_casa and fim_do_contrato(st, ct) >= ano:
+            return f"O piloto já tem contrato com a equipe até {fim_do_contrato(st, ct)}."
+        compra = bool(ct) and not da_casa and fim_do_contrato(st, ct) >= ano
         if compra and travado(st, p) and ct.get("inicio_ano", 0) > st["ano"]:
             return "O piloto acabou de assinar com outra equipe."
     if valor <= 0 or duracao < 1:
         return "Informe salário e duração válidos."
     st.setdefault("propostas_usuario", {})[f"{cid}|{eid}|{pid}"] = {
         "piloto": pid, "categoria": cid, "equipe": eid, "situacao": situacao, "valor_por_corrida": float(valor),
-        "duracao": int(duracao), "unidade": unidade, "quando": "atual" if inicio == "agora" else "proxima",
-        "semana": st["semana"], "ano": st["ano"], "compra_contrato": compra}
+        "duracao": int(duracao), "unidade": unidade, "quando": "atual" if ano == st["ano"] else "proxima",
+        "ano_inicio": ano, "semana": st["semana"], "ano": st["ano"], "compra_contrato": compra}
     if compra:
-        m = multa(st, ct, ct["categoria"], so_apos_esta_temporada=(inicio != "agora"))
+        m = multa(st, ct, ct["categoria"], a_partir_de=ano)
         noticia(st, f"Se aceitar, {quem(st, cid, eid, True)} pagará {dinheiro(m)} de multa à equipe atual de "
                     f"{p['nome']}.", cid, "usuario", equipe=eid)
-    noticia(st, f"{quem(st, cid, eid)} fez proposta a {p['nome']} ({dinheiro(valor)} por corrida, {duracao} "
-                f"{unidade}). Resposta na próxima semana.", cid, "usuario", equipe=eid)
+    if ano > st["ano"] + 1:
+        noticia(st, f"{quem(st, cid, eid)} fez proposta a {p['nome']} ({dinheiro(valor)} por corrida, {duracao} "
+                    f"{unidade}, a partir de {ano}). Resposta na próxima semana.", cid, "usuario", equipe=eid)
+    else:
+        noticia(st, f"{quem(st, cid, eid)} fez proposta a {p['nome']} ({dinheiro(valor)} por corrida, {duracao} "
+                    f"{unidade}). Resposta na próxima semana.", cid, "usuario", equipe=eid)
     return None
 
 
@@ -276,14 +370,17 @@ def rotina_pilotos(st, rng=random):
             if eh_usuario(st, cid, eq["id"]):
                 _avisar_usuario(st, cid, eq, vag_atual, vag_prox, mp)
                 continue
-            pedidos = [("atual", s) for s, q in vag_atual.items() for _ in range(q)]
+            pedidos = [("atual", s, st["ano"]) for s, q in vag_atual.items() for _ in range(q)]
             from .saude import de_jogador
             if de_jogador(st, cid, eq["id"]):
                 # multijogador, semana conduzida pela IA: a equipe do jogador não contrata titular por conta própria
-                pedidos = [x for x in pedidos if x != ("atual", "principal")]
+                pedidos = [x for x in pedidos if x[:2] != ("atual", "principal")]
             if st["semana"] >= mp.get("semana_inicio_propostas", 20):
                 for s, q in vag_prox.items():
-                    pedidos += [("proxima", s)] * max(0, q - vag_atual.get(s, 0))
+                    pedidos += [("proxima", s, st["ano"] + 1)] * max(0, q - vag_atual.get(s, 0))
+                antecipado = _pedido_antecipado(st, cid, eq, rng)
+                if antecipado:
+                    pedidos.append(("proxima", "principal", antecipado))
             if not pedidos:
                 _talvez_dispensar(st, cid, eq, categoria, rng)
                 continue
@@ -293,15 +390,16 @@ def rotina_pilotos(st, rng=random):
             from .economia import receita_prevista
             base = max(0.0, eq["financas"]["caixa"], receita_prevista(st, cid, eq))
             teto = base * mp.get("fracao_orcamento_pilotos", 0.2) / n / principais
-            for quando, situacao in pedidos:
+            for quando, situacao, ano_ini in pedidos:
                 teto_vaga = teto if situacao == "principal" else teto * 0.15
                 melhor = None
+                candidatos = []
                 for p in st["pilotos"].values():
                     if p["id"] in reservados or p.get("lesao"):
                         continue
-                    if not (livre_agora(p) if quando == "atual" else livre_proxima(st, p)):
-                        continue
-                    idade = idade_no_inicio(st, p, quando)
+                    if not (not p.get("contrato") if quando == "atual" else livre_em(st, p, ano_ini)):
+                        continue                       # agora: inclui quem está livre até um contrato futuro
+                    idade = idade_no_inicio(st, p, ano_ini)
                     if acima_da_idade(categoria, idade):
                         continue
                     mob = mobilidade(st, cid, p)
@@ -313,10 +411,14 @@ def rotina_pilotos(st, rng=random):
                     nota = ratings.nota_geral_piloto(p, categoria) - penalidade_idade(categoria, idade)
                     if situacao == "teste":
                         nota -= abs(p.get("idade", 25) - 21) * 1.5
+                    candidatos.append((nota, p, pedido))
                     if melhor is None or nota > melhor[0]:
                         melhor = (nota, p, pedido)
                 compra = False
-                if quando == "atual" or st["semana"] >= mp.get("semana_inicio_propostas", 20):
+                if ano_ini > st["ano"] + 1 and candidatos:
+                    # contrato antecipado: um dos 3 melhores disponíveis para aquela temporada
+                    melhor = rng.choice(sorted(candidatos, key=lambda x: -x[0])[:3])
+                elif quando == "atual" or st["semana"] >= mp.get("semana_inicio_propostas", 20):
                     alvo = _alvo_de_compra(st, cid, eq, categoria, quando, situacao, teto_vaga, reservados,
                                            melhor[0] if melhor else 0, rng)
                     if alvo:
@@ -329,7 +431,7 @@ def rotina_pilotos(st, rng=random):
                 valor = min(pedido * rng.uniform(0.95, 1.2), max(teto_vaga, piso))
                 ofertas.setdefault(p["id"], []).append({
                     "categoria": cid, "equipe": eq["id"], "situacao": situacao, "quando": quando,
-                    "valor_por_corrida": round(valor, -2), "pedido": pedido, "duracao": None, "unidade": "temporadas",
+                    "ano_inicio": ano_ini, "valor_por_corrida": round(valor, -2), "pedido": pedido, "duracao": None, "unidade": "temporadas",
                     "perspectiva": perspectiva_equipe(st, cid, eq), "usuario": False, "compra_contrato": compra})
     # propostas do usuário feitas na semana anterior
     for chave, prop in list(st.get("propostas_usuario", {}).items()):
@@ -345,6 +447,34 @@ def rotina_pilotos(st, rng=random):
                                                 perspectiva=perspectiva_equipe(st, prop["categoria"],
                                                                                c["equipes"][prop["equipe"]])))
     _pilotos_decidem(st, ofertas, rng)
+
+
+def _pedido_antecipado(st, cid, eq, rng):
+    """Equipe do PC planeja uma vaga de titular que abre daqui a 2+ temporadas (contrato terminando ou piloto se
+    aposentando): chance por semana de ~5% para 2 temporadas à frente, 2,5% para 3, 1,7% para 4... × recursos/70.
+    No máximo um contrato antecipado por equipe de cada vez. Retorna o ano de início ou None."""
+    for p in st["pilotos"].values():
+        f = p.get("contrato_futuro")
+        if f and f.get("categoria") == cid and f.get("equipe") == eq["id"] \
+                and int(f.get("inicio_ano") or 0) >= st["ano"] + 2:
+            return None
+    anos = set()
+    for p in pilotos_da_equipe(st, cid, eq["id"]):
+        ct = p["contrato"]
+        if ct.get("situacao") != "principal":
+            continue
+        fim = fim_do_contrato(st, ct)
+        if p.get("ano_aposentadoria"):
+            fim = min(fim, p["ano_aposentadoria"] - 1)
+        if fim + 1 >= st["ano"] + 2:
+            anos.add(fim + 1)
+    for ano in sorted(anos):
+        if vagas_no_ano(st, cid, eq, ano).get("principal", 0) <= 0:
+            continue
+        chance = 0.05 / (ano - st["ano"] - 1) * eq.get("recursos", 50) / 70
+        if rng.random() < chance:
+            return ano
+    return None
 
 
 def _talvez_dispensar(st, cid, eq, categoria, rng):
@@ -403,13 +533,14 @@ def _alvo_de_compra(st, cid, eq, categoria, quando, situacao, teto, reservados, 
 
 def _valida(st, p, o):
     """A oferta ainda é possível? (o piloto pode ter assinado com outra equipe)."""
-    if p.get("contrato_futuro"):
-        return False
+    ano = ano_da_oferta(st, o)
+    if p.get("contrato_futuro") and (ano > st["ano"] or p.get("contrato")):
+        return False                                   # um só contrato futuro; agora, só se estiver livre até lá
     if o.get("compra_contrato"):
         return bool(p.get("contrato"))
-    if o["quando"] == "atual":
-        return livre_agora(p)
-    return livre_proxima(st, p)
+    if ano == st["ano"]:
+        return not p.get("contrato")
+    return livre_em(st, p, ano)
 
 
 def _pilotos_decidem(st, ofertas, rng):
@@ -425,6 +556,7 @@ def _pilotos_decidem(st, ofertas, rng):
             if o["situacao"] == "teste":
                 u *= 0.6
             u *= 0.6 + 0.4 * min(1.0, mobilidade(st, o["categoria"], p))
+            u *= 1 - 0.05 * max(0, ano_da_oferta(st, o) - st["ano"] - 1)   # quanto mais longe, menos vale
             avaliadas.append((u + rng.uniform(-0.05, 0.05), o))
         prop_usuario = next((o for o in lista if o.get("usuario")), None)
         if not avaliadas:
@@ -444,6 +576,7 @@ def _pilotos_decidem(st, ofertas, rng):
 
 
 def _assinar(st, p, o, rng):
+    ano_ini = ano_da_oferta(st, o)
     if o.get("duracao"):
         duracao, unidade = o["duracao"], o.get("unidade", "temporadas")
     else:
@@ -452,9 +585,16 @@ def _assinar(st, p, o, rng):
             eq_o = st["categorias"][o["categoria"]]["equipes"][o["equipe"]]
             if vagas(st, o["categoria"], eq_o)[1].get(o["situacao"], 0) <= 0:
                 duracao = 1                   # a próxima temporada já está fechada: substituto só até o fim desta
+    limite = temporadas_antes_do_futuro(st, p) if ano_ini == st["ano"] else None
+    if limite is not None:                    # livre agora, mas já assinado com outra equipe para depois
+        if unidade == "corridas":
+            duracao = min(duracao, contratos.corridas_restantes(st, o["categoria"])
+                          + (limite - 1) * corridas_na_temporada(st["categorias"][o["categoria"]]))
+        else:
+            duracao = min(duracao, limite)
     contrato = contratos.novo(duracao, unidade, categoria=o["categoria"], equipe=o["equipe"],
                               valor_por_corrida=o["valor_por_corrida"], situacao=o["situacao"],
-                              inicio_ano=st["ano"] if o["quando"] == "atual" else st["ano"] + 1)
+                              inicio_ano=ano_ini)
     from .saude import de_jogador
     if o["quando"] == "atual" and o["situacao"] == "principal" and not de_jogador(st, o["categoria"], o["equipe"]):
         # equipe do PC com titular lesionado: o contratado é substituto e sai quando ele voltar (na equipe de
@@ -474,16 +614,14 @@ def _assinar(st, p, o, rng):
     antigo = p.get("contrato")
     if o.get("compra_contrato") and antigo:
         # paga a multa à equipe atual do piloto
-        valor_multa = multa(st, antigo, antigo["categoria"], so_apos_esta_temporada=(o["quando"] != "atual"))
+        valor_multa = multa(st, antigo, antigo["categoria"], a_partir_de=ano_ini)
         eq_antiga = st["categorias"][antigo["categoria"]]["equipes"][antigo["equipe"]]
         lancar(eq, "despesas", "multas", valor_multa)
         lancar(eq_antiga, "receitas", "multas", valor_multa)
         if o["quando"] == "atual":
             p["contrato"] = None
-        elif contratos.por_corridas(antigo):
-            antigo["corridas"] = max(1, contratos.corridas_restantes(st, antigo["categoria"]))
-        else:
-            antigo["temporadas"] = 1
+        else:                                 # o contrato atual passa a terminar no ano anterior ao novo
+            encurtar_contrato(st, antigo, antigo["categoria"], ano_ini - 1)
         envolve_usuario = o.get("usuario") or eh_usuario(st, antigo["categoria"], antigo["equipe"])
         noticia(st, f"{prefixo} paga {dinheiro(valor_multa)} de multa à {eq_antiga['nome']} pelo contrato de "
                     f"{p['nome']}.", o["categoria"], "usuario" if envolve_usuario else "contratacao",
@@ -497,7 +635,7 @@ def _assinar(st, p, o, rng):
     else:
         p["contrato_futuro"] = contrato
         noticia(st, f"{prefixo} acerta com {p['nome']} ({p['nacionalidade']}{troca}) como {papel} para "
-                    f"{st['ano'] + 1} – {contratos.descricao(contrato).rstrip('.')}.", o["categoria"],
+                    f"{ano_ini} – {contratos.descricao(contrato).rstrip('.')}.", o["categoria"],
                 "usuario" if o.get("usuario") else "contratacao", equipe=o["equipe"])
 
 
@@ -652,7 +790,7 @@ def negociacao(categoria):
     return n if n["ativa"] else None
 
 
-def preco_pedido_parte(st, cid, eid, parte, ent):
+def preco_pedido_parte(st, cid, eid, parte, ent, ano=None):
     """O que o fornecedor realmente pede à equipe: preço de tabela ± variacao, fixo por fornecedor, equipe e
     temporada. Só existe com a negociação ligada (senão é o próprio preço de tabela)."""
     tabela = ent["contrato"]["valor_por_corrida"]
@@ -660,7 +798,7 @@ def preco_pedido_parte(st, cid, eid, parte, ent):
     if not neg:
         return tabela
     v = float(neg["variacao"])
-    rng = random.Random(f"{st.get('semente', 0)}|{st.get('ano')}|{eid}|{parte}|{ent['id']}")
+    rng = random.Random(f"{st.get('semente', 0)}|{ano or st.get('ano')}|{eid}|{parte}|{ent['id']}")
     return round(tabela * rng.uniform(1 - v, 1 + v), -2)
 
 
@@ -670,7 +808,13 @@ def _validar_parte(st, cid, eq, parte, ent_id, inicio, rescindir):
         return "Opção não disponível nesta categoria."
     if not disp[ent_id][0]:
         return f"Fornecimento recusado: {disp[ent_id][1]}."
-    if inicio == "agora":
+    try:
+        ano = ano_de_inicio(st, inicio)
+    except (TypeError, ValueError):
+        return "Ano de início inválido."
+    if ano < st["ano"]:
+        return "O contrato não pode começar numa temporada que já passou."
+    if ano == st["ano"]:
         if tem_parte_ativa(eq, parte):
             if (eq.get(parte) or {}).get("origem") == "proprio":
                 return f"A equipe tem {parte} próprio."
@@ -678,13 +822,22 @@ def _validar_parte(st, cid, eq, parte, ent_id, inicio, rescindir):
                 return f"A equipe já tem {parte} com contrato ativo: é preciso rescindir pagando a multa " \
                        f"({dinheiro(multa_parte(st, cid, eq, parte))})."
     else:
+        fut = eq.get(f"{parte}_futuro")
+        if fut:                                        # um só contrato futuro por peça
+            return f"A equipe já tem contrato de {parte} para {_ano_futuro_parte(st, fut)}."
         atual = (eq.get(parte) or {}).get("contrato")
-        if atual and not contratos.termina_nesta_temporada(atual, contratos.corridas_restantes(st, cid)):
-            return f"O contrato atual de {parte} continua na próxima temporada."
+        if atual and (eq.get(parte) or {}).get("origem") != "proprio" and fim_do_contrato(st, atual, cid) >= ano:
+            if not rescindir:
+                return f"O contrato atual de {parte} vai até {fim_do_contrato(st, atual, cid)}: para começar em " \
+                       f"{ano} é preciso pagar a multa ({dinheiro(multa_parte(st, cid, eq, parte, ano))})."
         if parte == "chassis" and (eq.get("chassis") or {}).get("origem") == "proprio" \
                 and clientes_do_chassis(st, cid, eq["chassis"]["id"]):
             return "A equipe vende o próprio chassis a clientes: não pode trocá-lo por um comprado."
     return None
+
+
+def _ano_futuro_parte(st, fut):
+    return int((fut.get("contrato") or {}).get("inicio_ano") or st["ano"] + 1)
 
 
 def contratar_parte(st, cid, eq, parte, ent_id, duracao, unidade, inicio, rescindir=False, valor=None):
@@ -696,17 +849,35 @@ def contratar_parte(st, cid, eq, parte, ent_id, duracao, unidade, inicio, rescin
     tabela = st["categorias"][cid]["chassis" if parte == "chassis" else "motores"]
     ent = tabela[ent_id]
     origem = ("equipe" if ent.get("equipe") else "terceiros") if parte == "chassis" else ent["fabricante"]["tipo"]
+    ano = ano_de_inicio(st, inicio)
     ct = contratos.novo(duracao, unidade, valor_por_corrida=valor if valor else ent["contrato"]["valor_por_corrida"])
     novo = {"id": ent_id, "origem": origem, "contrato": ct}
-    if inicio == "agora":
+    if ano == st["ano"]:
         if tem_parte_ativa(eq, parte):
             rescindir_parte(st, cid, eq, parte)
         eq[parte] = novo
     else:
+        ct["inicio_ano"] = ano
+        atual = (eq.get(parte) or {}).get("contrato")
+        if atual and (eq.get(parte) or {}).get("origem") != "proprio" and fim_do_contrato(st, atual, cid) >= ano:
+            # o contrato atual se sobrepõe: paga a multa só pelas temporadas que se sobrepõem e encurta até ano − 1
+            valor_multa = multa_parte(st, cid, eq, parte, ano)
+            lancar(eq, "despesas", "multas", valor_multa)
+            info = eq[parte]
+            tab_atual = st["categorias"][cid]["chassis" if parte == "chassis" else "motores"].get(info["id"], {})
+            fab = tab_atual.get("fabricante") or {}
+            dono = fab.get("equipe") if fab.get("tipo") == "equipe" else tab_atual.get("equipe")
+            if dono in st["categorias"][cid]["equipes"]:
+                lancar(st["categorias"][cid]["equipes"][dono], "receitas", "multas", valor_multa)
+            encurtar_contrato(st, atual, cid, ano - 1)
+            noticia(st, f"{quem(st, cid, eq['id'])} paga {dinheiro(valor_multa)} de multa para encerrar o contrato de "
+                        f"{parte} ({tab_atual.get('nome', info['id'])}) ao fim de {ano - 1}.", cid,
+                    "usuario" if eh_usuario(st, cid, eq["id"]) else "contrato", equipe=eq["id"])
         eq[f"{parte}_futuro"] = novo
-        if (eq.get(parte) or {}).get("origem") == "proprio" and (eq.get("projeto") or {}).get(parte):
+        if ano == st["ano"] + 1 and (eq.get(parte) or {}).get("origem") == "proprio" \
+                and (eq.get("projeto") or {}).get(parte):
             eq["projeto"][parte] = {"modo": "manutencao", "investido": {}}   # comprou: o projeto próprio acaba
-    quando = "imediato" if inicio == "agora" else f"a partir de {st['ano'] + 1}"
+    quando = "imediato" if ano == st["ano"] else f"a partir de {ano}"
     nome = quem(st, cid, eq["id"]) if eh_usuario(st, cid, eq["id"]) else eq["nome"]
     noticia(st, f"{nome} fecha contrato de {parte} com {ent['nome']} ({contratos.descricao(ct)}, "
                 f"{dinheiro(ct['valor_por_corrida'])} por corrida, {quando}).", cid,
@@ -754,7 +925,8 @@ def _responder_propostas_partes(st):
             continue
         cid, parte = pr["categoria"], pr["parte"]
         humano = not pr.get("ia")              # oferta de pessoa: a resposta vai para ela mesmo numa semana da IA
-        pedido = preco_pedido_parte(st, cid, eq["id"], parte, ent)
+        ano_ini = ano_de_inicio(st, pr["inicio"])
+        pedido = preco_pedido_parte(st, cid, eq["id"], parte, ent, ano_ini if ano_ini > st["ano"] + 1 else None)
         if pr["valor_por_corrida"] + 1e-6 < pedido:
             if humano:
                 noticia(st, f"{ent['nome']} recusa a proposta da {eq['nome']} ({dinheiro(pr['valor_por_corrida'])} por "
@@ -897,7 +1069,9 @@ def virada_partes(st, cid):
                 ct["temporadas"] = ct.get("temporadas", 1) - 1
                 if ct["temporadas"] <= 0:
                     eq[parte] = None
-            if eq.get(f"{parte}_futuro") and (not tem_parte_ativa(eq, parte) or info.get("origem") == "proprio"):
+            fut = eq.get(f"{parte}_futuro")
+            if fut and _ano_futuro_parte(st, fut) <= st["ano"] and \
+                    (not tem_parte_ativa(eq, parte) or info.get("origem") == "proprio"):
                 eq[parte] = eq.pop(f"{parte}_futuro")     # inclui quem trocou o chassis próprio por um comprado
             if eq.get("ativa") and not tem_parte_ativa(eq, parte) and eh_usuario(st, cid, eq["id"]) \
                     and opcoes(st, cid, eq, parte):
