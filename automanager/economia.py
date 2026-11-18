@@ -26,18 +26,72 @@ def corridas(st, cid):
 
 
 # ---------------------------------------------------------------- previsão
+def tv_ativa(st, categoria):
+    """Há renda de TV nesta temporada? (regras.renda_tv.ativa e, se houver, a partir de ano_inicio)."""
+    tv = categoria["regras"].get("renda_tv") or {}
+    return bool(tv.get("ativa")) and st["ano"] >= int(tv.get("ano_inicio") or 0)
+
+
+def fator_tv(st, cid, eid):
+    """Fator da renda de TV pela classificação FINAL de equipes da temporada anterior (como a divisão de prêmios
+    da F1). Sem temporada anterior (1º ano do jogo): 1,0 para todas. Equipe que não estava na classificação
+    (equipe nova): o fator do último lugar."""
+    tv = st["categorias"][cid]["categoria"]["regras"].get("renda_tv") or {}
+    fatores = tv.get("fator_por_posicao_campeonato") or []
+    ant = (st.get("temporadas", {}).get(str(st["ano"] - 1), {}).get(cid, {}).get("final") or {}).get("equipes")
+    if not fatores or not ant:
+        return 1.0
+    pos = next((i for i, e in enumerate(ant, 1) if e["id"] == eid), None)
+    return fatores[min(pos, len(fatores)) - 1] if pos else fatores[-1]
+
+
+def premios_corrida(categoria):
+    """regras.premios_corrida: {ativa, vitoria, podio, por_ponto} (valores por corrida) ou None."""
+    p = categoria["regras"].get("premios_corrida") or {}
+    return p if p.get("ativa") else None
+
+
+def premio_total_por_corrida(categoria):
+    """Quanto a categoria paga, somando todas as equipes, numa corrida (para as previsões)."""
+    p = premios_corrida(categoria)
+    if not p:
+        return 0.0
+    pts = categoria["pontuacao"]
+    total_pts = sum(pts.get("posicoes") or []) + (pts.get("volta_mais_rapida") or 0) + (pts.get("pole") or 0)
+    return (p.get("vitoria") or 0) + 3 * (p.get("podio") or 0) + total_pts * (p.get("por_ponto") or 0)
+
+
+def pagar_premios(st, cid, reg):
+    """Prêmios de uma corrida para as equipes: vitória (1º), pódio (1º a 3º, cada carro) e por ponto marcado."""
+    c = st["categorias"][cid]
+    p = premios_corrida(c["categoria"])
+    if not p or not reg or reg.get("cancelada"):
+        return
+    for l in reg.get("resultado") or []:
+        eq = c["equipes"].get(l.get("equipe"))
+        if not eq:
+            continue
+        valor = (l.get("pontos") or 0) * (p.get("por_ponto") or 0)
+        if l.get("pos") == 1:
+            valor += p.get("vitoria") or 0
+        if l.get("pos") and l["pos"] <= 3:
+            valor += p.get("podio") or 0
+        if valor:
+            lancar(eq, "receitas", "premios", valor)
+
+
 def receita_prevista(st, cid, eq):
-    """Receita esperada na temporada: TV (pela posição) + venda de chassis/motor a clientes + patrocínios."""
+    """Receita esperada na temporada: TV (pela classificação final do ano anterior) + prêmios de corrida (a média
+    por equipe) + venda de chassis/motor a clientes + patrocínios."""
     c = st["categorias"][cid]
     regras = c["categoria"]["regras"]
     n = corridas(st, cid)
     total = 0.0
     tv = regras.get("renda_tv") or {}
-    if tv.get("ativa"):
-        fatores = tv.get("fator_por_posicao_campeonato") or []
-        pos = campeonato.posicao_equipe(st, cid, eq["id"])
-        fator = fatores[min(pos, len(fatores)) - 1] if (pos and fatores) else 1.0
-        total += tv.get("valor_medio_por_equipe", 0) * fator
+    if tv_ativa(st, c["categoria"]):
+        total += tv.get("valor_medio_por_equipe", 0) * fator_tv(st, cid, eq["id"])
+    ativas = sum(1 for e in c["equipes"].values() if e.get("ativa")) or 1
+    total += premio_total_por_corrida(c["categoria"]) * n / ativas
     from .state import dono_da_parte
     for outra in c["equipes"].values():                   # venda de chassis/motor a clientes
         if outra.get("ativa") and outra["id"] != eq["id"]:

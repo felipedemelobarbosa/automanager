@@ -36,7 +36,7 @@ def _caixa_inicial(equipe, regras):
 
 
 def financas_zeradas():
-    return {"receitas": {"patrocinio": 0.0, "tv": 0.0, "fornecimento": 0.0, "multas": 0.0},
+    return {"receitas": {"patrocinio": 0.0, "tv": 0.0, "premios": 0.0, "fornecimento": 0.0, "multas": 0.0},
             "despesas": {"salarios": 0.0, "chassis": 0.0, "motor": 0.0, "desenvolvimento": 0.0, "multas": 0.0}}
 
 

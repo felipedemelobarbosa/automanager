@@ -289,6 +289,9 @@ BATIDA_GRAVE = {
     "_comentario": "Batida grave = vários carros abandonam juntos. prob_por_volta: chance por volta do líder na corrida (×3 na 1ª volta, × acidentes do clima, × dificuldade da pista); treinos/classificação usam fator_treinos. prob_encerrar_sessao: chance de a bandeira vermelha encerrar a sessão. prob_lesao / prob_morte: por piloto envolvido. Lesão: fica fora de lesao_corridas [mín, máx] corridas e perde lesao_perda_atributos [mín, máx] pontos em cada atributo de atributos_afetados."
 }
 
+COMENTARIO_TV = ("Renda de TV pela classificação final de equipes da temporada anterior (1º ano: fator 1,0 para todas). ano_inicio: a partir de quando há transmissão (F1: acordos de TV da FOCA, Pacto da Concórdia de 1981).")
+COMENTARIO_PREMIOS = ("Prêmios por corrida para a equipe: vitória (1º), pódio (1º a 3º, por carro) e por ponto marcado. Total da temporada ~5% dos orçamentos somados (referência: premiações de corrida da IndyCar).")
+
 REGULAMENTO = {'ativo': True, 'semana_anuncio': 30, 'prob_grande_mudanca': 0.2, 'perda_grande_mudanca': [0.15, 0.3], 'aumento_importancia_carro': [0.05, 0.1], 'convergencia_por_temporada': 0.02, 'prob_limite_desenvolvimento': 0.15, 'limite_duracao': [2, 4], 'prob_congelamento': 0.5, 'limite_pontos_por_temporada': [2, 5], 'prob_ajuste_importancia': 0.15, 'ajuste_importancia': 0.03, 'importancia_carro_min': 0.3, 'importancia_carro_max': 0.8, '_comentario': 'Mudanças de regulamento, anunciadas na semana_anuncio para a temporada seguinte: grande mudança (chassis perdem mais na manutenção; importância do carro sobe e depois volta aos poucos ao valor da database), limite de desenvolvimento de uma parte (congelado ou pontos por temporada) e ajuste pequeno da importância do carro. Referência F1: grande mudança ~1 a cada 4 anos.'}
 
 CORRIDA_INTERROMPIDA = {
@@ -439,7 +442,8 @@ def formula_alfa():
                 "orcamento_medio": 60000000,
                 "inflacao_media_anual": 0.03,
                 "patrocinios": True,
-                "renda_tv": {"ativa": True, "valor_medio_por_equipe": 15000000,
+                "premios_corrida": {"ativa": True, "vitoria": 300000, "podio": 150000, "por_ponto": 13500, "_comentario": COMENTARIO_PREMIOS},
+                "renda_tv": {"ativa": True, "ano_inicio": 1981, "_comentario": COMENTARIO_TV, "valor_medio_por_equipe": 15000000,
                              "fator_por_posicao_campeonato": [1.4, 1.3, 1.2, 1.1, 1.05, 1.0, 0.95, 0.9, 0.8, 0.7]},
                 "clientes_por_chassis": 2,
                 "importancia_carro": 0.6,
@@ -585,7 +589,8 @@ def formula_beta():
                 "orcamento_medio": 4000000,
                 "inflacao_media_anual": 0.025,
                 "patrocinios": True,
-                "renda_tv": {"ativa": True, "valor_medio_por_equipe": 1000000,
+                "premios_corrida": {"ativa": True, "vitoria": 25000, "podio": 12000, "por_ponto": 1200, "_comentario": COMENTARIO_PREMIOS},
+                "renda_tv": {"ativa": True, "ano_inicio": 1981, "_comentario": COMENTARIO_TV, "valor_medio_por_equipe": 1000000,
                              "fator_por_posicao_campeonato": [1.3, 1.2, 1.1, 1.0, 1.0, 0.9, 0.8, 0.7]},
                 "clientes_por_chassis": 2,
                 "importancia_carro": 0.4,

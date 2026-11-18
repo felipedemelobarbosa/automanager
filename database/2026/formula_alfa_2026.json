@@ -28,6 +28,7 @@
    "patrocinios": true,
    "renda_tv": {
     "ativa": true,
+    "ano_inicio": 1981,
     "valor_medio_por_equipe": 15000000,
     "fator_por_posicao_campeonato": [
      1.4,
@@ -40,7 +41,8 @@
      0.9,
      0.8,
      0.7
-    ]
+    ],
+    "_comentario": "Renda de TV pela classificação final de equipes da temporada anterior (1º ano: fator 1,0 para todas). ano_inicio: a partir de quando há transmissão (F1: acordos de TV da FOCA, Pacto da Concórdia de 1981)."
    },
    "importancia_carro": 0.6,
    "importancia_piloto": 0.4,
@@ -79,7 +81,14 @@
     "penalidade_por_ano": 0,
     "_comentario": "idade_maxima: acima dela a categoria não contrata e o contrato termina na virada de temporada (vazio = sem limite). preferida_ate / penalidade_por_ano: na escolha das equipes do PC, cada ano acima da idade preferida tira esses pontos da nota do piloto (categorias de base preferem pilotos jovens)."
    },
-   "clientes_por_chassis": 2
+   "clientes_por_chassis": 2,
+   "premios_corrida": {
+    "ativa": true,
+    "vitoria": 300000,
+    "podio": 150000,
+    "por_ponto": 13500,
+    "_comentario": "Prêmios por corrida para a equipe: vitória (1º), pódio (1º a 3º, por carro) e por ponto marcado. Total da temporada ~5% dos orçamentos somados (referência: premiações de corrida da IndyCar)."
+   }
   },
   "tier": 1,
   "novas_equipes": [

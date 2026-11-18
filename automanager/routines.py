@@ -101,6 +101,7 @@ def _processar_eventos_da_semana(st, cid, rng):
         for eq in c["equipes"].values():
             if eq.get("ativa"):
                 _financas_corrida(st, cid, eq)
+        economia.pagar_premios(st, cid, reg)
         mercado.fim_de_corrida_pilotos(st, cid, ev["id"])
         saude.fim_de_corrida(st, cid, ev["id"])
         mercado.fim_de_corrida_partes(st, cid)
@@ -147,11 +148,8 @@ def _financas_corrida(st, cid, eq):
                             cid, "patrocinio")
     economia.pagar_parcelas(st, cid, eq)
     tv = regras.get("renda_tv") or {}
-    if tv.get("ativa"):
-        fatores = tv.get("fator_por_posicao_campeonato") or []
-        pos = campeonato.posicao_equipe(st, cid, eq["id"])
-        fator = fatores[min(pos, len(fatores)) - 1] if (pos and fatores) else 1.0
-        _lancar(eq, "receitas", "tv", tv.get("valor_medio_por_equipe", 0) / n * fator)
+    if economia.tv_ativa(st, c["categoria"]):            # pela classificação final da temporada anterior
+        _lancar(eq, "receitas", "tv", tv.get("valor_medio_por_equipe", 0) / n * economia.fator_tv(st, cid, eq["id"]))
 
 
 # ====================================================================== nova temporada
@@ -209,6 +207,10 @@ def _inflacao(st, cid, rng):
     regras["orcamento_medio"] = round(regras["orcamento_medio"] * f, -3)
     if regras.get("renda_tv"):
         regras["renda_tv"]["valor_medio_por_equipe"] = round(regras["renda_tv"]["valor_medio_por_equipe"] * f, -2)
+    if regras.get("premios_corrida"):
+        for k in ("vitoria", "podio", "por_ponto"):
+            if regras["premios_corrida"].get(k):
+                regras["premios_corrida"][k] = round(regras["premios_corrida"][k] * f, -2)
     mp = cat["simulacao"]["mercado_pilotos"]
     for k in ("salario_minimo_por_corrida", "salario_maximo_por_corrida"):
         mp[k] = round(mp[k] * f, -2)

@@ -121,7 +121,8 @@ def tetos_atual(st, cid, eq, parte):
     lim = regulamento.limite(st, cid, parte)
     if lim is None:
         return None
-    ganhos = _ganhos(eq, st["ano"]).get(parte, {})
+    g = eq.get("ganho_dev") or {}
+    ganhos = g.get(parte, {}) if g.get("ano") == st["ano"] else {}   # só lê: não mexe na equipe
     atuais = valores_atuais(st, cid, eq, parte)
     return {k: min(MAXIMO, v + max(0, lim - ganhos.get(k, 0))) for k, v in atuais.items()}
 

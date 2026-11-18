@@ -285,7 +285,8 @@ class TelaGestao(tk.Frame):
         fa = eq["financas"]["ano"]
         rec = sum(fa["receitas"].values())
         desp = sum(fa["despesas"].values())
-        nomes_r = {"patrocinio": "Patrocínios", "tv": "Renda de TV", "fornecimento": "Venda de chassis/motor",
+        nomes_r = {"patrocinio": "Patrocínios", "tv": "Renda de TV", "premios": "Prêmios de corrida",
+                   "fornecimento": "Venda de chassis/motor",
                    "multas": "Multas recebidas",
                    "emprestimos": "Empréstimos recebidos"}
         nomes_d = {"salarios": "Salários de pilotos", "chassis": "Contrato de chassis", "motor": "Contrato de motor",

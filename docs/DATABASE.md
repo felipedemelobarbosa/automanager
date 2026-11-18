@@ -34,7 +34,8 @@ Campos extras que você acrescentar são preservados no savegame.
 | `regras.orcamento_medio` | em dólares |
 | `regras.inflacao_media_anual` | ex.: 0.03 = 3% |
 | `regras.patrocinios` | há patrocínios? |
-| `regras.renda_tv` | `{ativa, valor_medio_por_equipe, fator_por_posicao_campeonato[]}` |
+| `regras.renda_tv` | `{ativa, ano_inicio, valor_medio_por_equipe, fator_por_posicao_campeonato[]}`. Paga a cada corrida: valor médio ÷ corridas × o fator da posição da equipe na classificação FINAL da temporada anterior (como a divisão de prêmios da F1). 1º ano do jogo: fator 1,0 para todas; equipe que não estava na classificação (nova): fator do último lugar. `ano_inicio` (opcional): antes dele não há renda de TV (nem sempre houve transmissão; F1: acordos de TV a partir do Pacto da Concórdia de 1981) |
+| `regras.premios_corrida` | `{ativa, vitoria, podio, por_ponto}` (USD): depois de cada corrida, a equipe recebe o prêmio da vitória (1º), o de pódio por carro do 1º ao 3º e o valor por ponto marcado (corrida cancelada não paga). Sobem com a inflação. Exemplo: Fórmula Alfa 300 mil / 150 mil / 13,5 mil por ponto; Fórmula Beta 25 mil / 12 mil / 1,2 mil – total da temporada ~5% dos orçamentos somados (referência: premiações de corrida da IndyCar), ~5 a 7% da receita das equipes. Entra na receita prevista das equipes do PC (média por equipe) |
 | `regras.importancia_carro` / `importancia_piloto` | pesos; devem somar 1.0 |
 | `desenvolvimento_inicial` | equipe criada pelo usuário: `{chassis|motor: {custo_por_ponto, atributo_base, atributo_maximo}}` |
 | `pontuacao` | `{posicoes[], volta_mais_rapida, pole}` |
