@@ -214,6 +214,11 @@ class TelaGestao(tk.Frame):
         """52 semanas: corridas (azul), testes coletivos (verde), semana atual em destaque, passadas em cinza."""
         cv = self.linha_tempo
         cv.delete("all")
+        from tkinter import font as tkfont
+        fonte_num = tkfont.Font(cv, family=w.FONTE[0], size=6)
+        altura = 28 + fonte_num.metrics("linespace") + 2   # a altura acompanha a fonte (escala do Windows)
+        if int(cv.cget("height")) != altura:
+            cv.configure(height=altura)
         st = self.st
         n = routines.SEMANAS_POR_TEMPORADA
         largura = max(cv.winfo_width(), 200)
@@ -234,8 +239,8 @@ class TelaGestao(tk.Frame):
             cv.create_rectangle(x0, 6, x1, 22, fill=cor, outline=w.CINZA_ESCURO)
             if i == st["semana"]:
                 cv.create_rectangle(x0 - 2, 2, x1 + 2, 26, outline="#e00000", width=3)
-            if i % 4 == 1:
-                cv.create_text(x0 + 1, 28, text=str(i), anchor="sw", font=(w.FONTE[0], 6), fill=w.CINZA_ESCURO)
+            if i % 4 == 1:                    # números abaixo da faixa (e do destaque da semana atual)
+                cv.create_text(x0 + 1, 28, text=str(i), anchor="nw", font=fonte_num, fill=w.CINZA_ESCURO)
 
     def _limpar(self, frame):
         for ch in frame.winfo_children():
