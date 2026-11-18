@@ -1,5 +1,7 @@
 # Formato da database (JSON)
 
+Guia de edição, com todas as opções explicadas: [`GUIA_DATABASE.md`](GUIA_DATABASE.md).
+
 Local: `database/<ano>/<categoria>_<ano>.json`. Um arquivo por categoria e temporada.
 Todos os atributos vão de 0 a 100. Campos que começam com `_comentario` são ignorados pelo jogo.
 Campos extras que você acrescentar são preservados no savegame.

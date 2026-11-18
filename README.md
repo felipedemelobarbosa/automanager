@@ -77,6 +77,7 @@ saves/                      jogos salvos
 docs/CONTROLE.md            o que já está definido, feito, suposto ou pendente
 tests/                      testes automáticos (inclui uma página da Wikipedia salva para o importador)
 docs/DATABASE.md            referência de todos os campos da database
+docs/GUIA_DATABASE.md       guia de edição da database (editor e todas as opções)
 automanager/
   db.py                     leitura, busca e validação da database
   state.py                  estado do jogo, criação de equipe, save/load
