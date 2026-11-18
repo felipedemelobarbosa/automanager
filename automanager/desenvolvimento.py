@@ -172,8 +172,15 @@ def investir_atual(st, cid, eq, parte, alvos):
 
 # ---------------------------------------------------------------- carro da próxima temporada
 def projeto(eq, parte):
-    p = eq.setdefault("projeto", {})
-    return p.setdefault(parte, {"modo": "manutencao", "investido": {}})
+    """Projeto do carro da próxima temporada, só para LER: sem registro, devolve o padrão (manutenção) sem gravar
+    nada na equipe. Abrir uma tela não pode mudar a equipe (no multijogador, a equipe do jogador e a do
+    comissário têm de ficar iguais)."""
+    return (eq.get("projeto") or {}).get(parte) or {"modo": "manutencao", "investido": {}}
+
+
+def _projeto_gravar(eq, parte):
+    """Projeto para ALTERAR (escolha do modo, investimento): cria o registro se ainda não houver."""
+    return eq.setdefault("projeto", {}).setdefault(parte, {"modo": "manutencao", "investido": {}})
 
 
 def base_projeto(st, cid, eq, parte, modo=None, ano_novo=None):
@@ -200,7 +207,7 @@ def valores_projeto(st, cid, eq, parte, ano_novo=None):
 
 def mudar_modo(eq, parte, modo):
     """Troca entre 'novo' e 'manutencao'. O que já foi investido no projeto é perdido."""
-    p = projeto(eq, parte)
+    p = _projeto_gravar(eq, parte)
     if p["modo"] != modo:
         p["modo"] = modo
         p["investido"] = {}
@@ -220,7 +227,7 @@ def investir_projeto(st, cid, eq, parte, alvos):
     custo = custo_alvos(st, cid, parte, atuais, alvos)
     if custo > eq["financas"]["caixa"]:
         raise ValueError("Caixa insuficiente.")
-    inv = projeto(eq, parte)["investido"]
+    inv = _projeto_gravar(eq, parte)["investido"]
     for k, v in alvos.items():
         inv[k] = inv.get(k, 0) + (v - atuais[k])
     _pagar(eq, custo)
@@ -254,7 +261,7 @@ def aplicar_projetos(st, ano_novo):
                 else:
                     ent["potencia"] = novos["potencia"]
                 ent["nome"] = re.sub(rf"{yy_ant}$", yy, ent["nome"])
-                eq["projeto"][parte] = {"modo": "manutencao", "investido": {}}
+                eq.setdefault("projeto", {})[parte] = {"modo": "manutencao", "investido": {}}
                 if parte == "chassis":
                     txt = (f"{eq['nome']} apresenta o {ent['nome']}, projeto totalmente novo." if modo == "novo"
                            else f"{eq['nome']} vai de {ent['nome']}, evolução do carro anterior.")
@@ -272,7 +279,7 @@ def _virar_proprio(st, cid, eq, parte, valores, yy):
     ent["nome"] = f"{eq['nome'].split()[0]} C{yy}"
     ent["atributos"] = {k: int(valores.get(k, 0)) for k in ATRIBUTOS_CHASSIS}
     eq["chassis"] = {"id": chid, "origem": "proprio"}
-    eq["projeto"][parte] = {"modo": "manutencao", "investido": {}}
+    eq.setdefault("projeto", {})[parte] = {"modo": "manutencao", "investido": {}}
     noticia(st, f"{eq['nome']} volta a ter chassis próprio: {ent['nome']}, projeto totalmente novo.", cid,
             "desenvolvimento")
 
