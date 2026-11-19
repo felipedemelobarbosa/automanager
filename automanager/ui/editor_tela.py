@@ -519,7 +519,7 @@ class AbaEntidades(tk.Frame):
         frases = []                       # uma frase por item: cada uma é traduzida inteira (i18n)
         def dur(ct):
             return f"{ct.get('corridas')} corridas" if "corridas" in ct else f"{ct.get('temporadas', 1)} temporada(s)"
-        origem = {"proprio": "próprio", "equipe": "de outra equipe", "fabricante": "de fabricante"}
+        origem = {"proprio": "próprio", "equipe": "de outra equipe", "fabricante": "de fabricante", "terceiros": "de fornecedor"}
         if c == "pilotos":
             ct = x.get("contrato")
             if not ct:
