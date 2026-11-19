@@ -1929,7 +1929,7 @@
  "piloto {0}: vai se aposentar em {1}, antes do contrato futuro ({2})": "driver {0}: retires in {1}, before the future contract ({2})",
  "equipe {0}: {1} pilotos ({2}) com contrato em {3} (máximo {4})": "team {0}: {1} drivers ({2}) under contract in {3} (maximum {4})",
  "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "driver {0} (future contract): contract needs 'temporadas' or 'corridas' (integer >= 1)",
- "possui": "has one",
+ "possui": "yes",
  "Chassis futuro": "Future chassis",
  "Motor futuro": "Future engine",
  "Opcional. Já contratado para uma temporada futura (um por peça). Se a peça atual for comprada, o contrato dela tem de terminar antes.": "Optional. Already signed for a future season (one per part). If the current part is bought, its contract must end before.",

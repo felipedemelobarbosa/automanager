@@ -1928,7 +1928,7 @@
  "piloto {0}: vai se aposentar em {1}, antes do contrato futuro ({2})": "piloto {0}: se retira en {1}, antes del contrato futuro ({2})",
  "equipe {0}: {1} pilotos ({2}) com contrato em {3} (máximo {4})": "equipo {0}: {1} pilotos ({2}) con contrato en {3} (máximo {4})",
  "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "piloto {0} (contrato futuro): el contrato necesita 'temporadas' o 'corridas' (entero >= 1)",
- "possui": "tiene",
+ "possui": "sí",
  "Chassis futuro": "Chasis futuro",
  "Motor futuro": "Motor futuro",
  "Opcional. Já contratado para uma temporada futura (um por peça). Se a peça atual for comprada, o contrato dela tem de terminar antes.": "Opcional. Ya contratado para una temporada futura (uno por pieza). Si la pieza actual es comprada, su contrato debe terminar antes.",

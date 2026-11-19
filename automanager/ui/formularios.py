@@ -51,7 +51,8 @@ class FormGenerico(tk.Frame):
             sb = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
             self.interno = tk.Frame(canvas)
             self.interno.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-            canvas.create_window((0, 0), window=self.interno, anchor="nw")
+            janela = canvas.create_window((0, 0), window=self.interno, anchor="nw")
+            canvas.bind("<Configure>", lambda e: self._ajustar_largura(canvas, janela, e.width))
             canvas.configure(yscrollcommand=sb.set)
             canvas.pack(side="left", fill="both", expand=True)
             sb.pack(side="right", fill="y")
@@ -70,6 +71,16 @@ class FormGenerico(tk.Frame):
             ajuda.grid(row=i, column=2, sticky="w", padx=6)
             self.widgets.append({"campo": c, "var": var, "ws": ws, "lbl": lbl, "ajuda": ajuda})
         self.interno.columnconfigure(2, weight=1)
+
+    def _ajustar_largura(self, canvas, janela, largura):
+        """O formulário ocupa a largura visível e as explicações quebram a linha antes da borda (sem cortar)."""
+        canvas.itemconfigure(janela, width=largura)
+        self.interno.update_idletasks()
+        x = self.interno.grid_bbox(2, 0)[0]
+        quebra = max(150, largura - x - 20)
+        for wd in self.widgets:
+            if int(wd["ajuda"].cget("wraplength")) != quebra:
+                wd["ajuda"].configure(wraplength=quebra)
 
     # ------------------------------------------------------------------ criação
     def _avisar(self, *_):
