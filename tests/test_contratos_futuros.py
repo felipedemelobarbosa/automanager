@@ -243,6 +243,54 @@ class TestArquivo(unittest.TestCase):
         self.assertEqual(p["contrato"]["equipe"], "tucano")
 
 
+class TestArquivoPartes(unittest.TestCase):
+    """Equipe que já contratou chassis para uma temporada futura no arquivo da database."""
+    def setUp(self):
+        self.caminho = next(a for a in db.arquivos_do_ano(2026) if BETA in a)
+        self.d = db.carregar_arquivo(self.caminho, validar=False)
+        self.e = next(e for e in self.d["equipes"] if e["id"] == "prisma")
+        atual = self.e["chassis"]
+        atual["origem"] = "terceiros"
+        atual["contrato"] = {"valor_por_corrida": 40000, "temporadas": 2}          # até 2027
+        self.outro = next(c for c in self.d["chassis"] if c["id"] != atual["id"] and not c.get("equipe"))
+        self.e["chassis_futuro"] = {"id": self.outro["id"], "origem": "terceiros",
+                                    "contrato": {"valor_por_corrida": 50000, "temporadas": 2, "inicio_ano": 2028}}
+
+    def erros(self):
+        return db.validar_contratos_futuros(self.d)
+
+    def test_validacao(self):
+        self.assertEqual(self.erros(), [])
+        f = self.e["chassis_futuro"]
+        f["contrato"]["inicio_ano"] = 2027
+        self.assertTrue(any("vai até 2027" in x for x in self.erros()))
+        f["contrato"]["inicio_ano"] = 2026
+        self.assertTrue(any("depois de 2026" in x for x in self.erros()))
+        f["contrato"]["inicio_ano"] = 2028
+        f["origem"] = "proprio"
+        self.assertTrue(any("origem deve ser" in x for x in self.erros()))
+        f["origem"] = "terceiros"
+        f["id"] = "nao_existe"
+        self.assertTrue(any("'nao_existe' não existe" in x for x in self.erros()))
+
+    def test_jogo_comeca_com_o_contrato_e_ele_vale_no_ano(self):
+        import json, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            caminho = os.path.join(tmp, os.path.basename(self.caminho))
+            with open(caminho, "w", encoding="utf-8") as fh:
+                json.dump(self.d, fh)
+            outros = [a for a in db.arquivos_do_ano(2026) if a != self.caminho]
+            st = state.novo_jogo([caminho] + outros, semente=4)
+        eq = st["categorias"][BETA]["equipes"]["prisma"]
+        self.assertEqual(eq["chassis_futuro"]["id"], self.outro["id"])
+        self.assertEqual(mercado.contratar_parte(st, BETA, eq, "chassis", self.outro["id"], 1, "temporadas", 2030),
+                         "A equipe já tem contrato de chassis para 2028.")
+        virar(st)                                        # 2027: o atual
+        self.assertNotEqual(eq["chassis"]["id"], self.outro["id"])
+        virar(st)                                        # 2028: o futuro
+        self.assertEqual(eq["chassis"]["id"], self.outro["id"])
+
+
 class TestMultijogador(unittest.TestCase):
     def test_proposta_para_um_ano_vai_nas_ordens(self):
         st = state.novo_jogo(db.arquivos_do_ano(2026), semente=4)

@@ -350,7 +350,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Attributes | `atributos.*` | Consistency, Race pace, Concentration, Rain, Acceleration, Car setup, Teamwork, Qualifying, Fitness, Driving, Start (0–100). |
 | Contract | `contrato` | No contract = free driver. Team, Salary per race (USD), Role (`principal` main / `teste` test), Duration in seasons **or** races. |
 | Assigned races | `contrato.corridas_definidas` | Optional (rotation): tick the races the driver takes part in; the duration becomes the number ticked. None ticked = all races. Valid only in the file's season. |
-| Future contract | `contrato_futuro` | Optional: the driver is already signed for a later season (one per driver). Team, Salary per race, Role, **Starts in (year)** (`inicio_ano`) and Duration. Until then the driver keeps the current contract or, if it ends earlier, is free but cannot sign for that season. Checks: the year must be after the file's year and after the current contract ends; the driver must not retire before it (a random retirement is moved to after the contract); the team must have a free seat that year (current contracts that still run plus future ones, at most the number of cars – or test seats). No assigned races. Chassis and engine contracts in the file are current only. |
+| Future contract | `contrato_futuro` | Optional: the driver is already signed for a later season (one per driver). Team, Salary per race, Role, **Starts in (year)** (`inicio_ano`) and Duration. Until then the driver keeps the current contract or, if it ends earlier, is free but cannot sign for that season. Checks: the year must be after the file's year and after the current contract ends; the driver must not retire before it (a random retirement is moved to after the contract); the team must have a free seat that year (current contracts that still run plus future ones, at most the number of cars – or test seats). No assigned races. |
 
 ### Chassis (`chassis`)
 
@@ -384,6 +384,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Year of entry | `ano_surgimento` | For inactive teams. Empty = random. |
 | Chassis / Chassis source | `chassis.id`, `chassis.origem` | `proprio` (own), `terceiros` (supplier), `equipe` (another team). Contract (value per race) for bought chassis. |
 | Engine / Engine source | `motor.id`, `motor.origem` | `proprio`, `equipe`, `fabricante`. |
+| Future chassis / Future engine | `chassis_futuro`, `motor_futuro` | Optional: the team has already bought a chassis or engine for a later season (one per part). Chassis or Engine (`id`), Source (`origem`: chassis `terceiros` or `equipe`; engine `equipe` or `fabricante` – a future part is always bought), Price per race, **Starts in (year)** (`contrato.inicio_ano`) and Duration. The year must be after the file's year; if the current part is bought, its contract must end before. It replaces the current part in that year. One that starts next season also ends the team's own design project for that part. |
 | Chance of closing / appearing per year | `prob_fechamento`, `prob_surgimento` | 0–1 (e.g. 0.02 = 2%). |
 
 ### Sponsors (`patrocinadores`)
@@ -473,3 +474,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-18 | First version of the guide (game as of commit `57de5cf`). |
 | 2026-11-18 | Contracts can start in any future season (drivers, chassis, engines): `semana_inicio_propostas` now also starts the AI's far-ahead offers; `fator_multa` charges only the overlap; note that the file holds only current contracts. |
 | 2026-11-19 | Drivers: new optional `contrato_futuro` (Future contract, with `inicio_ano`) in the file and the editor; checks for start year, current contract, retirement and seats. Editor: fields of an unticked group (e.g. no contract) are no longer marked red. |
+| 2026-11-19 | Teams: new optional `chassis_futuro` / `motor_futuro` (Future chassis / Future engine, with `contrato.inicio_ano`) in the file and the editor. |

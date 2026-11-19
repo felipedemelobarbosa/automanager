@@ -265,6 +265,7 @@ def validar_contratos_futuros(d):
             apos = ano + max(1, p["idade_aposentadoria"] - p["idade"])
         if isinstance(apos, int) and apos <= ini:
             erros.append(f"{nome}: vai se aposentar em {apos}, antes do contrato futuro ({ini})")
+    erros.extend(_validar_partes_futuras(d, ano, n))
     if ano is None:
         return erros
     for y in sorted(anos_checar):          # vagas: ninguém pode ter mais pilotos que o limite em nenhum ano
@@ -281,6 +282,43 @@ def validar_contratos_futuros(d):
         for (eid, sit), q in sorted(ocup.items(), key=str):
             if sit in alvo and q > alvo[sit]:
                 erros.append(f"equipe {eid}: {q} pilotos ({sit}) com contrato em {y} (máximo {alvo[sit]})")
+    return erros
+
+
+def _validar_partes_futuras(d, ano, n):
+    """Equipe que já contratou chassis/motor para uma temporada futura ('chassis_futuro' / 'motor_futuro')."""
+    erros = []
+    ids = {"chassis": {c["id"] for c in d["chassis"]}, "motor": {m["id"] for m in d["motores"]}}
+    origens = {"chassis": ("terceiros", "equipe"), "motor": ("equipe", "fabricante")}
+    fontes_motor = d["categoria"].get("regras", {}).get("fontes_de_motor_permitidas", ["proprio", "equipe", "fabricante"])
+    for e in d["equipes"]:
+        for parte in ("chassis", "motor"):
+            f = e.get(f"{parte}_futuro")
+            if not f:
+                continue
+            nome = f"equipe {e.get('id')} ({parte} futuro)"
+            if f.get("id") not in ids[parte]:
+                erros.append(f"{nome}: '{f.get('id')}' não existe")
+            if f.get("origem") not in origens[parte]:
+                erros.append(f"{nome}: origem deve ser {' ou '.join(origens[parte])} (a peça futura é comprada)")
+            elif parte == "motor" and f["origem"] not in fontes_motor:
+                erros.append(f"{nome}: origem '{f['origem']}' não permitida na categoria")
+            ct = f.get("contrato")
+            if not isinstance(ct, dict):
+                erros.append(f"{nome}: falta o contrato")
+                continue
+            contratos.validar(ct, nome, erros)
+            ini = ct.get("inicio_ano")
+            if not isinstance(ini, int) or (ano is not None and ini <= ano):
+                erros.append(f"{nome}: o contrato precisa de 'inicio_ano' depois de {ano}")
+                continue
+            atual = e.get(parte) or {}
+            ca = atual.get("contrato")
+            if ano is not None and atual.get("origem") not in (None, "proprio") and isinstance(ca, dict) \
+                    and isinstance(ca.get("corridas", ca.get("temporadas")), int):
+                fim = _fim_contrato_arquivo(ca, ano, n)
+                if fim >= ini:
+                    erros.append(f"{nome}: o contrato atual vai até {fim}; o futuro tem de começar depois")
     return erros
 
 

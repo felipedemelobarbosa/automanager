@@ -75,8 +75,7 @@ acerto_carro, trabalho_equipe, classificacao, fisico, conducao, largada}, contra
 Piloto já contratado para uma temporada futura: `contrato_futuro` (opcional, um por piloto) = os campos do contrato
 mais `inicio_ano` (depois do ano do arquivo e depois do fim do contrato atual; sem `corridas_definidas`). O piloto
 não pode se aposentar antes (aposentadoria sorteada é adiada para depois do contrato) e a equipe precisa de vaga
-nesse ano (contratos atuais que ainda valem + futuros ≤ carros, ou vagas de teste). Chassis e motor: no arquivo,
-só contratos atuais; os futuros feitos no jogo ficam no save (`chassis_futuro`/`motor_futuro` da equipe).
+nesse ano (contratos atuais que ainda valem + futuros ≤ carros, ou vagas de teste).
 
 Revezamento: contrato de piloto por corridas pode ter `corridas_definidas: [ids do calendário]`. O piloto só corre
 nessas corridas e o contrato termina depois da última delas (`corridas` = quantidade de corridas da lista; o editor
@@ -107,6 +106,11 @@ confiabilidade, classificacao, chuva, pneus}, contrato}`
 
 - `chassis`: `{id, origem: "proprio"|"terceiros", contrato?: {valor_por_corrida, temporadas}}`
 - `motor`: `{id, origem: "proprio"|"equipe"|"fabricante", contrato?}`. Com `proprio`, o menu Desenvolvimento > Motor é liberado
+- `chassis_futuro` / `motor_futuro` (opcionais, um por peça): peça já comprada para uma temporada futura,
+  `{id, origem, contrato: {valor_por_corrida, temporadas|corridas, inicio_ano}}`. Origem: chassis `terceiros`|`equipe`,
+  motor `equipe`|`fabricante`. `inicio_ano` depois do ano do arquivo; se a peça atual for comprada, o contrato dela
+  tem de terminar antes. Na temporada `inicio_ano` ela substitui a atual (os contratos futuros feitos no jogo usam o
+  mesmo formato no save).
 - `caixa`: `null` = calculado a partir do orçamento médio e dos recursos
 - `cor` / `cor_secundaria` (opcionais): cores da equipe no formato `"#RRGGBB"`. Sem `cor`, o jogo usa uma cor fixa derivada do ID da equipe
 

@@ -70,6 +70,18 @@ class Esquemas:
                                                      for k, r, t, a, o, x in extras] + \
             [F(g, "Duração", "duracao", "Em temporadas ou em quantidade de corridas.", grupo=g)]
 
+    def parte_futura(self, parte, rotulo, opcoes, origens):
+        g = (f"{parte}_futuro",)
+        return [F(g, rotulo, "grupo", "Opcional. Já contratado para uma temporada futura (um por peça). Se a "
+                                      "peça atual for comprada, o contrato dela tem de terminar antes."),
+                dict(F(g + ("id",), "Chassis" if parte == "chassis" else "Motor", "ref", "", opcoes, grupo=g),
+                     obrig=True),
+                F(g + ("origem",), "Origem", "escolha", "", origens, grupo=g),
+                dict(F(g + ("contrato", "valor_por_corrida"), "Valor por corrida (USD)", "real", "", grupo=g), min=0),
+                dict(F(g + ("contrato", "inicio_ano"), "Começa em (ano)", "int", "Temporada em que o contrato começa: "
+                       "depois do ano do arquivo.", grupo=g), min=1900, max=2200, obrig=True),
+                F(g + ("contrato",), "Duração", "duracao", "Em temporadas ou em quantidade de corridas.", grupo=g)]
+
     def pilotos(self):
         return ([self._campo("id", "ID", "texto", "Identificador único (gerado pelo nome).",
                              validador=self._id_unico("pilotos")),
@@ -168,6 +180,10 @@ class Esquemas:
                      [("proprio", "próprio"), ("equipe", "de outra equipe"), ("fabricante", "de fabricante")])]
                 + self.contrato(("motor",), [("valor_por_corrida", "Motor: valor por corrida", "real", "", None,
                                               {"min": 0})], "Só para motor de outra equipe ou de fabricante.")
+                + self.parte_futura("chassis", "Chassis futuro", self.chassis,
+                                    [("terceiros", "de fornecedor"), ("equipe", "de outra equipe")])
+                + self.parte_futura("motor", "Motor futuro", self.motores,
+                                    [("equipe", "de outra equipe"), ("fabricante", "de fabricante")])
                 + [F("prob_fechamento", "Chance de fechar por ano", "real", "0 a 1 (ex.: 0,02 = 2%).", minimo=0, maximo=1),
                    F("prob_surgimento", "Chance de surgir por ano", "real", "0 a 1, para equipes inativas.", minimo=0,
                      maximo=1)])
@@ -257,8 +273,8 @@ ABAS = [("pilotos", "Pilotos"), ("chassis", "Chassis"), ("motores", "Motores"), 
 REFERENCIAS = {
     "equipes": [("pilotos", ("contrato", "equipe")), ("pilotos", ("contrato_futuro", "equipe")), ("chassis", ("equipe",)), ("motores", ("fabricante", "equipe")),
                 ("patrocinadores", ("contrato", "equipe"))],
-    "chassis": [("equipes", ("chassis", "id"))],
-    "motores": [("equipes", ("motor", "id"))],
+    "chassis": [("equipes", ("chassis", "id")), ("equipes", ("chassis_futuro", "id"))],
+    "motores": [("equipes", ("motor", "id")), ("equipes", ("motor_futuro", "id"))],
 }
 
 
@@ -539,6 +555,14 @@ class AbaEntidades(tk.Frame):
             frases.append(f"{x.get('nome')} ({'ativa' if x.get('ativa') else 'inativa'}): chassis {nome_ch} "
                           f"({origem.get(ch.get('origem'), '-')}), motor {nome_mo} ({origem.get(mo.get('origem'), '-')}).")
             frases.append(f"Pilotos: {', '.join(pil)}." if pil else "Pilotos: nenhum.")
+            for parte, lista in (("chassis", "chassis"), ("motor", "motores")):
+                fut = x.get(f"{parte}_futuro")
+                if fut:
+                    nome = next((y["nome"] for y in self.ed.dados.get(lista, []) if y["id"] == fut.get("id")),
+                                fut.get("id"))
+                    ct = fut.get("contrato") or {}
+                    frases.append(f"A partir de {ct.get('inicio_ano')}: {parte} {nome}, "
+                                  f"{dinheiro(ct.get('valor_por_corrida') or 0)} por corrida, por {dur(ct)}.")
         elif c == "patrocinadores":
             ct = x.get("contrato")
             if ct:

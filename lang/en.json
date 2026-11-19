@@ -1928,5 +1928,21 @@
  "piloto {0}: o contrato atual vai até {1}; o contrato futuro tem de começar depois": "driver {0}: the current contract runs until {1}; the future contract must start after it",
  "piloto {0}: vai se aposentar em {1}, antes do contrato futuro ({2})": "driver {0}: retires in {1}, before the future contract ({2})",
  "equipe {0}: {1} pilotos ({2}) com contrato em {3} (máximo {4})": "team {0}: {1} drivers ({2}) under contract in {3} (maximum {4})",
- "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "driver {0} (future contract): contract needs 'temporadas' or 'corridas' (integer >= 1)"
+ "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "driver {0} (future contract): contract needs 'temporadas' or 'corridas' (integer >= 1)",
+ "possui": "has one",
+ "Chassis futuro": "Future chassis",
+ "Motor futuro": "Future engine",
+ "Opcional. Já contratado para uma temporada futura (um por peça). Se a peça atual for comprada, o contrato dela tem de terminar antes.": "Optional. Already signed for a future season (one per part). If the current part is bought, its contract must end before.",
+ "Origem": "Source",
+ "Valor por corrida (USD)": "Price per race (USD)",
+ "Temporada em que o contrato começa: depois do ano do arquivo.": "Season the contract starts: after the file's year.",
+ "A partir de {0}: chassis {1}, {2} por corrida, por {3}.": "From {0}: chassis {1}, {2} per race, for {3}.",
+ "A partir de {0}: motor {1}, {2} por corrida, por {3}.": "From {0}: engine {1}, {2} per race, for {3}.",
+ "equipe {0} ({1} futuro): '{2}' não existe": "team {0} (future {1}): '{2}' does not exist",
+ "equipe {0} ({1} futuro): origem deve ser {2} ou {3} (a peça futura é comprada)": "team {0} (future {1}): source must be {2} or {3} (the future part is bought)",
+ "equipe {0} ({1} futuro): origem '{2}' não permitida na categoria": "team {0} (future {1}): source '{2}' not allowed in the category",
+ "equipe {0} ({1} futuro): falta o contrato": "team {0} (future {1}): the contract is missing",
+ "equipe {0} ({1} futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "team {0} (future {1}): contract needs 'temporadas' or 'corridas' (integer >= 1)",
+ "equipe {0} ({1} futuro): o contrato precisa de 'inicio_ano' depois de {2}": "team {0} (future {1}): the contract needs 'inicio_ano' after {2}",
+ "equipe {0} ({1} futuro): o contrato atual vai até {2}; o futuro tem de começar depois": "team {0} (future {1}): the current contract runs until {2}; the future one must start after it"
 }
