@@ -142,6 +142,7 @@ def validar_dados(d):
                 for evid in lista:
                     if evid not in ids_corridas:
                         erros.append(f"piloto {p['id']}: corrida definida '{evid}' não existe no calendário")
+    erros.extend(validar_contratos_futuros(d))
     for c in d["chassis"]:
         faixa(f"chassis {c.get('id')}", c.get("atributos", {}), ATRIBUTOS_CHASSIS)
         if c.get("equipe") and c["equipe"] not in ids_eq:
@@ -213,6 +214,73 @@ def validar_dados(d):
         c = p.get("contrato")
         if c and c.get("equipe") not in ids_eq:
             erros.append(f"patrocinador {p['id']}: equipe '{c.get('equipe')}' não existe")
+    return erros
+
+
+def _fim_contrato_arquivo(ct, ano, n_corridas):
+    """Última temporada coberta por um contrato do arquivo (atual: começa no ano do arquivo; futuro: no inicio_ano)."""
+    ini = ct.get("inicio_ano") or ano
+    anos = -(-ct["corridas"] // n_corridas) if "corridas" in ct else ct.get("temporadas", 1)
+    return ini + max(1, anos) - 1
+
+
+def validar_contratos_futuros(d):
+    """Pilotos já contratados para uma temporada futura ('contrato_futuro' com 'inicio_ano')."""
+    erros = []
+    cat = d["categoria"]
+    regras = cat.get("regras", {})
+    ano = cat.get("ano") if isinstance(cat.get("ano"), int) else None
+    ids_eq = {e["id"] for e in d["equipes"]}
+    n = max(1, sum(1 for e in d["calendario"] if e.get("especie") == "corrida" and e.get("ativo", True)))
+    alvo = {"principal": regras.get("pilotos_principais_por_equipe", 2),
+            "teste": regras.get("pilotos_de_teste_por_equipe", 0) if regras.get("pilotos_de_teste") else 0}
+    anos_checar = set()
+    for p in d["pilotos"]:
+        f = p.get("contrato_futuro")
+        if not f:
+            continue
+        nome = f"piloto {p.get('id')}"
+        if f.get("equipe") not in ids_eq:
+            erros.append(f"{nome}: equipe '{f.get('equipe')}' do contrato futuro não existe")
+        if f.get("situacao") not in ("principal", "teste"):
+            erros.append(f"{nome}: situação do contrato futuro deve ser 'principal' ou 'teste'")
+        elif f["situacao"] == "teste" and not regras.get("pilotos_de_teste"):
+            erros.append(f"{nome}: categoria não tem pilotos de teste")
+        contratos.validar(f, f"{nome} (contrato futuro)", erros)
+        if f.get("corridas_definidas"):
+            erros.append(f"{nome}: corridas definidas só valem para o contrato atual")
+        ini = f.get("inicio_ano")
+        if not isinstance(ini, int) or (ano is not None and ini <= ano):
+            erros.append(f"{nome}: o contrato futuro precisa de 'inicio_ano' depois de {ano}")
+            continue
+        if ano is None or not isinstance(f.get("corridas", f.get("temporadas")), int):
+            continue
+        anos_checar.add(ini)
+        c = p.get("contrato")
+        if c and isinstance(c.get("corridas", c.get("temporadas")), int) and _fim_contrato_arquivo(c, ano, n) >= ini:
+            erros.append(f"{nome}: o contrato atual vai até {_fim_contrato_arquivo(c, ano, n)}; o contrato futuro "
+                         f"tem de começar depois")
+        apos = p.get("ano_aposentadoria")
+        if apos is None and p.get("idade_aposentadoria") is not None and isinstance(p.get("idade"), int):
+            apos = ano + max(1, p["idade_aposentadoria"] - p["idade"])
+        if isinstance(apos, int) and apos <= ini:
+            erros.append(f"{nome}: vai se aposentar em {apos}, antes do contrato futuro ({ini})")
+    if ano is None:
+        return erros
+    for y in sorted(anos_checar):          # vagas: ninguém pode ter mais pilotos que o limite em nenhum ano
+        ocup = {}
+        for p in d["pilotos"]:
+            for ct in (p.get("contrato"), p.get("contrato_futuro")):
+                if not ct or not isinstance(ct.get("corridas", ct.get("temporadas")), int):
+                    continue
+                if not isinstance(ct.get("inicio_ano", ano), int):
+                    continue
+                if (ct.get("inicio_ano") or ano) <= y <= _fim_contrato_arquivo(ct, ano, n):
+                    k = (ct.get("equipe"), ct.get("situacao"))
+                    ocup[k] = ocup.get(k, 0) + 1
+        for (eid, sit), q in sorted(ocup.items(), key=str):
+            if sit in alvo and q > alvo[sit]:
+                erros.append(f"equipe {eid}: {q} pilotos ({sit}) com contrato em {y} (máximo {alvo[sit]})")
     return erros
 
 

@@ -1914,5 +1914,18 @@
  "à sua equipe": "a tu equipo",
  "à {0}": "a {0}",
  "• Comprar no Mercado: contrato com um fornecedor ou outra equipe (Mercado > Chassis).": "• Comprar en el Mercado: contrato con un proveedor u otro equipo (Mercado > Chasis).",
- "• Projeto novo: chassis próprio, começa do zero e recebe investimento ponto a ponto.": "• Proyecto nuevo: chasis propio, empieza desde cero y recibe inversión punto a punto."
+ "• Projeto novo: chassis próprio, começa do zero e recebe investimento ponto a ponto.": "• Proyecto nuevo: chasis propio, empieza desde cero y recibe inversión punto a punto.",
+ "Contrato futuro": "Contrato futuro",
+ "Começa em (ano)": "Empieza en (año)",
+ "Temporada em que o contrato começa: depois do ano do arquivo e depois do fim do contrato atual.": "Temporada en que empieza el contrato: después del año del archivo y después del fin del contrato actual.",
+ "Opcional. Piloto já contratado para uma temporada futura (um por piloto). A equipe precisa ter vaga nesse ano.": "Opcional. Piloto ya contratado para una temporada futura (uno por piloto). El equipo necesita una plaza libre ese año.",
+ "A partir de {0}: contrato com a {1} como piloto {2}: {3} por corrida, por {4}.": "Desde {0}: contrato con {1} como piloto {2}: {3} por carrera, por {4}.",
+ "piloto {0}: equipe '{1}' do contrato futuro não existe": "piloto {0}: el equipo '{1}' del contrato futuro no existe",
+ "piloto {0}: situação do contrato futuro deve ser 'principal' ou 'teste'": "piloto {0}: la función del contrato futuro debe ser 'principal' o 'teste'",
+ "piloto {0}: corridas definidas só valem para o contrato atual": "piloto {0}: las carreras definidas solo valen para el contrato actual",
+ "piloto {0}: o contrato futuro precisa de 'inicio_ano' depois de {1}": "piloto {0}: el contrato futuro necesita 'inicio_ano' después de {1}",
+ "piloto {0}: o contrato atual vai até {1}; o contrato futuro tem de começar depois": "piloto {0}: el contrato actual va hasta {1}; el contrato futuro debe empezar después",
+ "piloto {0}: vai se aposentar em {1}, antes do contrato futuro ({2})": "piloto {0}: se retira en {1}, antes del contrato futuro ({2})",
+ "equipe {0}: {1} pilotos ({2}) com contrato em {3} (máximo {4})": "equipo {0}: {1} pilotos ({2}) con contrato en {3} (máximo {4})",
+ "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "piloto {0} (contrato futuro): el contrato necesita 'temporadas' o 'corridas' (entero >= 1)"
 }

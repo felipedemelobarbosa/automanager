@@ -348,8 +348,9 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Retirement | `ano_aposentadoria` **or** `idade_aposentadoria` | By year or by age (form field `aposentadoria`). Random: the game decides (34–40). |
 | Wikipedia article, Photo | `wikipedia`, `imagem` | Article in English (empty = uses the name); photo in `database/imagens`. |
 | Attributes | `atributos.*` | Consistency, Race pace, Concentration, Rain, Acceleration, Car setup, Teamwork, Qualifying, Fitness, Driving, Start (0–100). |
-| Contract | `contrato` | No contract = free driver. Team, Salary per race (USD), Role (`principal` main / `teste` test), Duration in seasons **or** races. The file holds only current contracts; contracts that start in a future season are made in the game (one per driver and one per part, kept in the save). |
+| Contract | `contrato` | No contract = free driver. Team, Salary per race (USD), Role (`principal` main / `teste` test), Duration in seasons **or** races. |
 | Assigned races | `contrato.corridas_definidas` | Optional (rotation): tick the races the driver takes part in; the duration becomes the number ticked. None ticked = all races. Valid only in the file's season. |
+| Future contract | `contrato_futuro` | Optional: the driver is already signed for a later season (one per driver). Team, Salary per race, Role, **Starts in (year)** (`inicio_ano`) and Duration. Until then the driver keeps the current contract or, if it ends earlier, is free but cannot sign for that season. Checks: the year must be after the file's year and after the current contract ends; the driver must not retire before it (a random retirement is moved to after the contract); the team must have a free seat that year (current contracts that still run plus future ones, at most the number of cars – or test seats). No assigned races. Chassis and engine contracts in the file are current only. |
 
 ### Chassis (`chassis`)
 
@@ -471,3 +472,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 |---|---|
 | 2026-11-18 | First version of the guide (game as of commit `57de5cf`). |
 | 2026-11-18 | Contracts can start in any future season (drivers, chassis, engines): `semana_inicio_propostas` now also starts the AI's far-ahead offers; `fator_multa` charges only the overlap; note that the file holds only current contracts. |
+| 2026-11-19 | Drivers: new optional `contrato_futuro` (Future contract, with `inicio_ano`) in the file and the editor; checks for start year, current contract, retirement and seats. Editor: fields of an unticked group (e.g. no contract) are no longer marked red. |

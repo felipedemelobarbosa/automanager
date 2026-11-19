@@ -38,6 +38,11 @@ def preparar_piloto(p, ano, rng=random):
     if not p.get("ano_aposentadoria"):
         alvo = p.get("idade_aposentadoria") or rng.randint(34, 40)
         p["ano_aposentadoria"] = ano + max(1, alvo - idade)
+        f = p.get("contrato_futuro")
+        if f and f.get("inicio_ano") and not p.get("idade_aposentadoria"):
+            # aposentadoria sorteada: não antes do fim do contrato futuro que veio do arquivo
+            anos = f.get("temporadas") or 1
+            p["ano_aposentadoria"] = max(p["ano_aposentadoria"], f["inicio_ano"] + anos)
     media = sum(p["atributos"].values()) / max(1, len(p["atributos"]))
     if not p.get("potencial"):
         anos_ate_pico = max(0, p["ano_pico"] - ano)

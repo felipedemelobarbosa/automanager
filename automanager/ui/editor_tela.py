@@ -63,9 +63,10 @@ class Esquemas:
             c["validador"] = validador
         return c
 
-    def contrato(self, prefixo, extras, ajuda="Desmarque se não houver contrato."):
-        g = tuple(prefixo) + ("contrato",)
-        return [F(g, "Contrato", "grupo", ajuda)] + [dict(F(g + (k,), r, t, a, o, grupo=g), **x)
+    def contrato(self, prefixo, extras, ajuda="Desmarque se não houver contrato.", chave="contrato",
+                 rotulo="Contrato"):
+        g = tuple(prefixo) + (chave,)
+        return [F(g, rotulo, "grupo", ajuda)] + [dict(F(g + (k,), r, t, a, o, grupo=g), **x)
                                                      for k, r, t, a, o, x in extras] + \
             [F(g, "Duração", "duracao", "Em temporadas ou em quantidade de corridas.", grupo=g)]
 
@@ -96,7 +97,15 @@ class Esquemas:
                           "Opcional. Marque as corridas em que o piloto corre (revezamento): a duração passa a ser "
                           "por corridas, na quantidade marcada. Nenhuma marcada = corre todas enquanto durar o "
                           "contrato.", self.corridas_calendario, grupo=("contrato",)),
-                        vazio_remove=True, conta_corridas=True, altura=8)])
+                        vazio_remove=True, conta_corridas=True, altura=8)]
+                + self.contrato((), [
+                    ("equipe", "Equipe", "ref", "", self.equipes, {"obrig": True}),
+                    ("valor_por_corrida", "Salário por corrida (USD)", "real", "", None, {"min": 0}),
+                    ("situacao", "Função", "escolha", "", [("principal", "principal"), ("teste", "teste")], {}),
+                    ("inicio_ano", "Começa em (ano)", "int", "Temporada em que o contrato começa: depois do ano do "
+                     "arquivo e depois do fim do contrato atual.", None, {"min": 1900, "max": 2200, "obrig": True})],
+                    "Opcional. Piloto já contratado para uma temporada futura (um por piloto). A equipe precisa "
+                    "ter vaga nesse ano.", chave="contrato_futuro", rotulo="Contrato futuro"))
 
     def chassis_campos(self):
         return ([self._campo("id", "ID", "texto", validador=self._id_unico("chassis")),
@@ -246,7 +255,7 @@ ABAS = [("pilotos", "Pilotos"), ("chassis", "Chassis"), ("motores", "Motores"), 
         ("patrocinadores", "Patrocinadores"), ("calendario", "Calendário")]
 # referências que apontam para IDs (para renomear em cascata)
 REFERENCIAS = {
-    "equipes": [("pilotos", ("contrato", "equipe")), ("chassis", ("equipe",)), ("motores", ("fabricante", "equipe")),
+    "equipes": [("pilotos", ("contrato", "equipe")), ("pilotos", ("contrato_futuro", "equipe")), ("chassis", ("equipe",)), ("motores", ("fabricante", "equipe")),
                 ("patrocinadores", ("contrato", "equipe"))],
     "chassis": [("equipes", ("chassis", "id"))],
     "motores": [("equipes", ("motor", "id"))],
@@ -503,6 +512,12 @@ class AbaEntidades(tk.Frame):
                 papel = "piloto principal" if ct.get("situacao", "principal") == "principal" else "piloto de testes"
                 frases.append(f"{x.get('nome')} tem contrato com a {self._nome_equipe(ct.get('equipe'))} como {papel}: "
                               f"{dinheiro(ct.get('valor_por_corrida') or 0)} por corrida, por {dur(ct)}.")
+            fut = x.get("contrato_futuro")
+            if fut:
+                papel = "piloto principal" if fut.get("situacao", "principal") == "principal" else "piloto de testes"
+                frases.append(f"A partir de {fut.get('inicio_ano')}: contrato com a "
+                              f"{self._nome_equipe(fut.get('equipe'))} como {papel}: "
+                              f"{dinheiro(fut.get('valor_por_corrida') or 0)} por corrida, por {dur(fut)}.")
             frases.append(f"Nota média: {_media(x.get('atributos')):.0f}.")
         elif c in ("chassis", "motores"):
             ct = x.get("contrato")

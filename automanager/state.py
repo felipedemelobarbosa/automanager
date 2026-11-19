@@ -103,7 +103,11 @@ def novo_jogo(caminhos, semente=None):
                 p["contrato"]["categoria"] = cid
                 if p["contrato"].get("corridas_definidas"):
                     p["contrato"]["corridas"] = len(p["contrato"]["corridas_definidas"])
-            p["contrato_futuro"] = None
+            f = p.get("contrato_futuro")
+            if f and int(f.get("inicio_ano") or 0) > st["ano"]:      # já contratado para uma temporada futura
+                f["categoria"] = cid
+            else:
+                p["contrato_futuro"] = None
             st["pilotos"][gid] = p
     from . import carreira
     rng = random.Random(semente)

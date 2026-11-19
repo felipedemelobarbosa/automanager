@@ -72,8 +72,11 @@ acerto_carro, trabalho_equipe, classificacao, fisico, conducao, largada}, contra
 
 `contrato`: `null` (piloto livre) ou `{equipe, valor_por_corrida, situacao: "principal"|"teste"}` mais
 `temporadas: n` **ou** `corridas: n`. O mesmo vale para os contratos de chassis/motor.
-O arquivo só tem contratos atuais. Contratos que começam numa temporada futura são feitos no jogo e ficam no save
-(`contrato_futuro` do piloto, `chassis_futuro`/`motor_futuro` da equipe, com `inicio_ano`).
+Piloto já contratado para uma temporada futura: `contrato_futuro` (opcional, um por piloto) = os campos do contrato
+mais `inicio_ano` (depois do ano do arquivo e depois do fim do contrato atual; sem `corridas_definidas`). O piloto
+não pode se aposentar antes (aposentadoria sorteada é adiada para depois do contrato) e a equipe precisa de vaga
+nesse ano (contratos atuais que ainda valem + futuros ≤ carros, ou vagas de teste). Chassis e motor: no arquivo,
+só contratos atuais; os futuros feitos no jogo ficam no save (`chassis_futuro`/`motor_futuro` da equipe).
 
 Revezamento: contrato de piloto por corridas pode ter `corridas_definidas: [ids do calendário]`. O piloto só corre
 nessas corridas e o contrato termina depois da última delas (`corridas` = quantidade de corridas da lista; o editor

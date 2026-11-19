@@ -418,8 +418,12 @@ class FormGenerico(tk.Frame):
     def validar(self):
         """Marca em vermelho os campos inválidos. Retorna a lista de (rótulo, mensagem)."""
         erros = []
+        desligados = {wd["campo"]["c"] for wd in self.widgets if wd["campo"]["t"] == "grupo" and not wd["var"].get()}
         for wd in self.widgets:
-            ok, v = self._valor(wd)
+            if wd["campo"]["g"] is not None and tuple(wd["campo"]["g"]) in desligados:
+                ok, v = True, None                     # grupo desmarcado (ex.: sem contrato): não há o que validar
+            else:
+                ok, v = self._valor(wd)
             extra = wd["campo"].get("validador")
             if ok and extra:
                 msg = extra(v, self.item)

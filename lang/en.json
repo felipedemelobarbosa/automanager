@@ -1915,5 +1915,18 @@
  "à sua equipe": "to your team",
  "à {0}": "to {0}",
  "• Comprar no Mercado: contrato com um fornecedor ou outra equipe (Mercado > Chassis).": "• Buy in the Market: contract with a supplier or another team (Market > Chassis).",
- "• Projeto novo: chassis próprio, começa do zero e recebe investimento ponto a ponto.": "• New design: own chassis, starts from scratch and receives investment point by point."
+ "• Projeto novo: chassis próprio, começa do zero e recebe investimento ponto a ponto.": "• New design: own chassis, starts from scratch and receives investment point by point.",
+ "Contrato futuro": "Future contract",
+ "Começa em (ano)": "Starts in (year)",
+ "Temporada em que o contrato começa: depois do ano do arquivo e depois do fim do contrato atual.": "Season the contract starts: after the file's year and after the current contract ends.",
+ "Opcional. Piloto já contratado para uma temporada futura (um por piloto). A equipe precisa ter vaga nesse ano.": "Optional. Driver already signed for a future season (one per driver). The team needs a free seat that year.",
+ "A partir de {0}: contrato com a {1} como piloto {2}: {3} por corrida, por {4}.": "From {0}: contract with {1} as {2} driver: {3} per race, for {4}.",
+ "piloto {0}: equipe '{1}' do contrato futuro não existe": "driver {0}: team '{1}' of the future contract does not exist",
+ "piloto {0}: situação do contrato futuro deve ser 'principal' ou 'teste'": "driver {0}: role of the future contract must be 'principal' or 'teste'",
+ "piloto {0}: corridas definidas só valem para o contrato atual": "driver {0}: assigned races only apply to the current contract",
+ "piloto {0}: o contrato futuro precisa de 'inicio_ano' depois de {1}": "driver {0}: the future contract needs 'inicio_ano' after {1}",
+ "piloto {0}: o contrato atual vai até {1}; o contrato futuro tem de começar depois": "driver {0}: the current contract runs until {1}; the future contract must start after it",
+ "piloto {0}: vai se aposentar em {1}, antes do contrato futuro ({2})": "driver {0}: retires in {1}, before the future contract ({2})",
+ "equipe {0}: {1} pilotos ({2}) com contrato em {3} (máximo {4})": "team {0}: {1} drivers ({2}) under contract in {3} (maximum {4})",
+ "piloto {0} (contrato futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "driver {0} (future contract): contract needs 'temporadas' or 'corridas' (integer >= 1)"
 }

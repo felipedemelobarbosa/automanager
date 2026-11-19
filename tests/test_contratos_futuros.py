@@ -180,6 +180,69 @@ class TestPartes(unittest.TestCase):
         self.assertEqual(self.eq["chassis"]["id"], self.outro["id"])
 
 
+class TestArquivo(unittest.TestCase):
+    """Piloto já contratado para uma temporada futura no arquivo da database."""
+    def setUp(self):
+        self.caminho = db.arquivos_do_ano(2026)[0]
+        self.d = db.carregar_arquivo(self.caminho, validar=False)
+        self.assertEqual(self.d["categoria"]["id"], ALFA)
+        regras = self.d["categoria"]["regras"]
+        regras["pilotos_principais_por_equipe"] = 2
+        for p in self.d["pilotos"]:                    # Tucano: contratos atuais só até 2027
+            c = p.get("contrato") or {}
+            if c.get("equipe") == "tucano":
+                c.pop("corridas", None)
+                c.pop("corridas_definidas", None)
+                c["temporadas"] = 2
+        self.p = next(p for p in self.d["pilotos"] if (p.get("contrato") or {}).get("equipe") == "vortex")
+        self.p["contrato"]["temporadas"] = 1
+        self.p["contrato"].pop("corridas", None)
+        self.p["contrato"].pop("corridas_definidas", None)
+        self.p.pop("ano_aposentadoria", None)
+        self.p.pop("idade_aposentadoria", None)
+        self.p["contrato_futuro"] = {"equipe": "tucano", "valor_por_corrida": 150000, "situacao": "principal",
+                                     "temporadas": 2, "inicio_ano": 2028}
+
+    def erros(self):
+        return db.validar_contratos_futuros(self.d)
+
+    def test_validacao(self):
+        self.assertEqual(self.erros(), [])
+        f = self.p["contrato_futuro"]
+        f["inicio_ano"] = 2026
+        self.assertTrue(any("depois de 2026" in e for e in self.erros()))
+        f["inicio_ano"] = 2028
+        self.p["contrato"]["temporadas"] = 3                 # atual até 2028
+        self.assertTrue(any("vai até 2028" in e for e in self.erros()))
+        self.p["contrato"]["temporadas"] = 1
+        self.p["ano_aposentadoria"] = 2028
+        self.assertTrue(any("aposentar em 2028" in e for e in self.erros()))
+        self.p.pop("ano_aposentadoria")
+        f["inicio_ano"] = 2027                               # a Tucano ainda tem os dois carros ocupados
+        self.assertTrue(any("equipe tucano: 3 pilotos (principal) com contrato em 2027" in e for e in self.erros()))
+        f["inicio_ano"] = 2028
+        f["equipe"] = "nao_existe"
+        self.assertTrue(any("não existe" in e for e in self.erros()))
+
+    def test_jogo_comeca_com_o_contrato_e_ele_vale_no_ano(self):
+        import json, tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            caminho = os.path.join(tmp, os.path.basename(self.caminho))
+            with open(caminho, "w", encoding="utf-8") as fh:
+                json.dump(self.d, fh)
+            outros = [a for a in db.arquivos_do_ano(2026) if a != self.caminho]
+            st = state.novo_jogo([caminho] + outros, semente=4)
+        p = st["pilotos"][state.id_global_piloto(ALFA, self.p["id"])]
+        self.assertEqual((p["contrato_futuro"]["equipe"], p["contrato_futuro"]["inicio_ano"]), ("tucano", 2028))
+        self.assertGreaterEqual(p["ano_aposentadoria"], 2030)        # aposentadoria sorteada não corta o contrato
+        eq = st["categorias"][ALFA]["equipes"]["tucano"]
+        self.assertEqual(mercado.vagas_no_ano(st, ALFA, eq, 2028)["principal"], 1)
+        virar(st)                                        # 2027: livre, já assinado
+        self.assertIsNone(p["contrato"])
+        virar(st)                                        # 2028
+        self.assertEqual(p["contrato"]["equipe"], "tucano")
+
+
 class TestMultijogador(unittest.TestCase):
     def test_proposta_para_um_ano_vai_nas_ordens(self):
         st = state.novo_jogo(db.arquivos_do_ano(2026), semente=4)
