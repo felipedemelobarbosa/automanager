@@ -446,6 +446,26 @@ class TelaGestao(tk.Frame):
                                              "de novo (vale o último arquivo importado).", parent=self)
 
     # ------------------------------------------------------------------ ação
+    def _minimo_de_pilotos(self):
+        """Corrida nesta semana e a equipe abaixo do mínimo de titulares: os pilotos respondem já às propostas
+        pendentes; se ainda faltar, a semana não avança."""
+        u = self.st["usuario"]
+        falta, ev = mercado.faltam_pilotos(self.st, u["categoria"], u["equipe"])
+        if falta <= 0:
+            return True
+        mercado.responder_agora(self.st, u["categoria"], u["equipe"])
+        falta, ev = mercado.faltam_pilotos(self.st, u["categoria"], u["equipe"])
+        if falta <= 0:
+            self.atualizar()
+            return True
+        minimo = mercado.minimo_pilotos(self.st, u["categoria"])
+        messagebox.showwarning("Pilotos", f"A categoria exige {minimo} pilotos titulares por equipe e sua equipe tem "
+                                          f"{minimo - falta} para o {ev['nome']}.\n\nContrate em Mercado > Pilotos. "
+                                          f"Com a corrida nesta semana, os pilotos respondem às propostas quando "
+                                          f"você clica em Continuar.", parent=self)
+        self.atualizar()
+        return False
+
     def continuar(self):
         if self.jogador:                                  # no multijogador quem avança a semana é o comissário
             self.salvar_ordens()
@@ -459,6 +479,8 @@ class TelaGestao(tk.Frame):
                                       "(Não = sua equipe testa no modo automático.)", parent=self):
                 self.app.evento(self.st, teste, inscritos, teste=True)
                 return
+        if not self._minimo_de_pilotos():
+            return
         pista = routines.corrida_do_usuario_na_semana(self.st)
         if pista:
             u = self.st["usuario"]

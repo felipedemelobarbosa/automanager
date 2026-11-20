@@ -1943,5 +1943,16 @@
  "equipe {0} ({1} futuro): falta o contrato": "equipo {0} ({1} futuro): falta el contrato",
  "equipe {0} ({1} futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "equipo {0} ({1} futuro): el contrato necesita 'temporadas' o 'corridas' (entero >= 1)",
  "equipe {0} ({1} futuro): o contrato precisa de 'inicio_ano' depois de {2}": "equipo {0} ({1} futuro): el contrato necesita 'inicio_ano' después de {2}",
- "equipe {0} ({1} futuro): o contrato atual vai até {2}; o futuro tem de começar depois": "equipo {0} ({1} futuro): el contrato actual va hasta {2}; el futuro debe empezar después"
+ "equipe {0} ({1} futuro): o contrato atual vai até {2}; o futuro tem de começar depois": "equipo {0} ({1} futuro): el contrato actual va hasta {2}; el futuro debe empezar después",
+ "Mínimo de pilotos titulares por equipe": "Mínimo de pilotos titulares por equipo",
+ "Em cada corrida. Abaixo dele o PC contrata na hora e o jogador não avança a semana. Vazio = sem mínimo.": "En cada carrera. Por debajo, la IA contrata en el acto y el jugador no avanza la semana. Vacío = sin mínimo.",
+ "categoria.regras: 'pilotos_minimos_por_equipe' deve ser inteiro >= 1 (vazio = sem mínimo)": "categoría.reglas: 'pilotos_minimos_por_equipe' debe ser un entero >= 1 (vacío = sin mínimo)",
+ "categoria.regras: o mínimo de pilotos ({0}) é maior que os pilotos principais por equipe ({1})": "categoría.reglas: el mínimo de pilotos ({0}) es mayor que los pilotos principales por equipo ({1})",
+ "equipe {0}: {1} piloto(s) titular(es) em '{2}' (mínimo {3})": "equipo {0}: {1} piloto(s) titular(es) en '{2}' (mínimo {3})",
+ "Proposta a {0} cancelada: {1} já preencheu a vaga.": "Oferta a {0} cancelada: {1} ya cubrió la plaza.",
+ "ATENÇÃO: {0} precisa de {1} pilotos titulares para o {2} e tem {3}. Contrate em Mercado > Pilotos – sem isso a semana não avança.": "ATENCIÓN: {0} necesita {1} pilotos titulares para el {2} y tiene {3}. Contrate en Mercado > Pilotos – sin eso la semana no avanza.",
+ "A categoria exige {0} pilotos titulares por equipe e sua equipe tem {1} para o {2}.": "La categoría exige {0} pilotos titulares por equipo y su equipo tiene {1} para el {2}.",
+ "Contrate em Mercado > Pilotos. Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Contrate en Mercado > Pilotos. Con la carrera esta semana, los pilotos responden a las ofertas cuando hace clic en Continuar.",
+ "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Equipos por debajo del mínimo de pilotos titulares para la carrera de esta semana: {0}. (Los jugadores deben contratar – Mercado > Pilotos – y enviar sus órdenes de nuevo; los pilotos responden en el acto.)",
+ "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "El equipo no tiene plaza para esa función en {0}: el contrato debe terminar antes."
 }

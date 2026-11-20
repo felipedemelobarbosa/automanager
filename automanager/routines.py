@@ -35,7 +35,18 @@ def avancar_semana(st, rng=random):
     st["semana"] += 1
     if st["semana"] > SEMANAS_POR_TEMPORADA:
         nova_temporada(st, rng)
+    mercado.garantir_minimo(st, rng)                  # corrida na nova semana: o PC completa o mínimo de pilotos
+    _avisar_minimo(st)
     return st["noticias"][inicio:]
+
+
+def _avisar_minimo(st):
+    """Equipe de pessoa abaixo do mínimo de pilotos para a corrida desta semana: aviso (o Continuar fica bloqueado)."""
+    for cid, eid, falta, ev in mercado.equipes_curtas(st, humanas_apenas=True):
+        minimo = mercado.minimo_pilotos(st, cid)
+        noticia(st, f"ATENÇÃO: {state.quem(st, cid, eid, True)} precisa de {minimo} pilotos titulares para o "
+                    f"{ev['nome']} e tem {minimo - falta}. Contrate em Mercado > Pilotos – sem isso a semana não "
+                    f"avança.", cid, "usuario", equipe=eid)
 
 
 def corrida_do_usuario_na_semana(st):
@@ -96,6 +107,7 @@ def _processar_eventos_da_semana(st, cid, rng):
                     feito["noticiado"] = True
             continue
         if not campeonato.ja_disputado(st, cid, ev["id"]):
+            mercado.garantir_minimo(st, rng, cid, ev)
             campeonato.simular_em_segundo_plano(st, cid, ev, rng)
         reg = next((r for r in contratos.resultados_da_temporada(st, cid) if r["evento"] == ev["id"]), None)
         for eq in c["equipes"].values():

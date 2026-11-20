@@ -447,6 +447,34 @@ def _dev_inicial_ia(st, j):
                   "usuario", equipe=eq["id"])
 
 
+def _responder_curtas(st):
+    """Equipes de jogadores abaixo do mínimo para a corrida desta semana: os pilotos respondem já às propostas."""
+    from . import mercado
+    for cid, eid, _f, _ev in mercado.equipes_curtas(st, humanas_apenas=True):
+        mercado.responder_agora(st, cid, eid, random.Random(f"{st['ano']}|{st['semana']}|{cid}|{eid}"))
+
+
+def _curtas_para_corrida(st, ordens, ia):
+    """Simula numa cópia as ordens desta semana e as respostas imediatas dos pilotos: equipes de jogadores que
+    continuariam abaixo do mínimo de titulares para a corrida desta semana ("Equipe (2 de 3)")."""
+    from . import mercado
+    if not any(mercado.minimo_pilotos(st, cid) and mercado.corridas_da_semana(st, cid) for cid in st["categorias"]):
+        return []
+    cp = copy.deepcopy(st)
+    cp["multiplayer"]["ia_nesta_semana"] = list(ia)
+    for jid in sorted(ordens):
+        j = cp["multiplayer"]["jogadores"][jid]
+        with acoes.como(cp, j["categoria"], j["equipe"]):
+            for a in ordens[jid].get("acoes", []):
+                acoes.aplicar(cp, a.get("acao"), a)
+    _responder_curtas(cp)
+    out = []
+    for cid, eid, falta, ev in mercado.equipes_curtas(cp, humanas_apenas=True):
+        minimo = mercado.minimo_pilotos(cp, cid)
+        out.append(f"{cp['categorias'][cid]['equipes'][eid]['nome']} ({minimo - falta}/{minimo}, {ev['nome']})")
+    return out
+
+
 def rodar_semana(st, rng=random):
     """Aplica as ordens e avança uma semana. Retorna {"noticias", "erros", "ia", "repetidas", "recebidas"}."""
     mp = st["multiplayer"]
@@ -468,6 +496,11 @@ def rodar_semana(st, rng=random):
             repetidas.append(jid)
         else:
             ia.append(jid)
+    curtas = _curtas_para_corrida(st, ordens, ia)
+    if curtas:
+        raise ErroLiga("Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: "
+                       + "; ".join(curtas) + ". (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as "
+                       "ordens de novo; os pilotos respondem na hora.)")
     mp["ia_nesta_semana"] = ia
     for jid in ia:
         _dev_inicial_ia(st, mp["jogadores"][jid])
@@ -497,6 +530,7 @@ def rodar_semana(st, rng=random):
             if novos:
                 mp["ultimo_plano"][jid] = dict(mp["ultimo_plano"].get(jid, {}), **novos)
     mp["planos_semana"] = planos_semana
+    _responder_curtas(st)
     semana, ano = st["semana"], st["ano"]
     try:
         noticias = routines.avancar_semana(st, rng)

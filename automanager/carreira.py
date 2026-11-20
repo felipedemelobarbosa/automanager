@@ -165,7 +165,7 @@ def _proporcao_nacionalidades(st, cid):
     return cont
 
 
-def gerar_ficticios(st, quantidade, rng=random):
+def gerar_ficticios(st, quantidade, rng=random, destino=None):
     """Pilotos fictícios no(s) tier(s) mais baixo(s) carregado(s)."""
     if quantidade <= 0:
         return []
@@ -174,6 +174,8 @@ def gerar_ficticios(st, quantidade, rng=random):
         return []
     pior_tier = max(c["categoria"].get("tier", 1) for c in st["categorias"].values())
     destinos = [cid for cid, c in st["categorias"].items() if c["categoria"].get("tier", 1) == pior_tier]
+    if destino:
+        destinos = [destino]                       # piloto criado para uma equipe sem piloto livre (mínimo por corrida)
     existentes = {p["nome"] for p in st["pilotos"].values()} | {p["nome"] for p in st.get("aposentados", {}).values()}
     seq = st.setdefault("seq_ficticios", 0)
     gerados = []

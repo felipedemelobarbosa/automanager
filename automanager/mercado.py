@@ -336,6 +336,9 @@ def fazer_proposta(st, pid, situacao, valor, duracao, unidade, inicio):
             return "O piloto acabou de assinar com outra equipe."
     if valor <= 0 or duracao < 1:
         return "Informe salário e duração válidos."
+    for y in range(ano + 1, ultimo_ano_do_contrato(st, cid, ano, duracao, unidade) + 1):
+        if vagas_no_ano(st, cid, eq, y).get(situacao, 0) <= 0:   # nunca mais pilotos que carros, em nenhum ano
+            return f"A equipe não tem vaga para essa função em {y}: o contrato tem de terminar antes."
     st.setdefault("propostas_usuario", {})[f"{cid}|{eid}|{pid}"] = {
         "piloto": pid, "categoria": cid, "equipe": eid, "situacao": situacao, "valor_por_corrida": float(valor),
         "duracao": int(duracao), "unidade": unidade, "quando": "atual" if ano == st["ano"] else "proxima",
@@ -354,11 +357,25 @@ def fazer_proposta(st, pid, situacao, valor, duracao, unidade, inicio):
 
 
 # ====================================================================== pilotos – rotina semanal
+OFERTAS_POR_VAGA = 2          # o PC manda propostas a mais pilotos do que tem vagas (o primeiro que aceitar leva)
+
+
+def teto_salario(st, cid, eq):
+    """Salário por corrida que a equipe do PC pode pagar a um titular."""
+    c = st["categorias"][cid]
+    mp = c["categoria"]["simulacao"]["mercado_pilotos"]
+    principais = c["categoria"]["regras"].get("pilotos_principais_por_equipe", 2) or 1
+    # base = o maior entre o caixa e a receita prevista da temporada: com a verba de desenvolvimento
+    # gasta, o caixa fica perto da reserva, mas a receita continua pagando os salários
+    from .economia import receita_prevista
+    base = max(0.0, eq["financas"]["caixa"], receita_prevista(st, cid, eq))
+    return base * mp.get("fracao_orcamento_pilotos", 0.2) / corridas_na_temporada(c) / principais
+
+
 def rotina_pilotos(st, rng=random):
     """Loop: equipes ativas têm pilotos com contrato? Se não, o PC faz propostas.
     As propostas do usuário entram na mesma disputa; o piloto escolhe a melhor."""
     ofertas = {}
-    reservados = set()
     for cid, c in st["categorias"].items():
         categoria = c["categoria"]
         mp = categoria["simulacao"]["mercado_pilotos"]
@@ -384,12 +401,8 @@ def rotina_pilotos(st, rng=random):
             if not pedidos:
                 _talvez_dispensar(st, cid, eq, categoria, rng)
                 continue
-            principais = categoria["regras"].get("pilotos_principais_por_equipe", 2) or 1
-            # base = o maior entre o caixa e a receita prevista da temporada: com a verba de desenvolvimento
-            # gasta, o caixa fica perto da reserva, mas a receita continua pagando os salários
-            from .economia import receita_prevista
-            base = max(0.0, eq["financas"]["caixa"], receita_prevista(st, cid, eq))
-            teto = base * mp.get("fracao_orcamento_pilotos", 0.2) / n / principais
+            teto = teto_salario(st, cid, eq)
+            reservados = set()                         # a mesma equipe não manda duas propostas ao mesmo piloto
             for quando, situacao, ano_ini in pedidos:
                 teto_vaga = teto if situacao == "principal" else teto * 0.15
                 melhor = None
@@ -415,24 +428,27 @@ def rotina_pilotos(st, rng=random):
                     if melhor is None or nota > melhor[0]:
                         melhor = (nota, p, pedido)
                 compra = False
+                ordem = sorted(candidatos, key=lambda x: -x[0])
+                alvos = ordem[:OFERTAS_POR_VAGA]
                 if ano_ini > st["ano"] + 1 and candidatos:
-                    # contrato antecipado: um dos 3 melhores disponíveis para aquela temporada
-                    melhor = rng.choice(sorted(candidatos, key=lambda x: -x[0])[:3])
+                    # contrato antecipado: entre os 3 melhores disponíveis para aquela temporada
+                    alvos = rng.sample(ordem[:3], min(OFERTAS_POR_VAGA, len(ordem[:3])))
                 elif quando == "atual" or st["semana"] >= mp.get("semana_inicio_propostas", 20):
                     alvo = _alvo_de_compra(st, cid, eq, categoria, quando, situacao, teto_vaga, reservados,
                                            melhor[0] if melhor else 0, rng)
                     if alvo:
-                        melhor, compra = alvo, True
-                if not melhor:
-                    continue
-                _, p, pedido = melhor
-                reservados.add(p["id"])
+                        alvos, compra = [alvo], True
+                # mais de uma proposta por vaga: quem aceitar primeiro fica com ela; as outras são recusadas por
+                # falta de vaga (a equipe nunca passa do número de carros)
                 piso = mp["salario_minimo_por_corrida"] * (1 if situacao == "principal" else 0.6)
-                valor = min(pedido * rng.uniform(0.95, 1.2), max(teto_vaga, piso))
-                ofertas.setdefault(p["id"], []).append({
-                    "categoria": cid, "equipe": eq["id"], "situacao": situacao, "quando": quando,
-                    "ano_inicio": ano_ini, "valor_por_corrida": round(valor, -2), "pedido": pedido, "duracao": None, "unidade": "temporadas",
-                    "perspectiva": perspectiva_equipe(st, cid, eq), "usuario": False, "compra_contrato": compra})
+                for _, p, pedido in alvos:
+                    reservados.add(p["id"])
+                    valor = min(pedido * rng.uniform(0.95, 1.2), max(teto_vaga, piso))
+                    ofertas.setdefault(p["id"], []).append({
+                        "categoria": cid, "equipe": eq["id"], "situacao": situacao, "quando": quando,
+                        "ano_inicio": ano_ini, "valor_por_corrida": round(valor, -2), "pedido": pedido,
+                        "duracao": None, "unidade": "temporadas",
+                        "perspectiva": perspectiva_equipe(st, cid, eq), "usuario": False, "compra_contrato": compra})
     # propostas do usuário feitas na semana anterior
     for chave, prop in list(st.get("propostas_usuario", {}).items()):
         if prop["semana"] == st["semana"] and prop["ano"] == st["ano"]:
@@ -531,8 +547,8 @@ def _alvo_de_compra(st, cid, eq, categoria, quando, situacao, teto, reservados, 
     return melhor
 
 
-def _valida(st, p, o):
-    """A oferta ainda é possível? (o piloto pode ter assinado com outra equipe)."""
+def _disponivel(st, p, o):
+    """O piloto ainda pode aceitar a oferta? (pode ter assinado com outra equipe)."""
     ano = ano_da_oferta(st, o)
     if p.get("contrato_futuro") and (ano > st["ano"] or p.get("contrato")):
         return False                                   # um só contrato futuro; agora, só se estiver livre até lá
@@ -543,12 +559,40 @@ def _valida(st, p, o):
     return livre_em(st, p, ano)
 
 
+def ultimo_ano_do_contrato(st, cid, ano, duracao, unidade):
+    """Última temporada coberta por um contrato que começa em `ano`."""
+    if unidade != "corridas":
+        return ano + max(1, int(duracao)) - 1
+    n = corridas_na_temporada(st["categorias"][cid])
+    primeiro = contratos.corridas_restantes(st, cid) if ano == st["ano"] else n
+    return ano if duracao <= primeiro else ano + -(-(duracao - primeiro) // n)
+
+
+def tem_vaga(st, o):
+    """A equipe da oferta ainda tem vaga para a função no ano de início? (outro piloto pode ter aceitado antes)"""
+    eq = st["categorias"][o["categoria"]]["equipes"][o["equipe"]]
+    ano = ano_da_oferta(st, o)
+    livres = vagas(st, o["categoria"], eq)[0] if ano == st["ano"] else vagas_no_ano(st, o["categoria"], eq, ano)
+    return livres.get(o["situacao"], 0) > 0
+
+
+def _valida(st, p, o):
+    """A oferta ainda é possível? (piloto disponível e equipe com vaga – nunca mais pilotos que carros)"""
+    return _disponivel(st, p, o) and tem_vaga(st, o)
+
+
 def _pilotos_decidem(st, ofertas, rng):
-    for pid, lista in ofertas.items():
+    for pid in sorted(ofertas, key=lambda _x: rng.random()):          # quem decide primeiro é sorteado
+        lista = ofertas[pid]
         p = st["pilotos"][pid]
         avaliadas = []
+        sem_vaga = None
         for o in lista:
-            if not _valida(st, p, o):
+            if not _disponivel(st, p, o):
+                continue
+            if not tem_vaga(st, o):
+                if o.get("usuario"):
+                    sem_vaga = o
                 continue
             mp = st["categorias"][o["categoria"]]["categoria"]["simulacao"]["mercado_pilotos"]
             u = (mp.get("peso_salario_na_escolha", 0.55) * clamp(o["valor_por_corrida"] / max(1, o["pedido"]), 0, 1.5) / 1.5
@@ -558,7 +602,10 @@ def _pilotos_decidem(st, ofertas, rng):
             u *= 0.6 + 0.4 * min(1.0, mobilidade(st, o["categoria"], p))
             u *= 1 - 0.05 * max(0, ano_da_oferta(st, o) - st["ano"] - 1)   # quanto mais longe, menos vale
             avaliadas.append((u + rng.uniform(-0.05, 0.05), o))
-        prop_usuario = next((o for o in lista if o.get("usuario")), None)
+        if sem_vaga:
+            noticia(st, f"Proposta a {p['nome']} cancelada: {quem(st, sem_vaga['categoria'], sem_vaga['equipe'], True)} "
+                        f"já preencheu a vaga.", sem_vaga["categoria"], "usuario")
+        prop_usuario = next((o for o in lista if o.get("usuario") and o is not sem_vaga), None)
         if not avaliadas:
             if prop_usuario:
                 noticia(st, f"{p['nome']} não está mais disponível: proposta cancelada.", prop_usuario["categoria"],
@@ -585,6 +632,20 @@ def _assinar(st, p, o, rng):
             eq_o = st["categorias"][o["categoria"]]["equipes"][o["equipe"]]
             if vagas(st, o["categoria"], eq_o)[1].get(o["situacao"], 0) <= 0:
                 duracao = 1                   # a próxima temporada já está fechada: substituto só até o fim desta
+    # cada temporada do contrato precisa de vaga na equipe (outro piloto pode já ter assinado para um ano à frente)
+    eq_o = st["categorias"][o["categoria"]]["equipes"][o["equipe"]]
+    n_corr = corridas_na_temporada(st["categorias"][o["categoria"]])
+    precisa = duracao if unidade != "corridas" else ultimo_ano_do_contrato(st, o["categoria"], ano_ini, duracao,
+                                                                            unidade) - ano_ini + 1
+    anos_vaga = 1
+    while anos_vaga < precisa and vagas_no_ano(st, o["categoria"], eq_o, ano_ini + anos_vaga).get(o["situacao"], 0) > 0:
+        anos_vaga += 1
+    if anos_vaga < precisa:
+        if unidade == "corridas":
+            primeiro = contratos.corridas_restantes(st, o["categoria"]) if ano_ini == st["ano"] else n_corr
+            duracao = min(duracao, primeiro + (anos_vaga - 1) * n_corr)
+        else:
+            duracao = anos_vaga
     limite = temporadas_antes_do_futuro(st, p) if ano_ini == st["ano"] else None
     if limite is not None:                    # livre agora, mas já assinado com outra equipe para depois
         if unidade == "corridas":
@@ -1244,3 +1305,124 @@ def aplicar_idade_maxima(st):
                         f"a {eq.get('nome', '?')}.", ct["categoria"],
                     "usuario" if eh_usuario(st, ct["categoria"], ct.get("equipe")) else "contrato",
                     equipe=ct.get("equipe"))
+
+
+# ====================================================================== mínimo de pilotos por corrida
+def minimo_pilotos(st, cid):
+    """Pilotos principais mínimos por equipe em cada corrida (0 = sem mínimo)."""
+    v = st["categorias"][cid]["categoria"]["regras"].get("pilotos_minimos_por_equipe")
+    return int(v) if v else 0
+
+
+def aptos_para_corrida(st, cid, eid, evento_id):
+    """Titulares que podem correr o evento: com contrato, sem lesão e escalados (revezamento)."""
+    return sum(1 for p in pilotos_da_equipe(st, cid, eid)
+               if p["contrato"]["situacao"] == "principal" and not p.get("lesao")
+               and contratos.escalado(p["contrato"], evento_id))
+
+
+def corridas_da_semana(st, cid):
+    return [ev for ev in st["categorias"][cid]["calendario"]
+            if ev.get("ativo") and ev["especie"] == "corrida" and ev["semana"] == st["semana"]
+            and not campeonato.ja_disputado(st, cid, ev["id"])]
+
+
+def faltam_pilotos(st, cid, eid, ev=None):
+    """Quantos titulares faltam para o mínimo na corrida `ev` (ou na corrida desta semana). (falta, evento)"""
+    minimo = minimo_pilotos(st, cid)
+    if not minimo:
+        return 0, None
+    pior = (0, None)
+    for e in ([ev] if ev else corridas_da_semana(st, cid)):
+        falta = minimo - aptos_para_corrida(st, cid, eid, e["id"])
+        if falta > pior[0]:
+            pior = (falta, e)
+    return pior
+
+
+def equipes_curtas(st, humanas_apenas=False):
+    """[(cid, eid, falta, evento)] das equipes ativas abaixo do mínimo para a corrida desta semana."""
+    out = []
+    for cid, c in st["categorias"].items():
+        if not minimo_pilotos(st, cid):
+            continue
+        for eid, eq in c["equipes"].items():
+            if not eq.get("ativa") or (humanas_apenas and not eh_humana(st, cid, eid)):
+                continue
+            falta, ev = faltam_pilotos(st, cid, eid)
+            if falta > 0:
+                out.append((cid, eid, falta, ev))
+    return out
+
+
+def responder_agora(st, cid, eid, rng=random):
+    """Corrida nesta semana e equipe abaixo do mínimo: os pilotos respondem já às propostas pendentes dela para
+    esta temporada (sem esperar a semana seguinte)."""
+    ofertas = {}
+    c = st["categorias"][cid]
+    for chave, prop in list(st.get("propostas_usuario", {}).items()):
+        if prop["categoria"] != cid or prop["equipe"] != eid or ano_da_oferta(st, prop) != st["ano"]:
+            continue
+        del st["propostas_usuario"][chave]
+        p = st["pilotos"].get(prop.get("piloto", chave))
+        if p:
+            ofertas.setdefault(p["id"], []).append(dict(prop, pedido=salario_pedido(p, c["categoria"]), usuario=True,
+                                                        perspectiva=perspectiva_equipe(st, cid, c["equipes"][eid])))
+    _pilotos_decidem(st, ofertas, rng)
+
+
+def garantir_minimo(st, rng=random, cid=None, ev=None):
+    """Equipes do PC abaixo do mínimo para a corrida desta semana contratam já: propostas a vários pilotos livres
+    ao mesmo tempo (o primeiro que aceitar leva cada vaga, sem passar do número de carros), em rodadas até chegar
+    ao mínimo; sem piloto livre, o jogo cria um piloto novo para a equipe."""
+    for c_id in ([cid] if cid else list(st["categorias"])):
+        c = st["categorias"][c_id]
+        if not minimo_pilotos(st, c_id):
+            continue
+        for e in ([ev] if ev else corridas_da_semana(st, c_id)):
+            for eq in c["equipes"].values():
+                if eq.get("ativa") and not eh_humana(st, c_id, eq["id"]):
+                    _completar_equipe(st, c_id, eq, e, rng)
+
+
+def _completar_equipe(st, cid, eq, ev, rng):
+    c = st["categorias"][cid]
+    categoria = c["categoria"]
+    mp = categoria["simulacao"]["mercado_pilotos"]
+    piso = mp["salario_minimo_por_corrida"]
+    teto = teto_salario(st, cid, eq)
+    tentados = set()
+    for _rodada in range(6):
+        falta = minimo_pilotos(st, cid) - aptos_para_corrida(st, cid, eq["id"], ev["id"])
+        if falta <= 0 or vagas(st, cid, eq)[0].get("principal", 0) <= 0:
+            return
+        cands = []
+        for p in st["pilotos"].values():
+            if p["id"] in tentados or p.get("contrato") or p.get("lesao"):
+                continue
+            if acima_da_idade(categoria, idade_no_inicio(st, p, st["ano"])):
+                continue
+            pedido = salario_pedido(p, categoria)
+            cands.append((pedido > teto * 1.1, -ratings.nota_geral_piloto(p, categoria), pedido, p))
+        if not cands:
+            break
+        cands.sort(key=lambda x: x[:3])                # primeiro os que cabem no orçamento, do melhor ao pior
+        ofertas = {}
+        for _caro, _n, pedido, p in cands[:OFERTAS_POR_VAGA * falta]:
+            tentados.add(p["id"])
+            ofertas[p["id"]] = [{"categoria": cid, "equipe": eq["id"], "situacao": "principal", "quando": "atual",
+                                 "ano_inicio": st["ano"], "valor_por_corrida": round(max(pedido, piso), -2),
+                                 "pedido": pedido, "duracao": 1, "unidade": "temporadas",
+                                 "perspectiva": perspectiva_equipe(st, cid, eq), "usuario": False,
+                                 "compra_contrato": False}]
+        _pilotos_decidem(st, ofertas, rng)
+    falta = minimo_pilotos(st, cid) - aptos_para_corrida(st, cid, eq["id"], ev["id"])
+    vagas_livres = vagas(st, cid, eq)[0].get("principal", 0)
+    if falta > 0 and vagas_livres > 0:
+        from . import carreira
+        for p in carreira.gerar_ficticios(st, min(falta, vagas_livres), rng, destino=cid):
+            pedido = salario_pedido(p, categoria)
+            _assinar(st, p, {"categoria": cid, "equipe": eq["id"], "situacao": "principal", "quando": "atual",
+                             "ano_inicio": st["ano"], "valor_por_corrida": round(max(pedido, piso), -2),
+                             "pedido": pedido, "duracao": 1, "unidade": "temporadas", "perspectiva": 0.5,
+                             "usuario": False, "compra_contrato": False}, rng)

@@ -132,6 +132,7 @@ class TestImportadorRevezamento(unittest.TestCase):
         corridas = st["temporadas"]["2026"]["formula_1"]["corridas"]
         self.assertGreater(len(corridas), 15)
         for r in corridas:
-            nomes = {x["nome"] for x in r["resultado"]}
+            # pela AlphaTauri (livre depois do contrato, o piloto pode ser contratado por outra equipe)
+            nomes = {x["nome"] for x in r["resultado"] if x["equipe"] == "alphatauri"}
             self.assertEqual("Nyck de Vries" in nomes, r["evento"] in ct["Nyck de Vries"]["corridas_definidas"])
             self.assertEqual("Liam Lawson" in nomes, r["evento"] in ct["Liam Lawson"]["corridas_definidas"])

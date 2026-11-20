@@ -1944,5 +1944,16 @@
  "equipe {0} ({1} futuro): falta o contrato": "team {0} (future {1}): the contract is missing",
  "equipe {0} ({1} futuro): contrato precisa de 'temporadas' ou 'corridas' (inteiro >= 1)": "team {0} (future {1}): contract needs 'temporadas' or 'corridas' (integer >= 1)",
  "equipe {0} ({1} futuro): o contrato precisa de 'inicio_ano' depois de {2}": "team {0} (future {1}): the contract needs 'inicio_ano' after {2}",
- "equipe {0} ({1} futuro): o contrato atual vai até {2}; o futuro tem de começar depois": "team {0} (future {1}): the current contract runs until {2}; the future one must start after it"
+ "equipe {0} ({1} futuro): o contrato atual vai até {2}; o futuro tem de começar depois": "team {0} (future {1}): the current contract runs until {2}; the future one must start after it",
+ "Mínimo de pilotos titulares por equipe": "Minimum race drivers per team",
+ "Em cada corrida. Abaixo dele o PC contrata na hora e o jogador não avança a semana. Vazio = sem mínimo.": "At every race. Below it the computer hires at once and a player can't advance the week. Empty = no minimum.",
+ "categoria.regras: 'pilotos_minimos_por_equipe' deve ser inteiro >= 1 (vazio = sem mínimo)": "category.rules: 'pilotos_minimos_por_equipe' must be an integer >= 1 (empty = no minimum)",
+ "categoria.regras: o mínimo de pilotos ({0}) é maior que os pilotos principais por equipe ({1})": "category.rules: the minimum of drivers ({0}) is higher than the main drivers per team ({1})",
+ "equipe {0}: {1} piloto(s) titular(es) em '{2}' (mínimo {3})": "team {0}: {1} race driver(s) in '{2}' (minimum {3})",
+ "Proposta a {0} cancelada: {1} já preencheu a vaga.": "Offer to {0} cancelled: {1} has already filled the seat.",
+ "ATENÇÃO: {0} precisa de {1} pilotos titulares para o {2} e tem {3}. Contrate em Mercado > Pilotos – sem isso a semana não avança.": "WARNING: {0} needs {1} race drivers for the {2} and has {3}. Hire in Market > Drivers – without it the week won't advance.",
+ "A categoria exige {0} pilotos titulares por equipe e sua equipe tem {1} para o {2}.": "The series requires {0} race drivers per team and your team has {1} for the {2}.",
+ "Contrate em Mercado > Pilotos. Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Hire in Market > Drivers. With the race this week, drivers answer your offers when you click Continue.",
+ "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Teams below the minimum of race drivers for this week's race: {0}. (The players must hire – Market > Drivers – and send their orders again; drivers answer at once.)",
+ "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "The team has no seat for this role in {0}: the contract must end before."
 }

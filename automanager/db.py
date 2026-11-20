@@ -210,6 +210,7 @@ def validar_dados(d):
         if anos["anos_entrada"] & anos["anos_saida"]:
             erros.append(f"calendário {ev.get('id')}: o mesmo ano não pode estar em anos_entrada e anos_saida")
     erros.extend(validar_escalacao(d))
+    erros.extend(validar_minimo_pilotos(d))
     for p in d["patrocinadores"]:
         c = p.get("contrato")
         if c and c.get("equipe") not in ids_eq:
@@ -319,6 +320,35 @@ def _validar_partes_futuras(d, ano, n):
                 fim = _fim_contrato_arquivo(ca, ano, n)
                 if fim >= ini:
                     erros.append(f"{nome}: o contrato atual vai até {fim}; o futuro tem de começar depois")
+    return erros
+
+
+def validar_minimo_pilotos(d):
+    """Mínimo de pilotos titulares por equipe: cada equipe ativa precisa tê-lo em todas as corridas do arquivo."""
+    regras = d["categoria"].get("regras", {})
+    minimo = regras.get("pilotos_minimos_por_equipe")
+    if minimo is None:
+        return []
+    if not isinstance(minimo, int) or isinstance(minimo, bool) or minimo < 1:
+        return ["categoria.regras: 'pilotos_minimos_por_equipe' deve ser inteiro >= 1 (vazio = sem mínimo)"]
+    maximo = regras.get("pilotos_principais_por_equipe", 2)
+    if isinstance(maximo, int) and minimo > maximo:
+        return [f"categoria.regras: o mínimo de pilotos ({minimo}) é maior que os pilotos principais por equipe "
+                f"({maximo})"]
+    erros = []
+    corridas = [e for e in d["calendario"] if e.get("especie") == "corrida" and e.get("ativo", True)]
+    for eq in d["equipes"]:
+        if not eq.get("ativa"):
+            continue
+        titulares = [(p.get("contrato") or {}).get("corridas_definidas") for p in d["pilotos"]
+                     if (p.get("contrato") or {}).get("equipe") == eq["id"]
+                     and p["contrato"].get("situacao") == "principal"]
+        for ev in corridas:
+            n = sum(1 for lst in titulares if not lst or ev.get("id") in lst)
+            if n < minimo:
+                erros.append(f"equipe {eq['id']}: {n} piloto(s) titular(es) em '{ev.get('nome', ev.get('id'))}' "
+                             f"(mínimo {minimo})")
+                break
     return erros
 
 

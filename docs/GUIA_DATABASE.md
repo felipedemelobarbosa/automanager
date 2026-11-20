@@ -85,7 +85,8 @@ a tree (double-click a value to edit). Settings that have no form field are edit
 
 | Label | JSON | What it does |
 |---|---|---|
-| Main drivers per team | `regras.pilotos_principais_por_equipe` | Cars per team. |
+| Main drivers per team | `regras.pilotos_principais_por_equipe` | Cars per team – the maximum: no signing ever takes a team above it (several offers can be open at once; when a seat fills, the other offers for it are refused). |
+| Minimum race drivers per team | `regras.pilotos_minimos_por_equipe` | Optional (empty = no minimum). Main drivers each team must have able to race (not injured, assigned when there is a rotation) at every race. Below it, before the race, a computer team sends offers to several free drivers at once until it reaches the minimum; with no free driver, the game creates a new one for the team. A player's team can't advance the race week: pending offers are answered at once when the player clicks Continue (in multiplayer, when the commissioner runs the week – the week is blocked while a player's team is short). The file must give every active team the minimum at every race. |
 | Test drivers / Test drivers per team | `regras.pilotos_de_teste`, `regras.pilotos_de_teste_por_equipe` | Whether there are test drivers, and how many. |
 | Teams develop the chassis | `regras.desenvolvimento_chassis_por_equipe` | On: each team develops its own chassis. Off: chassis are bought from suppliers. |
 | Allowed chassis sources | `regras.fontes_de_chassis_permitidas` | `proprio` (own), `fabricante` (supplier), `equipe` (another team's chassis). Empty = own only (with chassis development) or supplier only (without). With development and a buying source, each team chooses between developing and buying, both at the initial development and for next season. |
@@ -475,3 +476,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-18 | Contracts can start in any future season (drivers, chassis, engines): `semana_inicio_propostas` now also starts the AI's far-ahead offers; `fator_multa` charges only the overlap; note that the file holds only current contracts. |
 | 2026-11-19 | Drivers: new optional `contrato_futuro` (Future contract, with `inicio_ano`) in the file and the editor; checks for start year, current contract, retirement and seats. Editor: fields of an unticked group (e.g. no contract) are no longer marked red. |
 | 2026-11-19 | Teams: new optional `chassis_futuro` / `motor_futuro` (Future chassis / Future engine, with `contrato.inicio_ano`) in the file and the editor. |
+| 2026-11-20 | Rules: new `pilotos_minimos_por_equipe` (Minimum race drivers per team) with file check; Main drivers per team is now a hard maximum when signing. |

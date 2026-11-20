@@ -690,6 +690,9 @@ class AbaCategoria(ttk.Notebook):
               "Estreantes com nível e potencial da database e correção suave por temporada. Padrão ligado.")])
         self._form("Regras", [
             F(("regras", "pilotos_principais_por_equipe"), "Pilotos principais por equipe", "int", minimo=1),
+            F(("regras", "pilotos_minimos_por_equipe"), "Mínimo de pilotos titulares por equipe", "int",
+              "Em cada corrida. Abaixo dele o PC contrata na hora e o jogador não avança a semana. Vazio = sem "
+              "mínimo.", minimo=1),
             F(("regras", "pilotos_de_teste"), "Há pilotos de teste", "bool"),
             F(("regras", "pilotos_de_teste_por_equipe"), "Pilotos de teste por equipe", "int", minimo=0),
             F(("regras", "desenvolvimento_chassis_por_equipe"), "Equipes desenvolvem o chassis", "bool",
