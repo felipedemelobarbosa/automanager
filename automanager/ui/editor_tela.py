@@ -86,7 +86,7 @@ class Esquemas:
         return ([self._campo("id", "ID", "texto", "Identificador único (gerado pelo nome).",
                              validador=self._id_unico("pilotos")),
                  F("nome", "Nome", "texto", obrigatorio=True),
-                 F("nacionalidade", "Nacionalidade", "texto", "País, em português (ex.: Brasil)."),
+                 F("nacionalidade", "Nacionalidade", "pais", "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira)."),
                  F("idade", "Idade", "int", minimo=10, maximo=70),
                  F("ano_pico", "Ano de pico", "int", "Ano em que as habilidades chegam ao máximo. Vazio: o jogo define."),
                  F("potencial", "Potencial", "int", "Média dos atributos no pico (0-100). Vazio: o jogo estima.",
@@ -121,7 +121,7 @@ class Esquemas:
 
     def chassis_campos(self):
         return ([self._campo("id", "ID", "texto", validador=self._id_unico("chassis")),
-                 F("nome", "Nome", "texto", obrigatorio=True), F("nacionalidade", "Nacionalidade")]
+                 F("nome", "Nome", "texto", obrigatorio=True), F("nacionalidade", "Nacionalidade", "pais")]
                 + [F("wikipedia", "Artigo na Wikipedia", "texto_opcional",
                     "Título do artigo em inglês (ex.: McLaren MCL60). Vazio = usa o nome."),
                  dict(F("logotipo", "Logotipo", "imagem",
@@ -136,7 +136,7 @@ class Esquemas:
 
     def motores_campos(self):
         return ([self._campo("id", "ID", "texto", validador=self._id_unico("motores")),
-                 F("nome", "Nome", "texto", obrigatorio=True), F("nacionalidade", "Nacionalidade")]
+                 F("nome", "Nome", "texto", obrigatorio=True), F("nacionalidade", "Nacionalidade", "pais")]
                 + [F("wikipedia", "Artigo na Wikipedia", "texto_opcional",
                     "Título do artigo em inglês (ex.: Honda in Formula One). Vazio = usa o nome."),
                  dict(F("logotipo", "Logotipo", "imagem",
@@ -158,7 +158,7 @@ class Esquemas:
         return ([self._campo("id", "ID", "texto", validador=self._id_unico("equipes")),
                  F("nome", "Nome", "texto", obrigatorio=True), F("ativa", "Ativa", "bool",
                                                                  "Inativas podem surgir mais tarde."),
-                 F("nacionalidade", "Nacionalidade"),
+                 F("nacionalidade", "Nacionalidade", "pais"),
                  F("cor", "Cor principal", "cor", "Usada nas tabelas e telas do jogo. Vazio = cor automática."),
                  F("cor_secundaria", "Cor secundária", "cor", "Opcional (faixa na ficha de cor)."),
                  F("recursos", "Recursos", "atr", "Estrutura da equipe (0-100)."),
@@ -191,7 +191,7 @@ class Esquemas:
     def patrocinadores_campos(self):
         g = ("contrato",)
         return [self._campo("id", "ID", "texto", validador=self._id_unico("patrocinadores")),
-                F("nome", "Nome", "texto", obrigatorio=True), F("ativo", "Ativo", "bool"), F("pais", "País"),
+                F("nome", "Nome", "texto", obrigatorio=True), F("ativo", "Ativo", "bool"), F("pais", "País", "pais"),
                 F("ramo", "Ramo"), F("valor_base", "Valor base (USD/temporada)", "real",
                                      "Referência para as propostas que a empresa faz.", minimo=0),
                 F(("preferencia", "tipo"), "Preferência", "escolha", "",

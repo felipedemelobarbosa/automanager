@@ -81,6 +81,35 @@ def aplicar(root):
     return st
 
 
+class CampoPais(ttk.Combobox):
+    """Campo de país/nacionalidade: lista dos países que o jogo conhece (com bandeira), no idioma do jogo; ao
+    digitar, a lista mostra só os que contêm o texto. get() devolve o nome em português da database (aceita
+    também um país fora da lista)."""
+
+    def __init__(self, master, textvariable=None, width=31, **kw):
+        super().__init__(master, textvariable=textvariable, width=width, values=self._todos(), **kw)
+        self.bind("<KeyRelease>", self._filtrar, add="+")
+
+    @staticmethod
+    def _todos():
+        from .. import paises, i18n
+        return sorted(paises.PT_PARA_EN, key=lambda p: paises._norm(i18n.t(p)))
+
+    def _filtrar(self, e=None):
+        if e is not None and e.keysym in ("Up", "Down", "Return", "KP_Enter", "Escape", "Tab"):
+            return
+        from .. import paises, i18n
+        txt = paises._norm(self.tk.call(self._w, "get"))          # o texto exibido (no idioma do jogo)
+        todos = self._todos()
+        achados = [p for p in todos if txt in paises._norm(i18n.t(p))] if txt else todos
+        achados.sort(key=lambda p: not paises._norm(i18n.t(p)).startswith(txt))     # quem começa pelo texto primeiro
+        self.configure(values=achados or todos)
+
+    def valor(self):
+        from .. import paises
+        return paises.em_portugues(self.get().strip())
+
+
 class Botao(tk.Button):
     def __init__(self, master, texto, comando=None, largura=None, **kw):
         opts = dict(text=texto, command=comando, bg=CINZA, activebackground=CINZA, activeforeground=PRETO, relief="raised", bd=2,

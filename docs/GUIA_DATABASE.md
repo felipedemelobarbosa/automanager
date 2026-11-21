@@ -343,7 +343,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 
 | Label | JSON | What it does |
 |---|---|---|
-| ID, Name, Nationality, Age | `id`, `nome`, `nacionalidade`, `idade` | Nationality in Portuguese (e.g. Brasil) – it also picks the flag. |
+| ID, Name, Nationality, Age | `id`, `nome`, `nacionalidade`, `idade` | Nationality: pick from the list of countries the game knows (shown in the editor's language; type to filter). It is saved in Portuguese (e.g. Brasil) and picks the flag. A country typed that is not on the list is accepted but has no flag. The same list is used for every nationality/country field (drivers, chassis, engines, teams, sponsors) and in the game's Create team dialog. |
 | Peak year | `ano_pico` | Year the skills reach their maximum. Empty: the game decides (age 27–31). |
 | Potential | `potencial` | Average of the attributes at the peak (0–100). Empty: the game estimates. |
 | Retirement | `ano_aposentadoria` **or** `idade_aposentadoria` | By year or by age (form field `aposentadoria`). Random: the game decides (34–40). |
@@ -477,3 +477,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-19 | Drivers: new optional `contrato_futuro` (Future contract, with `inicio_ano`) in the file and the editor; checks for start year, current contract, retirement and seats. Editor: fields of an unticked group (e.g. no contract) are no longer marked red. |
 | 2026-11-19 | Teams: new optional `chassis_futuro` / `motor_futuro` (Future chassis / Future engine, with `contrato.inicio_ano`) in the file and the editor. |
 | 2026-11-20 | Rules: new `pilotos_minimos_por_equipe` (Minimum race drivers per team) with file check; Main drivers per team is now a hard maximum when signing. |
+| 2026-11-21 | Editor: nationality and sponsor-country fields are a list of known countries (type to filter); the same list in the game's Create team dialog. |

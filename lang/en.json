@@ -1956,5 +1956,6 @@
  "Contrate em Mercado > Pilotos. Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Hire in Market > Drivers. With the race this week, drivers answer your offers when you click Continue.",
  "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Teams below the minimum of race drivers for this week's race: {0}. (The players must hire – Market > Drivers – and send their orders again; drivers answer at once.)",
  "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "The team has no seat for this role in {0}: the contract must end before.",
- "{0} volta a ser piloto de testes da {1}.": "{0} goes back to being {1}'s test driver."
+ "{0} volta a ser piloto de testes da {1}.": "{0} goes back to being {1}'s test driver.",
+ "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira).": "Pick from the list or type to filter (a country not on the list is accepted too, but has no flag)."
 }

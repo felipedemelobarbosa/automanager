@@ -203,6 +203,13 @@ class FormGenerico(tk.Frame):
             sb.pack(side="left", fill="y")
             lb.bind("<<ListboxSelect>>", self._avisar)
             return lb, [lb]
+        if t == "pais":
+            v = tk.StringVar()
+            cb = w.CampoPais(f, textvariable=v)
+            cb.grid(row=linha, column=1, sticky="w")
+            cb.bind("<<ComboboxSelected>>", self._avisar)
+            cb.bind("<KeyRelease>", self._avisar, add="+")
+            return v, [cb]
         v = tk.StringVar()
         en = ttk.Entry(f, textvariable=v, width=34 if t in ("texto", "texto_opcional", "lista_num", "auto", "tempos_ano")
                        else 16)
@@ -381,6 +388,9 @@ class FormGenerico(tk.Frame):
         if t == "lista_ref":
             return True, [wd["mapa"][i] for i in var.curselection()]
         bruto = str(var.get()).strip()
+        if t == "pais":                                   # nome em português (aceita inglês e sem acento)
+            from .. import paises
+            return True, paises.em_portugues(bruto)
         if t == "tempos_ano":
             out = {}
             try:

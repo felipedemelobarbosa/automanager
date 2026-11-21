@@ -241,7 +241,7 @@ class DialogoCriarEquipe(w.Dialogo):
         self.nome = ttk.Entry(f, width=30)
         self.nome.grid(row=0, column=1, columnspan=2, sticky="w", pady=3)
         tk.Label(f, text="Nacionalidade:").grid(row=1, column=0, sticky="w", pady=3)
-        self.nac = ttk.Entry(f, width=30)
+        self.nac = w.CampoPais(f, width=28)
         self.nac.grid(row=1, column=1, columnspan=2, sticky="w", pady=3)
         livres = [c for c in cores.PALETA if c not in usadas] or cores.PALETA
         self.cores = {"cor": livres[0], "cor_secundaria": "#ffffff"}
@@ -274,7 +274,7 @@ class DialogoCriarEquipe(w.Dialogo):
         self.faixa.definir({"cor": self.cores["cor"], "cor_secundaria": self.cores["cor_secundaria"]})
 
     def ok(self):
-        nome, nac = self.nome.get().strip(), self.nac.get().strip()
+        nome, nac = self.nome.get().strip(), self.nac.valor()
         if not nome or not nac:
             messagebox.showwarning("Criar equipe", "Informe o nome e a nacionalidade.", parent=self)
             return
