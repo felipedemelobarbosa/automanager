@@ -1955,5 +1955,6 @@
  "A categoria exige {0} pilotos titulares por equipe e sua equipe tem {1} para o {2}.": "The series requires {0} race drivers per team and your team has {1} for the {2}.",
  "Contrate em Mercado > Pilotos. Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Hire in Market > Drivers. With the race this week, drivers answer your offers when you click Continue.",
  "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Teams below the minimum of race drivers for this week's race: {0}. (The players must hire – Market > Drivers – and send their orders again; drivers answer at once.)",
- "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "The team has no seat for this role in {0}: the contract must end before."
+ "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "The team has no seat for this role in {0}: the contract must end before.",
+ "{0} volta a ser piloto de testes da {1}.": "{0} goes back to being {1}'s test driver."
 }

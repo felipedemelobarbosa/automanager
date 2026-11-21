@@ -168,6 +168,40 @@ class TestMinimo(unittest.TestCase):
         self.assertEqual(sum(1 for x in r["resultado"] if x["equipe"] == "tucano"), 2)
 
 
+class TestSubstitutoNaVirada(unittest.TestCase):
+    """O titular lesionado deixa a equipe na virada: quem o substituía não fica como titular a mais."""
+    def test_piloto_de_testes_volta_a_ser_de_testes(self):
+        st = jogo(eid=None)
+        st["semana"] = 52
+        ferido, outro = titulares(st, "vortex")
+        teste = next(p for p in state.pilotos_da_equipe(st, ALFA, "vortex") if p["contrato"]["situacao"] == "teste")
+        for p in (ferido, teste):
+            p["contrato"]["temporadas"] = 1 if p is ferido else 2
+            p.pop("ano_aposentadoria", None)
+        outro["contrato"]["temporadas"] = 3
+        ferido["lesao"] = {"corridas": 5, "ano": 2026, "evento": "x"}
+        teste["contrato"].update(situacao="principal", situacao_original="teste", substituto_de=ferido["id"])
+        novo = livres(st, 1)[0]
+        mercado._assinar(st, novo, {"categoria": ALFA, "equipe": "vortex", "situacao": "principal",
+                                    "quando": "proxima", "ano_inicio": 2027, "valor_por_corrida": 1e5, "pedido": 1e5,
+                                    "duracao": 2, "unidade": "temporadas", "perspectiva": .5, "usuario": False,
+                                    "compra_contrato": False}, random.Random(1))
+        routines.nova_temporada(st, random.Random(1))
+        self.assertEqual(st["ano"], 2027)
+        self.assertEqual(teste["contrato"]["situacao"], "teste")
+        self.assertNotIn("substituto_de", teste["contrato"])
+        self.assertEqual({p["id"] for p in titulares(st, "vortex")}, {outro["id"], novo["id"]})
+
+    def test_titular_ainda_na_equipe_segue_substituido(self):
+        st = jogo(eid=None)
+        ferido = titulares(st, "vortex")[0]
+        teste = next(p for p in state.pilotos_da_equipe(st, ALFA, "vortex") if p["contrato"]["situacao"] == "teste")
+        teste["contrato"].update(situacao="principal", situacao_original="teste", substituto_de=ferido["id"])
+        from automanager import saude
+        saude.substitutos_sem_titular(st)
+        self.assertEqual(teste["contrato"]["substituto_de"], ferido["id"])
+
+
 class TestArquivo(unittest.TestCase):
     def test_validacao(self):
         d = db.carregar_arquivo(db.arquivos_do_ano(2026)[0], validar=False)

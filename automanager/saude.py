@@ -176,3 +176,23 @@ def fim_de_corrida(st, cid, evento_id=None):
                 eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
                 noticia(st, f"{o['nome']} deixa a {eq.get('nome', '?')} com a volta de {p['nome']} (era substituto).",
                         cid, "usuario" if _da_pessoa(st, oc) else "contrato", equipe=oc.get("equipe"))
+
+
+def substitutos_sem_titular(st):
+    """Virada de temporada: quem substituía um titular lesionado que deixou a equipe (contrato terminou, trocou de
+    equipe ou se aposentou) deixa de ser substituto – o piloto de testes volta a ser de testes (senão a equipe
+    ficaria com mais titulares que carros); o contratado no mercado segue com o próprio contrato."""
+    for o in st["pilotos"].values():
+        oc = o.get("contrato") or {}
+        alvo_id = oc.get("substituto_de")
+        if not alvo_id:
+            continue
+        ac = (st["pilotos"].get(alvo_id) or {}).get("contrato") or {}
+        if ac.get("categoria") == oc.get("categoria") and ac.get("equipe") == oc.get("equipe"):
+            continue                                       # o titular ainda é da equipe: segue substituindo
+        oc.pop("substituto_de")
+        if oc.get("situacao_original"):
+            oc["situacao"] = oc.pop("situacao_original")
+            eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
+            noticia(st, f"{o['nome']} volta a ser piloto de testes da {eq.get('nome', '?')}.", oc.get("categoria"),
+                    "usuario" if _da_pessoa(st, oc) else "piloto", equipe=oc.get("equipe"))
