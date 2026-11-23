@@ -21,7 +21,7 @@ from PIL import Image, ImageChops, ImageFilter
 from .wikipedia import _get, ErroImportacao
 from .imagens_wiki import baixar
 
-PADRAO = {"criterio": "raio", "raio_reta": 400, "raio_baixa": 80, "vel_reta": 250, "vel_baixa": 150,
+PADRAO = {"criterio": "raio", "criterio_oval": "velocidade", "raio_reta": 400, "raio_baixa": 80, "vel_reta": 250, "vel_baixa": 150,
           "aderencia": 2.0}
 VIZ = [(-1, -1), (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0)]
 ANEL = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]

@@ -111,19 +111,21 @@ class Evento:
                    "prob_amarela_acidente": 0.9, "prob_amarela_quebra": 0.35, "amarelas_detritos_por_corrida": 6.0,
                    "colisao_oval_curto": 2.5, "efeito_largada": 0.3, "voltas_amarela": [4, 7],
                    "compressao_pelotao": 0.6, "tentativas_relargada": 3, "piso_relargada": 0.6,
-                   "alcance_relargada_s": 0.8, "respeitar_tempo_maximo": False}
+                   "alcance_relargada_s": 0.8, "respeitar_tempo_maximo": False,
+                   "amarelas_oval_curto": 2.0, "ultrapassagem_oval_curto": 0.7}
 
     def perfil_oval(self):
         """None fora de oval. Num oval: {'pelotao': 0..1, 'curto': 0..1, **parâmetros}. Pelotão (pack racing)
-        cresce com as retas (superspeedway); 'curto' com poucas retas e curvas lentas (short track); o
-        intermediário fica entre os dois. Parâmetros em simulacao.oval."""
+        cresce com as retas (superspeedway); 'curto' com as curvas lentas (short track: 50% de curvas de baixa =
+        oval curto pleno); o intermediário fica entre os dois. Parâmetros em simulacao.oval."""
         if not self.oval():
             return None
         cfg = dict(self.OVAL_PADRAO, **(self.cat["simulacao"].get("oval") or {}))
         perfil = self.modelo.perfil
         lo, hi = cfg["retas_pelotao"]
         cfg["pelotao"] = clamp((perfil["retas"] - lo) / max(0.01, hi - lo), 0.0, 1.0)
-        cfg["curto"] = clamp(max((0.5 - perfil["retas"]) / 0.15, perfil["curvas_baixa"] / 0.5), 0.0, 1.0)
+        # só as curvas lentas: um intermediário com menos de 50% de retas (curvas de alta) não vira oval curto
+        cfg["curto"] = clamp(perfil["curvas_baixa"] / 0.5, 0.0, 1.0)
         return cfg
 
     def oval(self):
@@ -1323,7 +1325,8 @@ class SessaoCorrida:
             # oval: toda batida chama bandeira amarela geral (safety car), nunca VSC; quebra com óleo/detritos também
             acidente = any(g in ("acidente", "colisao", "pneu") for g in graves)
             p = oval["prob_amarela_acidente"] if acidente else oval["prob_amarela_quebra"] if graves \
-                else oval["amarelas_detritos_por_corrida"] * (0.8 + 0.4 * oval["curto"] + 0.4 * oval["pelotao"]) \
+                else oval["amarelas_detritos_por_corrida"] * (0.8 * (1 + (oval["amarelas_oval_curto"] - 1) * oval["curto"])
+                                                              + 0.4 * oval["pelotao"]) \
                 / max(1, self.total_voltas)
             if ev.rng.random() >= p:
                 return
@@ -1462,6 +1465,8 @@ class SessaoCorrida:
             p *= 1.6
         if alvo.equipe is c.equipe:
             p *= 0.7 + 0.6 * alvo.atr("trabalho_equipe") / 100   # companheiro facilita
+        if oval:
+            p *= 1 - (1 - oval["ultrapassagem_oval_curto"]) * oval["curto"]   # oval curto: pista estreita, passa-se menos
         p = clamp(p, 0.01, 0.92)
         # a briga custa tempo aos dois (linha defensiva, freada tardia)
         custo = ev.rng.uniform(0.1, 0.3) * (1 + 0.15 * alvo.ordens["agressividade"]) \

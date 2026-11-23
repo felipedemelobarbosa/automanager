@@ -1970,5 +1970,11 @@
  "posição: inteiro ≥ 1": "position: integer ≥ 1",
  "Cidade (livre) e país (da lista; dá a bandeira).": "Town (free text) and country (from the list; it gives the flag).",
  "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "Country (nationality preference) or highest championship position – the list changes with the preference type.",
- "Até lá a IA conduz sua equipe como faz com as dela: desenvolvimento, contratos, pilotos e finanças. Suas corridas e testes são disputados no automático.": "Until then the computer runs your team as it does its own: development, contracts, drivers and finances. Your races and tests are run automatically."
+ "Até lá a IA conduz sua equipe como faz com as dela: desenvolvimento, contratos, pilotos e finanças. Suas corridas e testes são disputados no automático.": "Until then the computer runs your team as it does its own: development, contracts, drivers and finances. Your races and tests are run automatically.",
+ "Critério padrão em ovais": "Default criterion on ovals",
+ "Pistas do tipo oval. Pela velocidade: as curvas de um superspeedway (raio ~300 m) contam como reta, e ele vira superspeedway no jogo. Padrão: pela velocidade.": "Oval tracks. By speed: a superspeedway's turns (~300 m radius) count as straight, so it plays as a superspeedway in the game. Default: by speed.",
+ "Oval curto: multiplicador de amarelas por detritos": "Short oval: debris-caution multiplier",
+ "No oval curto pleno (50% de curvas de baixa). Padrão 2.": "At a full short oval (50% slow corners). Default 2.",
+ "Oval curto: chance de ultrapassagem": "Short oval: passing chance",
+ "Multiplicador no oval curto pleno (pista estreita). Padrão 0,7.": "Multiplier at a full short oval (narrow track). Default 0.7."
 }

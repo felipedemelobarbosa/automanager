@@ -1969,5 +1969,11 @@
  "posição: inteiro ≥ 1": "posición: entero ≥ 1",
  "Cidade (livre) e país (da lista; dá a bandeira).": "Ciudad (texto libre) y país (de la lista; da la bandera).",
  "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "País (preferencia por nacionalidad) o posición máxima en el campeonato – la lista cambia con el tipo de preferencia.",
- "Até lá a IA conduz sua equipe como faz com as dela: desenvolvimento, contratos, pilotos e finanças. Suas corridas e testes são disputados no automático.": "Hasta entonces la IA dirige su equipo como hace con los suyos: desarrollo, contratos, pilotos y finanzas. Sus carreras y pruebas se disputan en automático."
+ "Até lá a IA conduz sua equipe como faz com as dela: desenvolvimento, contratos, pilotos e finanças. Suas corridas e testes são disputados no automático.": "Hasta entonces la IA dirige su equipo como hace con los suyos: desarrollo, contratos, pilotos y finanzas. Sus carreras y pruebas se disputan en automático.",
+ "Critério padrão em ovais": "Criterio por defecto en óvalos",
+ "Pistas do tipo oval. Pela velocidade: as curvas de um superspeedway (raio ~300 m) contam como reta, e ele vira superspeedway no jogo. Padrão: pela velocidade.": "Pistas de tipo óvalo. Por velocidad: las curvas de un superspeedway (radio ~300 m) cuentan como recta, y juega como superspeedway. Por defecto: por velocidad.",
+ "Oval curto: multiplicador de amarelas por detritos": "Óvalo corto: multiplicador de amarillas por residuos",
+ "No oval curto pleno (50% de curvas de baixa). Padrão 2.": "En el óvalo corto pleno (50% de curvas lentas). Por defecto 2.",
+ "Oval curto: chance de ultrapassagem": "Óvalo corto: probabilidad de adelantamiento",
+ "Multiplicador no oval curto pleno (pista estreita). Padrão 0,7.": "Multiplicador en el óvalo corto pleno (pista estrecha). Por defecto 0,7."
 }

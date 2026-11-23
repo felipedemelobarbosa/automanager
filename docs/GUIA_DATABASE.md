@@ -303,6 +303,7 @@ Defaults of the calendar's **Compute straights and corners from the track map...
 | Label | JSON | Default |
 |---|---|---|
 | Default criterion | `criterio` | `raio` (corner radius) or `velocidade` (estimated speed) |
+| Default criterion on ovals | `criterio_oval` | `velocidade`. For tracks of type oval. By radius, a superspeedway's turns (~300 m) count as corners and it plays like an intermediate; by speed it gets its straights right. |
 | Straight: radius from (m) / Slow corner: radius below (m) | `raio_reta` / `raio_baixa` | 400 / 80 (between them = fast corner) |
 | Straight: speed from (km/h) / Slow corner: below (km/h) | `vel_reta` / `vel_baixa` | 250 / 150 |
 | Grip in corners (g) | `aderencia` | 2.0 (speed = √(grip × 9.81 × radius)) |
@@ -333,7 +334,8 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Pace under SC / VSC, Pit stop under SC / VSC | `ritmo_sc`, `ritmo_vsc`, `pit_sob_sc`, `pit_sob_vsc` | (1.4 / 1.35 / 0.55 / 0.7) |
 | Engine life (laps), Power loss at end of life | `vida_motor_voltas`, `perda_potencia_motor` | (700, 0 = no wear / 3) |
 | Grid interval (s) | `intervalo_grid_s` | |
-| Oval: slipstream gain, pack compression, ease of passing in the pack, "Big One" risk, debris cautions per race, restart reach (s), short-oval contact | `oval.vacuo`, `oval.compressao_pelotao`, `oval.piso_ultrapassagem_pelotao`, `oval.multiplicador_batida_pelotao`, `oval.amarelas_detritos_por_corrida`, `oval.alcance_relargada_s`, `oval.colisao_oval_curto` | (0.012 / 0.6 / 0.4 / 6 / 6 / 0.8 / 2.5). Other oval settings: section 11. |
+| Oval: slipstream gain, pack compression, ease of passing in the pack, "Big One" risk, debris cautions per race, restart reach (s), short-oval contact | `oval.vacuo`, `oval.compressao_pelotao`, `oval.piso_ultrapassagem_pelotao`, `oval.multiplicador_batida_pelotao`, `oval.amarelas_detritos_por_corrida`, `oval.alcance_relargada_s`, `oval.colisao_oval_curto` | (0.012 / 0.6 / 0.4 / 6 / 6 / 0.8 / 2.5). Other oval settings: section 11. How "pack" (superspeedway) and "short" are worked out: pack grows from 50% to 75% straights; short grows with slow corners (50% slow corners = full short oval). |
+| Short oval: debris-caution multiplier, passing chance | `oval.amarelas_oval_curto`, `oval.ultrapassagem_oval_curto` | 2 / 0.7, at a full short oval (scaled down for less short ones). |
 
 ---
 
@@ -479,3 +481,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-20 | Rules: new `pilotos_minimos_por_equipe` (Minimum race drivers per team) with file check; Main drivers per team is now a hard maximum when signing. |
 | 2026-11-21 | Editor: nationality and sponsor-country fields are a list of known countries (type to filter); the same list in the game's Create team dialog. |
 | 2026-11-23 | Editor: calendar Location split into Town + Country (list); sponsor Preference value is a list (countries or positions, by type). |
+| 2026-11-23 | Ovals: track tracer defaults to the speed criterion on ovals (`mapa_pista.criterio_oval`); short oval now depends only on slow corners; new `oval.amarelas_oval_curto` (2) and `oval.ultrapassagem_oval_curto` (0.7). |

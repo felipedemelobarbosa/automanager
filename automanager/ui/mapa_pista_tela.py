@@ -47,7 +47,9 @@ class DialogoMapaPista(w.Dialogo):
         self.v_km = tk.StringVar()
         ttk.Entry(f2, textvariable=self.v_km, width=7).pack(side="left", padx=(2, 10))
         tk.Label(f2, text="Critério:").pack(side="left")
-        self.v_crit = tk.StringVar(value=self.cfg["criterio"])
+        # oval: pela velocidade – as curvas de um superspeedway (raio ~300 m) passariam por curvas pelo raio
+        self.v_crit = tk.StringVar(value=self.cfg["criterio_oval"] if evento.get("tipo_pista") == "oval"
+                                   else self.cfg["criterio"])
         for val, rot in (("raio", "raio (m)"), ("velocidade", "velocidade (km/h)")):
             ttk.Radiobutton(f2, text=rot, value=val, variable=self.v_crit, command=self.desenhar).pack(side="left")
         w.Botao(f2, "Recalcular", self.calcular, padx=6).pack(side="left", padx=12)

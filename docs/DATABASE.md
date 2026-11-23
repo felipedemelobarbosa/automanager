@@ -276,7 +276,9 @@ volta completa, a corrida é cancelada e ninguém pontua.
 
 Vale para pistas com `tipo_pista: "oval"`. O tipo de oval sai das retas e curvas da própria pista, de forma
 contínua: `pelotão` cresce com as retas entre `retas_pelotao` [0,5; 0,75] (superspeedway, "pack racing") e `curto`
-cresce com poucas retas (< 50%) ou curvas lentas (short track); o intermediário fica entre os dois.
+cresce com as curvas lentas (short track; 50% de curvas de baixa = oval curto pleno); o intermediário fica entre os
+dois. Para tirar as retas e curvas do mapa, use o critério pela velocidade (`mapa_pista.criterio_oval`, o padrão em
+ovais): pelo raio, as curvas de um superspeedway (~300 m) contam como curvas e ele vira um intermediário.
 - vácuo: quem vem até `alcance_vacuo_s` (1,5 s) atrás ganha até `vacuo` (0,012) do tempo nas retas; quem tem um carro
   colado atrás ganha metade (empurrão) – sozinho é mais lento; no pelotão o ar sujo quase não pesa
 - `compressao_pelotao` (0,6): no superspeedway o vácuo e o limite de potência aproximam o ritmo dos carros
@@ -284,8 +286,10 @@ cresce com poucas retas (< 50%) ou curvas lentas (short track); o intermediário
   a briga custa pouco tempo
 - `multiplicador_batida_pelotao` (6) e `carros_max_pelotao` (12): o "Big One" (batida grave com muitos carros)
 - amarelas: toda batida chama safety car (`prob_amarela_acidente` 0,9; quebra `prob_amarela_quebra` 0,35), nunca VSC;
-  `amarelas_detritos_por_corrida` (6, × (0,8 + 0,4·curto + 0,4·pelotão), independe do nº de voltas); `voltas_amarela` [4, 7]
-- `colisao_oval_curto` (2,5): oval curto é corrida de contato
+  `amarelas_detritos_por_corrida` (6, × (0,8·(1 + (`amarelas_oval_curto` − 1)·curto) + 0,4·pelotão), independe do nº
+  de voltas); `amarelas_oval_curto` (2): no oval curto pleno, o dobro de amarelas; `voltas_amarela` [4, 7]
+- `colisao_oval_curto` (2,5): oval curto é corrida de contato; `ultrapassagem_oval_curto` (0,7): no oval curto pleno a
+  chance de ultrapassagem é multiplicada por 0,7 (pista estreita)
 - `respeitar_tempo_maximo` (false): como na IndyCar/NASCAR, a corrida em oval cumpre a distância, sem o tempo máximo
   da categoria (true = vale o `tempo_maximo_min` também no oval)
 - `efeito_largada` (0,3): largada lançada; `tentativas_relargada` (3), `piso_relargada` (0,6) e `alcance_relargada_s`
