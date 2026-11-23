@@ -98,6 +98,8 @@ class CampoPais(ttk.Combobox):
     def _filtrar(self, e=None):
         if e is not None and e.keysym in ("Up", "Down", "Return", "KP_Enter", "Escape", "Tab"):
             return
+        if getattr(self, "numeros", False):
+            return                                   # usado como lista de posições (preferência de patrocinador)
         from .. import paises, i18n
         txt = paises._norm(self.tk.call(self._w, "get"))          # o texto exibido (no idioma do jogo)
         todos = self._todos()

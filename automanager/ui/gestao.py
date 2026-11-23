@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import messagebox
 
-from .. import state, ratings, routines, mercado, desenvolvimento, contratos, economia, acoes, multiplayer
+from .. import state, ratings, routines, mercado, desenvolvimento, contratos, economia, acoes, multiplayer, campeonato
 from . import mercado_tela, desenvolvimento_tela, historico_tela, financas_tela
 from ..event.inscritos import montar_inscritos
 from ..db import NOMES_ATRIBUTOS, ATRIBUTOS_CHASSIS
@@ -50,6 +50,8 @@ class TelaGestao(tk.Frame):
             w.Botao(rod, "Plano do evento...", self.plano_evento, largura=16).pack(side="right", padx=4)
         else:
             w.Botao(rod, "Continuar  >>", self.continuar, largura=14, font=w.FONTE_NEGRITO).pack(side="right", padx=4)
+            w.Botao(rod, "Simular temporada", self.simular_temporada, largura=17).pack(side="right", padx=2)
+            w.Botao(rod, "Próximo evento", self.proximo_evento, largura=15).pack(side="right", padx=2)
         self.status = w.BarraStatus(rod)
         self.status.pack(side="left", fill="x", expand=True)
         self.st_data = self.status.campo("", 22)
@@ -493,14 +495,83 @@ class TelaGestao(tk.Frame):
                                    f"Sua equipe não tem carro completo ou pilotos para o {pista['nome']}.\n"
                                    "O evento será disputado sem ela.", parent=self)
         novas = routines.avancar_semana(self.st)
-        if self.st.get("fim_de_jogo"):
-            messagebox.showerror("Fim de jogo", "Sua equipe faliu: sem caixa e sem crédito, encerrou as atividades.\n\n"
-                                                "Você pode carregar um jogo salvo ou começar outro.", parent=self)
-            self.app.estado = None
-            self.app.menu_inicial()
+        if self._fim_de_jogo():
             return
         self.atualizar()
         self.st_msg.configure(text=f"{len(novas)} notícia(s) nesta semana." if novas else "Semana sem novidades.")
+
+    def _fim_de_jogo(self):
+        if not self.st.get("fim_de_jogo"):
+            return False
+        messagebox.showerror("Fim de jogo", "Sua equipe faliu: sem caixa e sem crédito, encerrou as atividades.\n\n"
+                                            "Você pode carregar um jogo salvo ou começar outro.", parent=self)
+        self.app.estado = None
+        self.app.menu_inicial()
+        return True
+
+    def _evento_na_semana(self):
+        return routines.corrida_do_usuario_na_semana(self.st) or routines.teste_do_usuario_na_semana(self.st)
+
+    def _progresso(self, texto):
+        self.st_msg.configure(text=texto)
+        self.config(cursor="watch")
+        self.update()
+
+    def proximo_evento(self):
+        """Avança as semanas sem evento da sua categoria e para na semana do próximo (corrida ou teste), que você
+        disputa com Continuar. Com um evento nesta semana, é o próprio Continuar. Para também no início de uma nova
+        temporada."""
+        if self.jogador:
+            return
+        if self._evento_na_semana():
+            self.continuar()
+            return
+        ano, semanas = self.st["ano"], 0
+        try:
+            while not self._evento_na_semana() and semanas < 60:
+                routines.avancar_semana(self.st)
+                semanas += 1
+                if self._fim_de_jogo():
+                    return
+                if self.st["ano"] != ano:
+                    break                              # nova temporada: para no início dela
+                self._progresso(f"Semana {self.st['semana']}...")
+        finally:
+            self.config(cursor="")
+        self.atualizar()
+        ev = self._evento_na_semana()
+        self.st_msg.configure(text=f"{semanas} semana(s) avançada(s). Próximo evento: {ev['nome']}." if ev
+                              else f"{semanas} semana(s) avançada(s). Começa a temporada {self.st['ano']}.")
+
+    def simular_temporada(self):
+        """Simula até o fim da temporada, com as corridas e os testes da sua equipe no automático (acerto e
+        estratégia da IA). Para se a equipe ficar abaixo do mínimo de pilotos para uma corrida."""
+        if self.jogador:
+            return
+        ano = self.st["ano"]
+        if not messagebox.askyesno("Simular temporada", f"Simular até o fim da temporada {ano}?\n\nSuas corridas e "
+                                                        f"testes são disputados no automático (a IA faz o acerto e a "
+                                                        f"estratégia da sua equipe).", parent=self):
+            return
+        u = self.st["usuario"]
+        try:
+            while self.st["ano"] == ano:
+                pista = routines.corrida_do_usuario_na_semana(self.st)
+                if pista:
+                    self.config(cursor="")
+                    if not self._minimo_de_pilotos():
+                        return
+                    self._progresso(f"Semana {self.st['semana']}: {pista['nome']}...")
+                    campeonato.simular_em_segundo_plano(self.st, u["categoria"], pista)
+                routines.avancar_semana(self.st)
+                if self._fim_de_jogo():
+                    return
+                self._progresso(f"Semana {self.st['semana']}...")
+        finally:
+            if self.winfo_exists():
+                self.config(cursor="")
+        self.atualizar()
+        self.st_msg.configure(text=f"Temporada {ano} simulada. Começa a temporada {self.st['ano']}.")
 
     def destroy(self):
         try:

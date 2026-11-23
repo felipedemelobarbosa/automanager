@@ -1957,5 +1957,17 @@
  "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Teams below the minimum of race drivers for this week's race: {0}. (The players must hire – Market > Drivers – and send their orders again; drivers answer at once.)",
  "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "The team has no seat for this role in {0}: the contract must end before.",
  "{0} volta a ser piloto de testes da {1}.": "{0} goes back to being {1}'s test driver.",
- "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira).": "Pick from the list or type to filter (a country not on the list is accepted too, but has no flag)."
+ "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira).": "Pick from the list or type to filter (a country not on the list is accepted too, but has no flag).",
+ "Simular temporada": "Simulate season",
+ "Semana {0}...": "Week {0}...",
+ "Semana {0}: {1}...": "Week {0}: {1}...",
+ "{0} semana(s) avançada(s). Próximo evento: {1}.": "{0} week(s) advanced. Next event: {1}.",
+ "{0} semana(s) avançada(s). Começa a temporada {1}.": "{0} week(s) advanced. The {1} season begins.",
+ "Simular até o fim da temporada {0}?": "Simulate to the end of the {0} season?",
+ "Suas corridas e testes são disputados no automático (a IA faz o acerto e a estratégia da sua equipe).": "Your races and tests are run automatically (the computer sets up your car and picks your strategy).",
+ "Temporada {0} simulada. Começa a temporada {1}.": "{0} season simulated. The {1} season begins.",
+ "escolha o país": "choose the country",
+ "posição: inteiro ≥ 1": "position: integer ≥ 1",
+ "Cidade (livre) e país (da lista; dá a bandeira).": "Town (free text) and country (from the list; it gives the flag).",
+ "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "Country (nationality preference) or highest championship position – the list changes with the preference type."
 }

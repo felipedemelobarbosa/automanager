@@ -395,7 +395,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | ID, Name, Country, Sector | `id`, `nome`, `pais`, `ramo` | |
 | Active | `ativo` | Inactive sponsors may appear later. |
 | Base value (USD/season) | `valor_base` | Reference for the offers the company makes. |
-| Preference / Preference value | `preferencia.tipo`, `preferencia.valor` | Driver nationality, team nationality or championship position (the value is the country or the highest position). |
+| Preference / Preference value | `preferencia.tipo`, `preferencia.valor` | Driver nationality, team nationality or championship position. The value is a list that follows the type: countries (the same list as nationality) or positions 1–20. |
 | Contract | `contrato` | No contract = looking for a team. Team, Amount (USD), Payment (per season/per race), Duration and unit (seasons/races). **Contracts in the file are the sponsorships teams start the game with.** |
 | Chance of leaving / appearing per year | `prob_fechamento`, `prob_surgimento` | |
 
@@ -403,7 +403,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 
 | Label | JSON | What it does |
 |---|---|---|
-| ID, Name, Location | `id`, `nome`, `local` | Location "Town, Country" – the country gives the flag. |
+| ID, Name, Location | `id`, `nome`, `local` | Location: Town (free text) and Country (from the country list), saved as "Town, Country". The country gives the flag. The town can be left empty. |
 | Active | `ativo` | Inactive = reserve track that may join later. |
 | Week | `semana` | 1–52. |
 | Type | `especie` | `corrida` (race) or `treino` (collective test). |
@@ -478,3 +478,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-19 | Teams: new optional `chassis_futuro` / `motor_futuro` (Future chassis / Future engine, with `contrato.inicio_ano`) in the file and the editor. |
 | 2026-11-20 | Rules: new `pilotos_minimos_por_equipe` (Minimum race drivers per team) with file check; Main drivers per team is now a hard maximum when signing. |
 | 2026-11-21 | Editor: nationality and sponsor-country fields are a list of known countries (type to filter); the same list in the game's Create team dialog. |
+| 2026-11-23 | Editor: calendar Location split into Town + Country (list); sponsor Preference value is a list (countries or positions, by type). |

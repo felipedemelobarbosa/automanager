@@ -1956,5 +1956,17 @@
  "Equipes abaixo do mínimo de pilotos titulares para a corrida desta semana: {0}. (Os jogadores precisam contratar – Mercado > Pilotos – e mandar as ordens de novo; os pilotos respondem na hora.)": "Equipos por debajo del mínimo de pilotos titulares para la carrera de esta semana: {0}. (Los jugadores deben contratar – Mercado > Pilotos – y enviar sus órdenes de nuevo; los pilotos responden en el acto.)",
  "A equipe não tem vaga para essa função em {0}: o contrato tem de terminar antes.": "El equipo no tiene plaza para esa función en {0}: el contrato debe terminar antes.",
  "{0} volta a ser piloto de testes da {1}.": "{0} vuelve a ser piloto de pruebas de {1}.",
- "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira).": "Elija de la lista o escriba para filtrar (un país fuera de la lista también vale, pero queda sin bandera)."
+ "Escolha na lista ou digite para filtrar (um país fora da lista também vale, mas fica sem bandeira).": "Elija de la lista o escriba para filtrar (un país fuera de la lista también vale, pero queda sin bandera).",
+ "Simular temporada": "Simular temporada",
+ "Semana {0}...": "Semana {0}...",
+ "Semana {0}: {1}...": "Semana {0}: {1}...",
+ "{0} semana(s) avançada(s). Próximo evento: {1}.": "{0} semana(s) avanzada(s). Próximo evento: {1}.",
+ "{0} semana(s) avançada(s). Começa a temporada {1}.": "{0} semana(s) avanzada(s). Comienza la temporada {1}.",
+ "Simular até o fim da temporada {0}?": "¿Simular hasta el final de la temporada {0}?",
+ "Suas corridas e testes são disputados no automático (a IA faz o acerto e a estratégia da sua equipe).": "Sus carreras y pruebas se disputan en automático (la IA hace la puesta a punto y la estrategia de su equipo).",
+ "Temporada {0} simulada. Começa a temporada {1}.": "Temporada {0} simulada. Comienza la temporada {1}.",
+ "escolha o país": "elija el país",
+ "posição: inteiro ≥ 1": "posición: entero ≥ 1",
+ "Cidade (livre) e país (da lista; dá a bandeira).": "Ciudad (texto libre) y país (de la lista; da la bandera).",
+ "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "País (preferencia por nacionalidad) o posición máxima en el campeonato – la lista cambia con el tipo de preferencia."
 }

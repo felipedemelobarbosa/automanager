@@ -83,8 +83,21 @@ class FormGenerico(tk.Frame):
                 wd["ajuda"].configure(wraplength=quebra)
 
     # ------------------------------------------------------------------ criação
+    def _modo_preferencia(self):
+        """Valor da preferência: lista de países ou de posições, conforme o tipo escolhido no campo de que depende."""
+        for wd in self.widgets:
+            if wd["campo"]["t"] != "pref_valor":
+                continue
+            tipo = next((self._valor(x)[1] for x in self.widgets if x["campo"]["c"] == wd["campo"]["depende"]), None)
+            cb = wd["ws"][0]
+            numeros = tipo == "posicao_campeonato"
+            if numeros != getattr(cb, "numeros", None):
+                cb.numeros = numeros
+                cb.configure(values=[str(i) for i in range(1, 21)] if numeros else cb._todos())
+
     def _avisar(self, *_):
         if not self._carregando:
+            self._modo_preferencia()
             self.validar()
             if self.ao_mudar:
                 self.ao_mudar()
@@ -203,6 +216,25 @@ class FormGenerico(tk.Frame):
             sb.pack(side="left", fill="y")
             lb.bind("<<ListboxSelect>>", self._avisar)
             return lb, [lb]
+        if t == "local":                                  # "Cidade, País": cidade livre + país da lista
+            vc, vp = tk.StringVar(), tk.StringVar()
+            fr = tk.Frame(f)
+            fr.grid(row=linha, column=1, sticky="w")
+            en = ttk.Entry(fr, textvariable=vc, width=15)
+            en.pack(side="left")
+            en.bind("<KeyRelease>", self._avisar)
+            cb = w.CampoPais(fr, textvariable=vp, width=17)
+            cb.pack(side="left", padx=(4, 0))
+            cb.bind("<<ComboboxSelected>>", self._avisar)
+            cb.bind("<KeyRelease>", self._avisar, add="+")
+            return (vc, vp), [en, cb]
+        if t == "pref_valor":                             # país (preferência por nacionalidade) ou posição
+            v = tk.StringVar()
+            cb = w.CampoPais(f, textvariable=v)
+            cb.grid(row=linha, column=1, sticky="w")
+            cb.bind("<<ComboboxSelected>>", self._avisar)
+            cb.bind("<KeyRelease>", self._avisar, add="+")
+            return v, [cb]
         if t == "pais":
             v = tk.StringVar()
             cb = w.CampoPais(f, textvariable=v)
@@ -324,11 +356,17 @@ class FormGenerico(tk.Frame):
                         var.selection_set(i)
             elif t == "lista_num":
                 var.set(", ".join(str(x) for x in (v or [])))
+            elif t == "local":                       # "Serra Azul, Brasil" -> cidade / país
+                partes = str(v or "").rsplit(",", 1)
+                cidade, pais = (partes[0].strip(), partes[1].strip()) if len(partes) == 2 else ("", partes[0].strip())
+                var[0].set(cidade)
+                var[1].set(pais)
             elif t == "tempos_ano":                  # {"2028": [treino, corrida]} -> "2028: 88.4 / 90.1; ..."
                 var.set("; ".join(f"{a}: {x[0]} / {x[1]}" for a, x in sorted((v or {}).items())))
             else:
                 var.set("" if v is None else str(v))
         self._grupos()
+        self._modo_preferencia()
         self._carregando = False
         self.validar()
 
@@ -387,7 +425,20 @@ class FormGenerico(tk.Frame):
             return True, [k for k, bv in var.items() if bv.get()]
         if t == "lista_ref":
             return True, [wd["mapa"][i] for i in var.curselection()]
+        if t == "local":
+            from .. import paises
+            cidade, pais = var[0].get().strip(), paises.em_portugues(var[1].get().strip())
+            if cidade and not pais:
+                return False, "escolha o país"
+            return True, ", ".join(x for x in (cidade, pais) if x)
         bruto = str(var.get()).strip()
+        if t == "pref_valor":
+            from .. import paises
+            if getattr(wd["ws"][0], "numeros", False):
+                if not bruto.isdigit() or int(bruto) < 1:
+                    return False, "posição: inteiro ≥ 1"
+                return True, int(bruto)
+            return True, paises.em_portugues(bruto) or None
         if t == "pais":                                   # nome em português (aceita inglês e sem acento)
             from .. import paises
             return True, paises.em_portugues(bruto)
