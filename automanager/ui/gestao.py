@@ -549,11 +549,13 @@ class TelaGestao(tk.Frame):
         if self.jogador:
             return
         ano = self.st["ano"]
-        if not messagebox.askyesno("Simular temporada", f"Simular até o fim da temporada {ano}?\n\nSuas corridas e "
-                                                        f"testes são disputados no automático (a IA faz o acerto e a "
-                                                        f"estratégia da sua equipe).", parent=self):
+        if not messagebox.askyesno("Simular temporada", f"Simular até o fim da temporada {ano}?\n\nAté lá a IA "
+                                                        f"conduz sua equipe como faz com as dela: desenvolvimento, "
+                                                        f"contratos, pilotos e finanças. Suas corridas e testes são "
+                                                        f"disputados no automático.", parent=self):
             return
         u = self.st["usuario"]
+        self.st["ia_conduz_usuario"] = True
         try:
             while self.st["ano"] == ano:
                 pista = routines.corrida_do_usuario_na_semana(self.st)
@@ -568,6 +570,7 @@ class TelaGestao(tk.Frame):
                     return
                 self._progresso(f"Semana {self.st['semana']}...")
         finally:
+            self.st.pop("ia_conduz_usuario", None)
             if self.winfo_exists():
                 self.config(cursor="")
         self.atualizar()

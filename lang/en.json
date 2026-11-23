@@ -1969,5 +1969,6 @@
  "escolha o país": "choose the country",
  "posição: inteiro ≥ 1": "position: integer ≥ 1",
  "Cidade (livre) e país (da lista; dá a bandeira).": "Town (free text) and country (from the list; it gives the flag).",
- "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "Country (nationality preference) or highest championship position – the list changes with the preference type."
+ "País (preferência por nacionalidade) ou posição máxima no campeonato – a lista muda com o tipo de preferência.": "Country (nationality preference) or highest championship position – the list changes with the preference type.",
+ "Até lá a IA conduz sua equipe como faz com as dela: desenvolvimento, contratos, pilotos e finanças. Suas corridas e testes são disputados no automático.": "Until then the computer runs your team as it does its own: development, contracts, drivers and finances. Your races and tests are run automatically."
 }

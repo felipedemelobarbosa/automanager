@@ -293,7 +293,7 @@ def _virada_patrocinadores(st, cid, rng):
 def _virada_equipes(st, cid, rng):
     c = st["categorias"][cid]
     for eq in c["equipes"].values():
-        if mercado.eh_usuario(st, cid, eq["id"]):
+        if mercado.eh_usuario(st, cid, eq["id"]) or state.eh_da_pessoa(st, cid, eq["id"]):
             continue
         if eq.get("ativa"):
             if rng.random() < eq.get("prob_fechamento", 0):

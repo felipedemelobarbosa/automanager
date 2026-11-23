@@ -191,10 +191,13 @@ def multijogador(st):
     return st.get("multiplayer")
 
 
-def humanas(st):
+def humanas(st, com_ia_no_comando=False):
     """{(categoria, equipe)} controladas por pessoas. No multijogador: as dos jogadores (menos as que a IA
-    conduz nesta semana por falta de arquivo de ordens)."""
+    conduz nesta semana por falta de arquivo de ordens). Um jogador: vazio enquanto a IA conduz a equipe dele
+    (Simular temporada) – com `com_ia_no_comando`, a equipe dele mesmo assim."""
     mp = st.get("multiplayer")
+    if not mp and st.get("ia_conduz_usuario") and not com_ia_no_comando:
+        return set()
     if mp:
         ia = set(mp.get("ia_nesta_semana") or [])
         return {(j["categoria"], j["equipe"]) for jid, j in mp["jogadores"].items()
@@ -205,6 +208,11 @@ def humanas(st):
 
 def eh_humana(st, cid, eid):
     return (cid, eid) in humanas(st)
+
+
+def eh_da_pessoa(st, cid, eid):
+    """Equipe de uma pessoa mesmo quando a IA a conduz (não fecha por sorteio; a falência encerra o jogo)."""
+    return (cid, eid) in humanas(st, com_ia_no_comando=True)
 
 
 def quem(st, cid, eid, minuscula=False):

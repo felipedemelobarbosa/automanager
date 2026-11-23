@@ -242,13 +242,14 @@ def falir(st, cid, eq):
         if pat.get("contrato") and pat["contrato"].get("equipe") == eq["id"]:
             pat["contrato"] = None
     eq["emprestimos"] = []
-    if _usuario(st, cid, eq) and st.get("multiplayer"):
+    from .state import eh_da_pessoa
+    if eh_da_pessoa(st, cid, eq["id"]) and st.get("multiplayer"):
         for j in st["multiplayer"]["jogadores"].values():
             if j["categoria"] == cid and j["equipe"] == eq["id"]:
                 j["eliminado"] = {"motivo": "falencia", "ano": st["ano"], "semana": st["semana"]}
         noticia(st, f"FALÊNCIA: a {eq['nome']} não conseguiu honrar as dívidas e encerra as atividades. O jogador "
                     f"está fora da liga.", cid, "usuario", equipe=eq["id"])
-    elif _usuario(st, cid, eq):
+    elif eh_da_pessoa(st, cid, eq["id"]):
         st["fim_de_jogo"] = {"motivo": "falencia", "ano": st["ano"], "semana": st["semana"]}
         noticia(st, "FALÊNCIA: sua equipe não conseguiu honrar as dívidas e encerra as atividades.", cid, "usuario")
     else:
