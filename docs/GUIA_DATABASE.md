@@ -482,3 +482,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-21 | Editor: nationality and sponsor-country fields are a list of known countries (type to filter); the same list in the game's Create team dialog. |
 | 2026-11-23 | Editor: calendar Location split into Town + Country (list); sponsor Preference value is a list (countries or positions, by type). |
 | 2026-11-23 | Ovals: track tracer defaults to the speed criterion on ovals (`mapa_pista.criterio_oval`); short oval now depends only on slow corners; new `oval.amarelas_oval_curto` (2) and `oval.ultrapassagem_oval_curto` (0.7). |
+| 2026-11-23 | Sample database (Fórmula Alfa and Beta): two new ovals, inactive in 2026 – Copper Valley 500 (short, 48/15/37, joins in 2027) and Riverbend 400 (intermediate, 50/49/1, joins in 2028), via `anos_entrada`. |
