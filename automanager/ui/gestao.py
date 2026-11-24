@@ -108,6 +108,10 @@ class TelaGestao(tk.Frame):
         self.lbl_not.pack(fill="x", pady=(4, 0))
 
         self.atualizar()
+        self._avisou_semana = False
+        self._agendado_pasta = None
+        if self.jogador:
+            self._vigiar_pasta()
 
     # ------------------------------------------------------------------ menu
     def _menu(self):
@@ -423,6 +427,55 @@ class TelaGestao(tk.Frame):
         DialogoPlanoEvento(self, self.st).modal()
         self.atualizar()
 
+    # ------------------------------------------------------------------ multijogador: pasta compartilhada
+    def _pasta_liga(self):
+        return self.app.pasta_liga_jogador if getattr(self.app, "liga_compartilhada", False) else None
+
+    def _vigiar_pasta(self):
+        """Jogador: mostra o prazo e a situação das ordens dele (status.json do comissário) e avisa quando uma
+        semana nova é publicada na pasta compartilhada. Repete a cada 20 s."""
+        from .. import caixa_liga
+        try:
+            if not self.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        pasta = self._pasta_liga()
+        st = self.st
+        jid = multiplayer.sessao(st)["jogador"]
+        prazo = caixa_liga.prazo(st)
+        partes = [f"Prazo: {prazo}" + (" (vencido)" if caixa_liga.atrasado(st) else "")] if prazo else []
+        s = caixa_liga.ler_status(pasta) if pasta else None
+        if s and (s.get("ano"), s.get("semana")) == (st["ano"], st["semana"]):
+            j = (s.get("jogadores") or {}).get(jid) or {}
+            if j.get("estado") == "recebidas":
+                partes.append(f"Suas ordens foram recebidas pelo comissário às {str(j.get('quando', ''))[-5:]}.")
+            elif j.get("estado") == "recusadas":
+                partes.append(f"Suas ordens foram recusadas: {j.get('motivo', '')}")
+            else:
+                partes.append("O comissário ainda não recebeu suas ordens.")
+        if partes:
+            from .. import i18n
+            self.st_msg.configure(text="  ·  ".join(i18n.t(x) for x in partes))
+        if s and (s.get("ano"), s.get("semana")) > (st["ano"], st["semana"]) and not self._avisou_semana:
+            self._avisou_semana = True
+            if messagebox.askyesno("Nova semana", f"O comissário publicou a semana {s['semana']}/{s['ano']}.\n\n"
+                                                  f"Abrir agora?", parent=self):
+                self._abrir_semana_nova(pasta, jid)
+                return
+        self._agendado_pasta = self.after(20000, self._vigiar_pasta)
+
+    def _abrir_semana_nova(self, pasta, jid):
+        import os
+        from .. import caixa_liga
+        try:
+            st_liga = multiplayer.carregar_liga(os.path.join(pasta, caixa_liga.LIGA))
+            novo = multiplayer.entrar_com_chave(st_liga, jid, multiplayer.sessao(self.st)["_chave"])
+        except (OSError, ValueError, multiplayer.ErroLiga) as e:
+            messagebox.showerror("Nova semana", f"Não foi possível abrir a semana nova:\n{e}", parent=self)
+            return
+        self.app.abrir_equipe(novo)
+
     def salvar_ordens(self):
         from tkinter import filedialog
         import os
@@ -439,6 +492,21 @@ class TelaGestao(tk.Frame):
         if sem_plano and not messagebox.askyesno(
                 "Salvar ordens", "Sem plano de evento para:\n" + "\n".join(sem_plano) +
                 "\n\nA equipe decidirá automaticamente para eles. Salvar mesmo assim?", parent=self):
+            return
+        pasta = self._pasta_liga()
+        if pasta:                                   # pasta compartilhada: entrega direto, sem escolher arquivo
+            from .. import caixa_liga
+            try:
+                caminho = caixa_liga.entregar_ordens(self.st, pasta)
+            except OSError as e:
+                messagebox.showerror("Salvar ordens", f"Não foi possível gravar na pasta compartilhada:\n{e}",
+                                     parent=self)
+                return
+            messagebox.showinfo("Salvar ordens", f"{resumo_jogador(self.st)}\n\nEntregues na pasta compartilhada:\n"
+                                                 f"{caminho}\n\nO comissário recebe sozinho; a situação aparece na "
+                                                 f"barra de baixo. Você pode continuar mexendo e salvar de novo (vale a "
+                                                 f"última entrega).", parent=self)
+            self._vigiar_pasta_agora()
             return
         padrao = caminho_ordens_padrao(self.st, self.app.pasta_liga_jogador or os.getcwd())
         caminho = filedialog.asksaveasfilename(parent=self, title="Salvar ordens desta semana",
@@ -586,7 +654,20 @@ class TelaGestao(tk.Frame):
         self.atualizar()
         self.st_msg.configure(text=f"Temporada {ano} simulada. Começa a temporada {self.st['ano']}.")
 
+    def _vigiar_pasta_agora(self):
+        if self._agendado_pasta:
+            try:
+                self.after_cancel(self._agendado_pasta)
+            except tk.TclError:
+                pass
+        self._vigiar_pasta()
+
     def destroy(self):
+        if getattr(self, "_agendado_pasta", None):
+            try:
+                self.after_cancel(self._agendado_pasta)
+            except tk.TclError:
+                pass
         try:
             self.app.root.unbind("<F5>")
             self.app.root.unbind("<Control-s>")

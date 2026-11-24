@@ -62,6 +62,25 @@ Um **comissário** e vários **jogadores**; cada semana é um turno.
 Ordens alteradas, de outra liga/semana ou de outro jogador são recusadas. A ordem em que os jogadores agem no
 mercado é sorteada a cada semana. Equipes sem jogador ficam com a IA.
 
+### Caixa de entrada e pasta compartilhada
+
+- **Pasta compartilhada** (Google Drive, Dropbox, OneDrive, Syncthing...): na tela do comissário, *Caixa de entrada
+  da liga > Pasta compartilhada...*. A cada semana o jogo publica nela o `liga.json` (versão dos jogadores), uma cópia
+  em `semanas/` e o `status.json`. O jogador abre o `liga.json` dessa pasta: *Salvar ordens* entrega direto em
+  `ordens/<jogador>.json`, a barra de baixo mostra o prazo e se o comissário recebeu (ou recusou, com o motivo) as
+  ordens, e o jogo avisa quando a semana nova é publicada (abre sem pedir a senha de novo). O comissário importa
+  sozinho (a cada 5 s). O arquivo do comissário nunca vai para a pasta compartilhada.
+- **Rodar sozinha**: quando chegarem todas as ordens e/ou no prazo (o jogo do comissário precisa estar aberto).
+- **Prazo da semana**, **Importar todas de uma pasta...** (com o motivo de cada recusa) e **Histórico de envios**.
+
+### Bot do Discord (opcional)
+
+`python -m automanager.bot_discord <pasta compartilhada> --config bot_discord.json` (requer
+`pip install -r requirements-bot.txt` e o token em `DISCORD_TOKEN`). Os jogadores mandam o arquivo de ordens no canal
+da liga (ou em mensagem privada); o bot grava na pasta compartilhada, publica cada semana nova com o arquivo da liga,
+responde `!status`, `!liga`, `!prazo`, `!ajuda` e lembra quem falta antes do prazo. Passo a passo:
+[docs/BOT_DISCORD.md](docs/BOT_DISCORD.md).
+
 ## Estrutura
 
 ```

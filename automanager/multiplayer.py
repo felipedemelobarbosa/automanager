@@ -40,7 +40,7 @@ from .util import PASTA_DADOS
 PASTA_LIGAS = os.path.join(PASTA_DADOS, "ligas")
 POLITICAS = ("ia", "repetir", "bloquear")
 FORMATO_ORDENS = "automanager-ordens"
-SECRETOS = ("recebidas", "ultimas", "ultimo_plano", "planos_semana")
+SECRETOS = ("recebidas", "ultimas", "ultimo_plano", "planos_semana", "envios", "auto", "pasta_compartilhada")
 ACOES_REPETIVEIS = ("dev_modo", "dev_investir")
 
 
@@ -193,6 +193,17 @@ def entrar(st_liga, jid, senha):
     chave = _derivar(senha, j["sal"])
     if not hmac.compare_digest(_verificador(chave), j["verificador"]):
         raise ErroLiga("Senha incorreta.")
+    st = versao_jogadores(st_liga)
+    st["usuario"] = {"categoria": j["categoria"], "equipe": j["equipe"]}
+    st["multiplayer"]["sessao"] = {"jogador": jid, "acoes": [], "planos": {}, "_chave": chave}
+    return st
+
+
+def entrar_com_chave(st_liga, jid, chave):
+    """Reabre a liga (nova semana da pasta compartilhada) com a chave já derivada da senha na sessão atual."""
+    j = (st_liga.get("multiplayer") or {}).get("jogadores", {}).get(jid)
+    if not j or j.get("eliminado") or not hmac.compare_digest(_verificador(chave), j["verificador"]):
+        raise ErroLiga("Não foi possível reabrir a liga com este jogador.")
     st = versao_jogadores(st_liga)
     st["usuario"] = {"categoria": j["categoria"], "equipe": j["equipe"]}
     st["multiplayer"]["sessao"] = {"jogador": jid, "acoes": [], "planos": {}, "_chave": chave}

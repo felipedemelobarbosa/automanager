@@ -34,6 +34,7 @@ class App:
         self.criando_liga = False
         self.caminho_liga = None
         self.pasta_liga_jogador = None
+        self.liga_compartilhada = False
         self.root.title("AutoManager")
         self.trocar(MenuInicial)
 
@@ -99,8 +100,13 @@ class App:
         st = DialogoEntrar(self.root, st_liga).modal()
         if not st:
             return
+        from .. import caixa_liga
         self.pasta_liga_jogador = os.path.dirname(caminho)
-        anterior = caminho_ordens_padrao(st, self.pasta_liga_jogador)
+        # liga.json de uma pasta compartilhada (com o status do comissário): as ordens vão direto para ela
+        self.liga_compartilhada = os.path.basename(caminho) == caixa_liga.LIGA \
+            and caixa_liga.ler_status(self.pasta_liga_jogador) is not None
+        anterior = caixa_liga.caminho_ordens(self.pasta_liga_jogador, mp.sessao(st)["jogador"]) \
+            if self.liga_compartilhada else caminho_ordens_padrao(st, self.pasta_liga_jogador)
         if not os.path.exists(anterior):
             # o nome do arquivo leva a equipe: procura as ordens deste jogador nesta semana com qualquer equipe
             import glob

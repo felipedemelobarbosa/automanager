@@ -4,7 +4,7 @@ import random
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 
-from .. import multiplayer as mp, state
+from .. import multiplayer as mp, state, caixa_liga as caixa
 from ..event import planos as planos_evento
 from ..event.inscritos import montar_inscritos
 from ..event.modelo import PARAMETROS_ACERTO, NOMES_ACERTO, ORDENS, NOMES_ORDENS
@@ -207,6 +207,32 @@ class TelaComissario(tk.Frame):
         w.Botao(b, "Exportar para HTML...", self.exportar_html, padx=6).pack(side="left", padx=4)
         self.lbl_pol = tk.Label(g, text="", fg=w.CINZA_ESCURO, anchor="w", justify="left")
         self.lbl_pol.pack(fill="x")
+        # --- caixa de entrada: pasta compartilhada, prazo, importação em lote, histórico
+        gc = w.Grupo(corpo, "Caixa de entrada da liga")
+        gc.pack(fill="x", pady=(6, 0))
+        lc = tk.Frame(gc)
+        lc.pack(fill="x")
+        self.lbl_pasta = tk.Label(lc, text="", anchor="w", justify="left")
+        self.lbl_pasta.pack(side="left", fill="x", expand=True)
+        w.Botao(lc, "Pasta compartilhada...", self.escolher_pasta, padx=6).pack(side="left", padx=2)
+        w.Botao(lc, "Desligar", self.desligar_pasta, padx=6).pack(side="left")
+        lc2 = tk.Frame(gc)
+        lc2.pack(fill="x", pady=(4, 0))
+        auto = m.setdefault("auto", {})
+        self.v_todas = tk.BooleanVar(value=bool(auto.get("todas")))
+        self.v_prazo = tk.BooleanVar(value=bool(auto.get("prazo")))
+        ttk.Checkbutton(lc2, text="Rodar sozinha quando chegarem todas as ordens", variable=self.v_todas,
+                        command=self._auto).pack(side="left")
+        ttk.Checkbutton(lc2, text="Rodar sozinha no prazo", variable=self.v_prazo,
+                        command=self._auto).pack(side="left", padx=10)
+        lc3 = tk.Frame(gc)
+        lc3.pack(fill="x", pady=(4, 2))
+        w.Botao(lc3, "Prazo desta semana...", self.definir_prazo, padx=6).pack(side="left")
+        w.Botao(lc3, "Importar todas de uma pasta...", self.importar_pasta, padx=6).pack(side="left", padx=4)
+        w.Botao(lc3, "Histórico de envios...", self.historico_envios, padx=6).pack(side="left")
+        self.lbl_prazo = tk.Label(lc3, text="", fg=w.CINZA_ESCURO, anchor="w")
+        self.lbl_prazo.pack(side="left", padx=10)
+        self.vistos = {}
         g2 = w.Grupo(corpo, "Notícias")
         g2.pack(fill="both", expand=True, pady=(6, 0))
         self.lb = tk.Listbox(g2, relief="sunken", bd=2)
@@ -218,6 +244,10 @@ class TelaComissario(tk.Frame):
         self.atualizar()
         self.status_msg(f"Arquivo do comissário: {caminho}")
         app.root.title(f"AutoManager – Liga {m['nome']} (comissário)")
+        self._agendado = None
+        if self.pasta():
+            self._publicar()
+        self._vigiar()
 
     def status_msg(self, t):
         self.st_msg.configure(text=t)
@@ -252,11 +282,24 @@ class TelaComissario(tk.Frame):
                    if e.get("ativo") and e["semana"] == st["semana"]]
         self.lbl_sub.configure(text=f"{st['ano']} · {len(eventos)} evento(s)" if eventos else str(st["ano"]))
         self.tv.delete(*self.tv.get_children())
+        recusas = caixa.recusas_da_semana(st)
         for jid, nome, eqn, est in mp.situacao(st):
+            ult = next((x for x in reversed(m.get("envios", [])) if x["jogador"] == jid and x["resultado"] == "aceita"
+                        and (x["ano"], x["semana"]) == (st["ano"], st["semana"])), None)
+            if est == "ordens recebidas" and ult:
+                est = f"ordens recebidas às {ult['quando'][-5:]}" + (" (atrasadas)" if ult.get("atrasado") else "")
+            elif est == "aguardando" and jid in recusas:
+                est = f"recusadas: {recusas[jid]}"
             j = m["jogadores"][jid]
             eq = st["categorias"][j["categoria"]]["equipes"].get(j["equipe"]) or {"id": "nova", "nome": "", "cor": "#808080"}
             self.tv.insert("", "end", iid=jid, image=w.chip_equipe(eq, eq.get("nacionalidade")),
                            values=(nome, eqn, est), tags=("cinza",) if j.get("eliminado") else ())
+        pasta = self.pasta()
+        self.lbl_pasta.configure(text=f"Pasta compartilhada: {pasta}" if pasta else
+                                 "Sem pasta compartilhada: os arquivos vão e voltam à mão (ou pelo bot).")
+        pr = caixa.prazo(st)
+        self.lbl_prazo.configure(text=f"Prazo: {pr}" + (" (vencido)" if caixa.atrasado(st) else "") if pr
+                                 else "Sem prazo nesta semana.")
         rot, ajuda = NOMES_POLITICA[m["politica"]]
         self.lbl_pol.configure(text=f"Política para ordens ausentes: {rot} – {ajuda}"
                                     + (f"\nEventos desta semana: {', '.join(eventos)}" if eventos else ""))
@@ -272,25 +315,112 @@ class TelaComissario(tk.Frame):
         mp.salvar_liga(self.st, self.caminho)
         self.status_msg(f"Liga salva em {self.caminho}")
 
+    # ------------------------------------------------------------------ caixa de entrada
+    def pasta(self):
+        return self.st["multiplayer"].get("pasta_compartilhada")
+
+    def escolher_pasta(self):
+        d = filedialog.askdirectory(parent=self, title="Pasta compartilhada da liga (Drive, Dropbox, OneDrive...)")
+        if not d:
+            return
+        if os.path.commonpath([os.path.abspath(self.caminho), os.path.abspath(d)]) == os.path.abspath(d):
+            messagebox.showwarning("Pasta compartilhada", "Escolha outra pasta: o arquivo do comissário (com as "
+                                                          "chaves dos jogadores) não pode ficar na pasta "
+                                                          "compartilhada.", parent=self)
+            return
+        self.st["multiplayer"]["pasta_compartilhada"] = d
+        self._publicar()
+        self.salvar()
+        self.atualizar()
+        messagebox.showinfo("Pasta compartilhada", f"A liga foi publicada em:\n{d}\n\nOs jogadores abrem o "
+                                                   f"liga.json dessa pasta; as ordens deles voltam para a subpasta "
+                                                   f"ordens e são importadas sozinhas.", parent=self)
+
+    def desligar_pasta(self):
+        self.st["multiplayer"].pop("pasta_compartilhada", None)
+        self.salvar()
+        self.atualizar()
+
+    def _auto(self):
+        self.st["multiplayer"]["auto"] = {"todas": bool(self.v_todas.get()), "prazo": bool(self.v_prazo.get())}
+        self.salvar()
+
+    def _publicar(self):
+        try:
+            caixa.publicar(self.st, self.pasta(), caixa.recusas_da_semana(self.st))
+        except OSError as e:
+            self.status_msg(f"Não foi possível publicar na pasta compartilhada: {e}")
+
+    def _vigiar(self):
+        """A cada 5 s: importa as ordens novas da pasta compartilhada e, se marcado, roda a semana sozinha."""
+        try:
+            if not self.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        pasta = self.pasta()
+        if pasta and os.path.isdir(pasta):
+            res = caixa.varrer(self.st, pasta, self.vistos)
+            if res:
+                self.salvar()
+                caixa.escrever_status(self.st, pasta, caixa.recusas_da_semana(self.st))
+                nomes = self.st["multiplayer"]["jogadores"]
+                self.status_msg("; ".join(f"{nomes[j]['nome'] if j in nomes else os.path.basename(c)}: "
+                                          f"{'ordens recebidas' if r == 'aceita' else r}" for c, j, r in res))
+                self.atualizar()
+        motivo = caixa.deve_rodar_sozinha(self.st)
+        if motivo:
+            self.rodar(auto=motivo)
+        self._agendado = self.after(5000, self._vigiar)
+
+    def definir_prazo(self):
+        from tkinter import simpledialog
+        atual = caixa.prazo(self.st) or ""
+        r = simpledialog.askstring("Prazo desta semana", "Data e hora (AAAA-MM-DD HH:MM). Vazio = sem prazo.",
+                                   initialvalue=atual, parent=self)
+        if r is None:
+            return
+        try:
+            caixa.definir_prazo(self.st, r)
+        except ValueError:
+            messagebox.showwarning("Prazo desta semana", "Use o formato AAAA-MM-DD HH:MM (ex.: 2026-12-01 20:00).",
+                                   parent=self)
+            return
+        self.salvar()
+        if self.pasta():
+            caixa.escrever_status(self.st, self.pasta(), caixa.recusas_da_semana(self.st))
+        self.atualizar()
+
+    def importar_pasta(self):
+        d = filedialog.askdirectory(parent=self, title="Pasta com os arquivos de ordens",
+                                    initialdir=os.path.dirname(self.caminho))
+        if not d:
+            return
+        self._mostrar_importacao(caixa.importar_pasta(self.st, d))
+
+    def _mostrar_importacao(self, res):
+        if any(r == "aceita" for _, _, r in res):
+            self.salvar()
+            if self.pasta():
+                caixa.escrever_status(self.st, self.pasta(), caixa.recusas_da_semana(self.st))
+        self.atualizar()
+        if not res:
+            messagebox.showinfo("Importar ordens", "Nenhum arquivo de ordens encontrado.", parent=self)
+            return
+        nomes = self.st["multiplayer"]["jogadores"]
+        linhas = [f"{os.path.basename(c)} – {nomes[j]['nome'] if j in nomes else '?'}: "
+                  f"{'aceitas' if r == 'aceita' else 'recusadas – ' + r}" for c, j, r in res]
+        messagebox.showinfo("Importar ordens", "\n\n".join(linhas), parent=self)
+
+    def historico_envios(self):
+        DialogoEnvios(self, self.st).modal()
+
     def importar(self):
         caminhos = filedialog.askopenfilenames(parent=self, title="Arquivos de ordens dos jogadores",
                                                initialdir=os.path.dirname(self.caminho),
                                                filetypes=[("Ordens (JSON)", "*.json"), ("Todos", "*.*")])
-        ok, erros = [], []
-        for c in caminhos:
-            try:
-                jid = mp.importar_ordens(self.st, mp.ler_ordens(c))
-                eqn = (mp.ler_ordens(c).get("equipe") or {}).get("nome")
-                ok.append(self.st["multiplayer"]["jogadores"][jid]["nome"] + (f" ({eqn})" if eqn else ""))
-            except mp.ErroLiga as e:
-                erros.append(f"{os.path.basename(c)}: {e}")
-        if ok:
-            self.salvar()
-        self.atualizar()
-        if erros:
-            messagebox.showwarning("Importar ordens", "\n\n".join(erros), parent=self)
-        if ok:
-            self.status_msg(f"Ordens importadas: {', '.join(ok)}")
+        if caminhos:
+            self._mostrar_importacao(caixa.importar_arquivos(self.st, caminhos))
 
     def pular(self):
         sel = self.tv.selection()
@@ -321,15 +451,18 @@ class TelaComissario(tk.Frame):
         from .exportar_tela import exportar
         exportar(self, self.st)
 
-    def rodar(self):
+    def rodar(self, auto=None):
+        """auto: 'todas' ou 'prazo' quando a semana roda sozinha (sem perguntas; o resultado vai para a barra)."""
         ok, pend = mp.pode_rodar(self.st)
+        if auto and not ok:
+            return
         if not ok:
             nomes = ", ".join(self.st["multiplayer"]["jogadores"][j]["nome"] for j in pend)
             messagebox.showwarning("Rodar semana", f"Faltam as ordens de: {nomes}.\n\nImporte os arquivos ou pule os "
                                                    "jogadores.", parent=self)
             return
         falta = [self.st["multiplayer"]["jogadores"][j]["nome"] for j in mp.faltando(self.st)]
-        if falta and not messagebox.askyesno(
+        if falta and not auto and not messagebox.askyesno(
                 "Rodar semana", f"Sem ordens de: {', '.join(falta)}.\nPolítica: "
                                 f"{NOMES_POLITICA[self.st['multiplayer']['politica']][0]}.\n\nRodar a semana?",
                 parent=self):
@@ -339,7 +472,10 @@ class TelaComissario(tk.Frame):
         try:
             r = mp.rodar_semana(self.st, random.Random())
         except mp.ErroLiga as e:
-            messagebox.showwarning("Rodar semana", str(e), parent=self)
+            if auto:
+                self.status_msg(f"A semana não rodou sozinha: {e}")
+            else:
+                messagebox.showwarning("Rodar semana", str(e), parent=self)
             return
         finally:
             self.config(cursor="")
@@ -355,12 +491,46 @@ class TelaComissario(tk.Frame):
             linhas.append(f"Conduzidos pela IA: {', '.join(nomes[j]['nome'] for j in r['ia'])}")
         if r["erros"]:
             linhas.append(f"Ordens não executadas: {len(r['erros'])} (veja as notícias)")
-        linhas.append(f"\nArquivo para enviar aos jogadores:\n{dist}")
-        messagebox.showinfo("Rodar semana", "\n".join(linhas), parent=self)
+        if self.pasta():
+            self._publicar()
+            linhas.append(f"\nPublicada na pasta compartilhada:\n{self.pasta()}")
+        else:
+            linhas.append(f"\nArquivo para enviar aos jogadores:\n{dist}")
+        self.vistos.clear()
         self.atualizar()
+        if auto:
+            self.status_msg(("Todas as ordens chegaram" if auto == "todas" else "Prazo vencido")
+                            + f": semana rodada sozinha. {linhas[0]}")
+        else:
+            messagebox.showinfo("Rodar semana", "\n".join(linhas), parent=self)
 
     def destroy(self):
+        if getattr(self, "_agendado", None):
+            try:
+                self.after_cancel(self._agendado)
+            except tk.TclError:
+                pass
         super().destroy()
+
+
+class DialogoEnvios(w.Dialogo):
+    """Histórico da caixa de entrada: cada arquivo de ordens recebido, quando e se foi aceito."""
+
+    def __init__(self, master, st):
+        super().__init__(master, "Histórico de envios", 900, 460)
+        m = st["multiplayer"]
+        fr, tv = w.tabela(self.corpo, [("sem", "Semana"), ("jog", "Jogador"), ("quando", "Recebido em"),
+                                       ("arq", "Arquivo"), ("res", "Resultado")], 16,
+                          {"sem": 80, "jog": 120, "quando": 120, "arq": 180, "res": 360}, estica={"res"})
+        fr.pack(fill="both", expand=True)
+        for x in reversed(m.get("envios", [])):
+            j = m["jogadores"].get(x["jogador"], {})
+            res = "aceitas" if x["resultado"] == "aceita" else f"recusadas – {x['resultado']}"
+            tv.insert("", "end", values=(f"{x['semana']}/{x['ano']}", j.get("nome", x["jogador"]),
+                                         x["quando"] + (" (atrasadas)" if x.get("atrasado") else ""), x["arquivo"], res))
+        if not m.get("envios"):
+            tk.Label(self.corpo, text="Nenhum arquivo recebido ainda.").pack(anchor="w")
+        w.Botao(self.rodape, "Fechar", self.destroy, largura=10).pack(side="right")
 
 
 class DialogoPolitica(w.Dialogo):
