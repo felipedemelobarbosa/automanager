@@ -148,6 +148,8 @@ class Exportador:
                           f'<a href="{cid}-pilotos.html">{t("Pilotos")}</a>')
         if self.humanas:
             partes.append(f'<a href="financas.html">{t("Finanças")}</a>')
+        if self.anos_anteriores():
+            partes.append(f'<a href="temporadas.html">{t("Temporadas anteriores")}</a>')
         partes.append(f'<a href="noticias.html">{t("Notícias")}</a>')
         return "<nav>" + " ".join(partes) + "</nav>"
 
@@ -189,15 +191,30 @@ class Exportador:
         return f'<table class="{"ordenavel" if ordenavel else ""}"><thead><tr>{th}</tr></thead><tbody>{trs}</tbody></table>'
 
     # ------------------------------------------------------------------ dados
-    def corridas(self, cid):
-        return self.st.get("temporadas", {}).get(str(self.st["ano"]), {}).get(cid, {}).get("corridas", [])
+    def corridas(self, cid, ano=None):
+        return self.st.get("temporadas", {}).get(str(ano or self.st["ano"]), {}).get(cid, {}).get("corridas", [])
+
+    def anos_anteriores(self):
+        return sorted((int(a) for a in self.st.get("temporadas", {}) if int(a) < self.st["ano"]), reverse=True)
+
+    @staticmethod
+    def arq_classificacao(cid, ano=None):
+        return f"{cid}-{ano}-classificacao.html" if ano else f"{cid}-classificacao.html"
+
+    @staticmethod
+    def arq_corrida(cid, evento, ano=None):
+        return f"{cid}-{ano}-corrida-{evento}.html" if ano else f"{cid}-corrida-{evento}.html"
 
     def calendario(self, cid):
         return sorted((ev for ev in self.st["categorias"][cid]["calendario"] if ev.get("ativo")),
                       key=lambda ev: ev["semana"])
 
-    def classificacao(self, cid):
-        return campeonato.classificacao(self.st, cid)
+    def classificacao(self, cid, ano=None):
+        if ano:                                     # temporada encerrada: a classificação final gravada
+            final = self.st.get("temporadas", {}).get(str(ano), {}).get(cid, {}).get("final")
+            if final:
+                return final["pilotos"], final["equipes"]
+        return campeonato.classificacao(self.st, cid, ano)
 
     # ------------------------------------------------------------------ páginas
     def exportar(self):
@@ -213,6 +230,13 @@ class Exportador:
             self.pag_pilotos(cid)
             for r in self.corridas(cid):
                 self.pag_corrida(cid, r)
+            for ano in self.anos_anteriores():
+                if self.corridas(cid, ano):
+                    self.pag_classificacao(cid, ano)
+                    for r in self.corridas(cid, ano):
+                        self.pag_corrida(cid, r, ano)
+        if self.anos_anteriores():
+            self.pag_temporadas()
         if self.humanas:
             self.pag_financas()
         self.pag_noticias()
@@ -256,7 +280,8 @@ class Exportador:
                             f'<td>{e(x.get("equipe"))}</td>'])
                       for x in sorted(campeoes, key=lambda x: (-int(x.get("ano", 0)), str(x.get("categoria"))))]
             blocos.append(self.secao(t("Campeões"), self.tabela(
-                [(t("Ano"), "num"), (t("Categoria"), ""), (t("Piloto"), ""), (t("Equipe"), "")], linhas)))
+                [(t("Ano"), "num"), (t("Categoria"), ""), (t("Piloto"), ""), (t("Equipe"), "")], linhas)
+                + f'<p><a href="temporadas.html">{t("Temporadas anteriores")}</a></p>'))
         blocos.append(self.secao(t("Últimas notícias"), self._noticias(25) +
                                  f'<p><a href="noticias.html">{t("Todas as notícias")}</a></p>'))
         self.pagina("index.html", f'AutoManager – {t("Temporada")} {st["ano"]}', "".join(blocos))
@@ -295,13 +320,18 @@ class Exportador:
                 f'<div>{t("Pilotos")}: {pilotos}</div>{caixa}</div>')
 
     # --- classificação, com a posição em cada corrida (como nas tabelas da Wikipedia)
-    def pag_classificacao(self, cid):
+    def pag_classificacao(self, cid, ano=None):
+        """Temporada atual (ano=None) ou uma já encerrada (colunas = as corridas disputadas naquele ano)."""
         st = self.st
         c = st["categorias"][cid]
-        corridas = self.corridas(cid)
-        cal = [ev for ev in self.calendario(cid) if ev["especie"] == "corrida"]
+        corridas = self.corridas(cid, ano)
+        if ano:
+            cal = [{"id": r["evento"], "nome": r["nome"], "local": r.get("local")}
+                   for r in sorted(corridas, key=lambda r: r.get("semana", 0))]
+        else:
+            cal = [ev for ev in self.calendario(cid) if ev["especie"] == "corrida"]
         por_evento = {r["evento"]: r for r in corridas}
-        pil, eqs = self.classificacao(cid)
+        pil, eqs = self.classificacao(cid, ano)
         # colunas das corridas: bandeira + 3 letras da cidade (como nas tabelas da Wikipedia); nome completo na dica
         cols = "".join(f'<th class="c" title="{e(ev["nome"])}">{self.bandeira(paises.do_local(ev.get("local")))}<br>'
                        f'{e((ev.get("local") or ev["nome"]).split(",")[0][:3].upper())}</th>' for ev in cal)
@@ -351,7 +381,45 @@ class Exportador:
         nota = "" if corridas else f'<p>{t("Nenhuma corrida disputada ainda.")}</p>'
         corpo = (self.secao(t("Campeonato de pilotos"), nota + legenda + self.tabela_html(cab_p, linhas))
                  + self.secao(t("Campeonato de equipes"), self.tabela_html(cab_e, linhas_e)))
-        self.pagina(f"{cid}-classificacao.html", f'{c["categoria"]["nome"]} {st["ano"]} – {t("Campeonato")}', corpo)
+        if ano:                                     # temporada encerrada: lista das corridas com o vencedor
+            linhas_r = []
+            for r in sorted(corridas, key=lambda r: r.get("semana", 0)):
+                v = (r.get("resultado") or [{}])[0]
+                venc = t("Cancelada") if r.get("cancelada") else \
+                    f'{self.bandeira(v.get("nacionalidade"))}{e(v.get("nome", ""))} ({e(v.get("equipe_nome", ""))})'
+                linhas_r.append(("", [f'<td class="num">{r.get("semana", "")}</td>',
+                                      f'<td><a href="{self.arq_corrida(cid, r["evento"], ano)}">{e(r["nome"])}</a></td>',
+                                      f'<td>{self.bandeira(paises.do_local(r.get("local")))}{e(self.local(r.get("local")))}</td>',
+                                      f'<td>{venc}</td>', f'<td>{e(r.get("pole") or "")}</td>',
+                                      f'<td>{e((r.get("volta_rapida") or {}).get("nome", ""))}</td>']))
+            corpo += self.secao(t("Corridas"), self.tabela(
+                [(t("Semana"), "num"), (t("Evento"), ""), (t("Local"), ""), (t("Vencedor"), ""), (t("Pole"), ""),
+                 (t("Volta mais rápida"), "")], linhas_r))
+        self.pagina(self.arq_classificacao(cid, ano),
+                    f'{c["categoria"]["nome"]} {ano or st["ano"]} – {t("Campeonato")}', corpo)
+
+    def pag_temporadas(self):
+        """Índice das temporadas encerradas: campeões e links para a classificação de cada uma."""
+        st = self.st
+        comissario = st.get("multiplayer") and not st["multiplayer"].get("sessao")
+        linhas = []
+        for ano in self.anos_anteriores():
+            for cid, c in st["categorias"].items():
+                if not self.corridas(cid, ano):
+                    continue
+                pil, eqs = self.classificacao(cid, ano)
+                p = pil[0] if pil else {}
+                x = eqs[0] if eqs else {}
+                minha = next((i for i, q in enumerate(eqs, 1) if self.eh_usuario(cid, q["id"])), None)
+                linhas.append(("", [f'<td class="num">{ano}</td>',
+                                    f'<td><a href="{self.arq_classificacao(cid, ano)}">{e(c["categoria"]["nome"])}</a></td>',
+                                    f'<td>{self.bandeira(p.get("nacionalidade"))}{e(p.get("nome", "-"))}</td>',
+                                    f'<td>{e(x.get("nome", "-"))}</td>', f'<td class="num">{len(self.corridas(cid, ano))}</td>']
+                              + ([] if comissario else [f'<td class="num">{minha or ""}</td>'])))
+        corpo = self.secao(t("Temporadas anteriores"), self.tabela(
+            [(t("Ano"), "num"), (t("Categoria"), ""), (t("Campeão"), ""), (t("Equipe campeã"), ""),
+             (t("Corridas"), "num")] + ([] if comissario else [(t("Sua equipe"), "num")]), linhas))
+        self.pagina("temporadas.html", t("Temporadas anteriores"), corpo)
 
     def pag_calendario(self, cid):
         st = self.st
@@ -385,7 +453,7 @@ class Exportador:
              (t("Vencedor"), ""), (t("Pole"), ""), (t("Volta mais rápida"), "")], linhas))
         self.pagina(f"{cid}-calendario.html", f'{c["categoria"]["nome"]} {st["ano"]} – {t("Calendário")}', corpo)
 
-    def pag_corrida(self, cid, r):
+    def pag_corrida(self, cid, r, ano=None):
         st = self.st
         c = st["categorias"][cid]
         lider = r["resultado"][0]["tempo"] if r.get("resultado") else 0
@@ -417,7 +485,8 @@ class Exportador:
         corpo = self.secao(r["nome"], info + self.tabela(
             [("P", "num"), (t("Piloto"), ""), (t("Equipe"), ""), (t("Grid"), "num"), (t("Voltas"), "num"),
              (t("Tempo/Status"), "num"), (t("Pit"), "num"), (t("Pts"), "num")], linhas))
-        self.pagina(f"{cid}-corrida-{r['evento']}.html", f'{c["categoria"]["nome"]} {st["ano"]} – {r["nome"]}', corpo)
+        self.pagina(self.arq_corrida(cid, r["evento"], ano), f'{c["categoria"]["nome"]} {ano or st["ano"]} – {r["nome"]}',
+                    corpo)
 
     def pag_equipes(self, cid):
         st = self.st

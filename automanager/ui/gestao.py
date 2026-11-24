@@ -506,27 +506,9 @@ class TelaGestao(tk.Frame):
 
     def exportar_html(self):
         """Gera um site (index.html + páginas) com classificação, calendário, resultados, equipes, pilotos,
-        finanças da sua equipe e notícias, para abrir no navegador."""
-        from tkinter import filedialog
-        import os
-        import webbrowser
-        from .. import exportar_html
-        base = filedialog.askdirectory(parent=self, title="Pasta onde salvar o HTML")
-        if not base:
-            return
-        pasta = os.path.join(base, f"AutoManager_{self.st['ano']}_S{self.st['semana']:02d}")
-        self.config(cursor="watch")
-        self.update()
-        try:
-            indice = exportar_html.exportar(self.st, pasta)
-        except OSError as erro:
-            messagebox.showerror("Exportar para HTML", f"Não foi possível gravar os arquivos:\n{erro}", parent=self)
-            return
-        finally:
-            self.config(cursor="")
-        if messagebox.askyesno("Exportar para HTML", f"Páginas geradas em:\n{pasta}\n\nAbrir no navegador?",
-                               parent=self):
-            webbrowser.open("file://" + os.path.abspath(indice))
+        finanças da sua equipe, temporadas anteriores e notícias, para abrir no navegador."""
+        from .exportar_tela import exportar
+        exportar(self, self.st)
 
     def _fim_de_jogo(self):
         if not self.st.get("fim_de_jogo"):

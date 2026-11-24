@@ -204,6 +204,7 @@ class TelaComissario(tk.Frame):
         w.Botao(b, "Importar ordens...", self.importar, padx=6).pack(side="left")
         w.Botao(b, "Pular jogador (IA nesta semana)", self.pular, padx=6).pack(side="left", padx=4)
         w.Botao(b, "Exportar arquivo para os jogadores...", self.exportar, padx=6).pack(side="left")
+        w.Botao(b, "Exportar para HTML...", self.exportar_html, padx=6).pack(side="left", padx=4)
         self.lbl_pol = tk.Label(g, text="", fg=w.CINZA_ESCURO, anchor="w", justify="left")
         self.lbl_pol.pack(fill="x")
         g2 = w.Grupo(corpo, "Notícias")
@@ -314,6 +315,11 @@ class TelaComissario(tk.Frame):
         if caminho:
             mp.exportar_para_jogadores(self.st, caminho)
             self.status_msg(f"Arquivo para os jogadores: {caminho}")
+
+    def exportar_html(self):
+        """Site da liga visto pelo comissário: finanças de todas as equipes de jogadores."""
+        from .exportar_tela import exportar
+        exportar(self, self.st)
 
     def rodar(self):
         ok, pend = mp.pode_rodar(self.st)
