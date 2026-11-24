@@ -122,11 +122,15 @@ class TelaGestao(tk.Frame):
             arq.add_command(label="Salvar ordens...", command=self.salvar_ordens, accelerator="Ctrl+S")
             arq.add_command(label="Plano do evento...", command=self.plano_evento)
             arq.add_separator()
+            arq.add_command(label="Exportar para HTML...", command=self.exportar_html)
+            arq.add_separator()
             arq.add_command(label="Fechar liga", command=app.fechar_jogo)
         else:
             arq.add_command(label="Abrir jogo salvo...", command=app.abrir_jogo)
             arq.add_command(label="Salvar jogo", command=app.salvar_jogo, accelerator="Ctrl+S")
             arq.add_command(label="Salvar como...", command=lambda: app.salvar_jogo(como=True))
+            arq.add_separator()
+            arq.add_command(label="Exportar para HTML...", command=self.exportar_html)
             arq.add_separator()
             arq.add_command(label="Opções...", command=app.opcoes)
             arq.add_separator()
@@ -499,6 +503,30 @@ class TelaGestao(tk.Frame):
             return
         self.atualizar()
         self.st_msg.configure(text=f"{len(novas)} notícia(s) nesta semana." if novas else "Semana sem novidades.")
+
+    def exportar_html(self):
+        """Gera um site (index.html + páginas) com classificação, calendário, resultados, equipes, pilotos,
+        finanças da sua equipe e notícias, para abrir no navegador."""
+        from tkinter import filedialog
+        import os
+        import webbrowser
+        from .. import exportar_html
+        base = filedialog.askdirectory(parent=self, title="Pasta onde salvar o HTML")
+        if not base:
+            return
+        pasta = os.path.join(base, f"AutoManager_{self.st['ano']}_S{self.st['semana']:02d}")
+        self.config(cursor="watch")
+        self.update()
+        try:
+            indice = exportar_html.exportar(self.st, pasta)
+        except OSError as erro:
+            messagebox.showerror("Exportar para HTML", f"Não foi possível gravar os arquivos:\n{erro}", parent=self)
+            return
+        finally:
+            self.config(cursor="")
+        if messagebox.askyesno("Exportar para HTML", f"Páginas geradas em:\n{pasta}\n\nAbrir no navegador?",
+                               parent=self):
+            webbrowser.open("file://" + os.path.abspath(indice))
 
     def _fim_de_jogo(self):
         if not self.st.get("fim_de_jogo"):
