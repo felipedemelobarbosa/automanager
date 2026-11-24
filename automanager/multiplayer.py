@@ -22,6 +22,7 @@ st["multiplayer"] = {
   "sessao" (só no modo jogador, em memória): {"jogador", "acoes", "planos", "_chave"}}
   (* só no arquivo do comissário)
 """
+import base64
 import copy
 import hashlib
 import hmac
@@ -40,7 +41,8 @@ from .util import PASTA_DADOS
 PASTA_LIGAS = os.path.join(PASTA_DADOS, "ligas")
 POLITICAS = ("ia", "repetir", "bloquear")
 FORMATO_ORDENS = "automanager-ordens"
-SECRETOS = ("recebidas", "ultimas", "ultimo_plano", "planos_semana", "envios", "auto", "pasta_compartilhada")
+SECRETOS = ("recebidas", "ultimas", "ultimo_plano", "planos_semana", "envios", "auto", "pasta_compartilhada",
+            "pasta_ordens_privada", "recebidas_mac")
 ACOES_REPETIVEIS = ("dev_modo", "dev_investir")
 
 
@@ -63,6 +65,71 @@ def _canonico(d):
 
 def _assinar(chave, dados):
     return hmac.new(bytes.fromhex(chave), _canonico(dados).encode("utf-8"), hashlib.sha256).hexdigest()
+
+
+# ---------------------------------------------------------------- ordens cifradas
+# O arquivo de ordens vai cifrado com a chave do jogador (a mesma que o comissário guarda): numa pasta
+# compartilhada, no Discord ou por e-mail, os outros jogadores só veem de quem e de que semana ele é.
+# Cifra de fluxo com HMAC-SHA256 em modo contador (nonce aleatório de 16 bytes) e autenticação
+# encrypt-then-MAC (HMAC-SHA256 sobre o cabeçalho, o nonce e o texto cifrado), chaves separadas para cifra e MAC.
+VERSAO_CIFRADA = 4
+CABECALHO_CIFRADO = ("formato", "versao", "liga", "jogador", "ano", "semana")
+
+
+def _chaves_cifra(chave):
+    base = bytes.fromhex(chave)
+    return (hmac.new(base, b"automanager:ordens:cifra", hashlib.sha256).digest(),
+            hmac.new(base, b"automanager:ordens:mac", hashlib.sha256).digest())
+
+
+def _fluxo(kc, nonce, n):
+    out = bytearray()
+    i = 0
+    while len(out) < n:
+        out += hmac.new(kc, nonce + i.to_bytes(8, "big"), hashlib.sha256).digest()
+        i += 1
+    return bytes(out[:n])
+
+
+def _mac(km, cab, nonce, cifrado):
+    return hmac.new(km, _canonico(cab).encode("utf-8") + nonce + cifrado, hashlib.sha256).hexdigest()
+
+
+def cifrar_ordens(chave, dados):
+    """Envelope cifrado das ordens: só o cabeçalho (liga, jogador, ano, semana) fica legível."""
+    kc, km = _chaves_cifra(chave)
+    cab = {"formato": FORMATO_ORDENS, "versao": VERSAO_CIFRADA, "liga": dados["liga"], "jogador": dados["jogador"],
+           "ano": dados["ano"], "semana": dados["semana"]}
+    texto = _canonico(dados).encode("utf-8")
+    nonce = secrets.token_bytes(16)
+    cif = bytes(a ^ b for a, b in zip(texto, _fluxo(kc, nonce, len(texto))))
+    return dict(cab, cifrado={"nonce": nonce.hex(), "dados": base64.b64encode(cif).decode("ascii"),
+                              "mac": _mac(km, cab, nonce, cif)})
+
+
+def abrir_ordens(chave, env):
+    """Abre um envelope cifrado. Levanta ErroLiga se a chave não for a do jogador ou o arquivo foi alterado."""
+    try:
+        cab = {k: env[k] for k in CABECALHO_CIFRADO}
+        nonce = bytes.fromhex(env["cifrado"]["nonce"])
+        cif = base64.b64decode(env["cifrado"]["dados"], validate=True)
+        mac = str(env["cifrado"]["mac"])
+    except (KeyError, TypeError, ValueError) as e:
+        raise ErroLiga("Arquivo de ordens cifrado incompleto.") from e
+    kc, km = _chaves_cifra(chave)
+    if not hmac.compare_digest(_mac(km, cab, nonce, cif), mac):
+        raise ErroLiga("Não foi possível abrir as ordens cifradas (arquivo alterado ou senha diferente).")
+    try:
+        dados = json.loads(bytes(a ^ b for a, b in zip(cif, _fluxo(kc, nonce, len(cif)))).decode("utf-8"))
+    except (ValueError, UnicodeDecodeError) as e:
+        raise ErroLiga("Arquivo de ordens cifrado ilegível.") from e
+    if any(dados.get(k) != cab[k] for k in ("liga", "jogador", "ano", "semana")):
+        raise ErroLiga("O cabeçalho das ordens cifradas não confere com o conteúdo.")
+    return dados
+
+
+def cifradas(dados):
+    return isinstance(dados, dict) and "cifrado" in dados
 
 
 def _slug(s):
@@ -293,9 +360,14 @@ def ordens_da_sessao(st):
     return dados
 
 
+def ordens_para_arquivo(st):
+    """As ordens da sessão como vão para o arquivo: cifradas com a chave do jogador."""
+    return cifrar_ordens(sessao(st)["_chave"], ordens_da_sessao(st))
+
+
 def salvar_ordens(st, caminho):
     with open(caminho, "w", encoding="utf-8") as f:
-        json.dump(ordens_da_sessao(st), f, ensure_ascii=False, indent=1)
+        json.dump(ordens_para_arquivo(st), f, ensure_ascii=False, indent=1)
     return caminho
 
 
@@ -317,6 +389,8 @@ def retomar_ordens(st, dados):
     mp = st["multiplayer"]
     if dados.get("liga") != mp["id"] or dados.get("jogador") != s["jogador"]:
         raise ErroLiga("Estas ordens são de outra liga ou de outro jogador.")
+    if cifradas(dados):
+        dados = abrir_ordens(s["_chave"], dados)
     if (dados.get("ano"), dados.get("semana")) != (st["ano"], st["semana"]):
         raise ErroLiga("Estas ordens são de outra semana.")
     erros = []
@@ -342,6 +416,13 @@ def importar_ordens(st, dados):
         raise ErroLiga("Jogador desconhecido.")
     if j.get("eliminado"):
         raise ErroLiga(f"{j['nome']} está fora da liga.")
+    mac = None
+    if cifradas(dados):                                  # só o comissário (com a chave do jogador) abre
+        mac = (dados.get("cifrado") or {}).get("mac")
+        try:
+            dados = abrir_ordens(j["chave"], dados)
+        except ErroLiga as e:
+            raise ErroLiga(f"Ordens de {j['nome']}: {e}") from e
     if (dados.get("ano"), dados.get("semana")) != (st["ano"], st["semana"]):
         raise ErroLiga(f"As ordens de {j['nome']} são da semana {dados.get('semana')}/{dados.get('ano')}; a liga "
                        f"está na semana {st['semana']}/{st['ano']}.")
@@ -371,6 +452,11 @@ def importar_ordens(st, dados):
                        f"(o jogador usou um arquivo da liga diferente do desta semana?)"
                        + (f": {'; '.join(erros)}" if erros else "."))
     mp["recebidas"][jid] = dados
+    marcas = mp.setdefault("recebidas_mac", {})          # identifica o arquivo cifrado (não importar duas vezes)
+    if mac:
+        marcas[jid] = mac
+    else:
+        marcas.pop(jid, None)
     if jid in mp.get("pular", []):
         mp["pular"].remove(jid)
     return jid

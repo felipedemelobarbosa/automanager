@@ -2089,5 +2089,15 @@
  "esta mensagem": "this message",
  "Arquivo da liga – semana {0}/{1}.": "League file – week {0}/{1}.",
  "Semana {0}/{1} publicada na liga {2}. Baixe o arquivo da liga (anexo), jogue e mande suas ordens aqui.": "Week {0}/{1} published in league {2}. Download the league file (attached), play, and send your orders here.",
- "Faltam ordens de {0}. Prazo: {1}.": "Orders still missing from {0}. Deadline: {1}."
+ "Faltam ordens de {0}. Prazo: {1}.": "Orders still missing from {0}. Deadline: {1}.",
+ "Pasta privada do bot...": "Bot's private folder...",
+ "Pasta privada onde o bot grava as ordens (fora da pasta compartilhada)": "Private folder where the bot saves orders (outside the shared folder)",
+ "Pasta privada do bot": "Bot's private folder",
+ "A pasta privada tem de ficar fora da pasta compartilhada.": "The private folder must be outside the shared folder.",
+ "Pasta privada do bot: {0}": "Bot's private folder: {0}",
+ "Arquivo de ordens cifrado incompleto.": "Incomplete encrypted orders file.",
+ "Não foi possível abrir as ordens cifradas (arquivo alterado ou senha diferente).": "Could not open the encrypted orders (file changed or different password).",
+ "Arquivo de ordens cifrado ilegível.": "Unreadable encrypted orders file.",
+ "O cabeçalho das ordens cifradas não confere com o conteúdo.": "The encrypted orders' header doesn't match their content.",
+ "Ordens de {0}: {1}": "Orders from {0}: {1}"
 }

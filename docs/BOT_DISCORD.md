@@ -39,7 +39,8 @@ Create `bot_discord.json` (all fields optional):
   "jogadores": {"ana": 111111111111111111, "bia": 222222222222222222},
   "lembrete_horas": 12,
   "prefixo": "!",
-  "idioma": "en"
+  "idioma": "en",
+  "pasta_ordens": "/path/to/private/inbox"
 }
 ```
 
@@ -48,6 +49,9 @@ Create `bot_discord.json` (all fields optional):
   `ordens/`) → Discord user id. Used to mention missing players and to refuse orders sent by someone else.
 - `lembrete_horas`: remind missing players this many hours before the deadline (once per week).
 - `idioma`: `pt`, `en` or `es`.
+- `pasta_ordens`: a folder **outside** the shared folder (on the bot's computer) where the bot saves received orders.
+  In the game, the commissioner points to the same folder with *League inbox > Bot's private folder...*. Without
+  it, orders go to `ordens/` inside the shared folder.
 
 Run (keep it running while the league is active):
 
@@ -69,6 +73,14 @@ On Windows (PowerShell): `$env:DISCORD_TOKEN="your-token"; python -m automanager
 | Commissioner runs the week | The bot posts "Week N published" with the new league file attached (checked every minute). |
 | Before the deadline | One reminder per week mentioning who is still missing. |
 
-Security: orders are signed with each player's password, so a file sent by someone else, or changed, is refused
-by the commissioner's game anyway; the `jogadores` map adds a check at the bot. The token gives control of the bot –
-never share it or put it in the shared folder.
+Security:
+- **Orders are encrypted** with each player's own key (derived from their password, which only that player and the
+  commissioner's file have). A file posted in the channel or sitting in the shared folder shows only whose and which
+  week it is – no one else, not even the bot, can read the actions or event plans. The commissioner's game decrypts it
+  on import; the player's own game can reopen it to keep editing.
+- Orders are also signed, so a changed or forged file is refused by the commissioner's game; the `jogadores` map adds
+  a check at the bot.
+- With `pasta_ordens`, received orders don't even appear in the shared folder.
+- The commissioner can read everyone's orders (needed to run the week): if the commissioner also plays, the other
+  players have to trust them.
+- The token gives control of the bot – never share it or put it in the shared folder.

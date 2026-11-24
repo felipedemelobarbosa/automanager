@@ -2088,5 +2088,15 @@
  "esta mensagem": "este mensaje",
  "Arquivo da liga – semana {0}/{1}.": "Archivo de la liga – semana {0}/{1}.",
  "Semana {0}/{1} publicada na liga {2}. Baixe o arquivo da liga (anexo), jogue e mande suas ordens aqui.": "Semana {0}/{1} publicada en la liga {2}. Descargue el archivo de la liga (adjunto), juegue y envíe sus órdenes aquí.",
- "Faltam ordens de {0}. Prazo: {1}.": "Faltan órdenes de {0}. Plazo: {1}."
+ "Faltam ordens de {0}. Prazo: {1}.": "Faltan órdenes de {0}. Plazo: {1}.",
+ "Pasta privada do bot...": "Carpeta privada del bot...",
+ "Pasta privada onde o bot grava as ordens (fora da pasta compartilhada)": "Carpeta privada donde el bot guarda las órdenes (fuera de la carpeta compartida)",
+ "Pasta privada do bot": "Carpeta privada del bot",
+ "A pasta privada tem de ficar fora da pasta compartilhada.": "La carpeta privada debe estar fuera de la carpeta compartida.",
+ "Pasta privada do bot: {0}": "Carpeta privada del bot: {0}",
+ "Arquivo de ordens cifrado incompleto.": "Archivo de órdenes cifrado incompleto.",
+ "Não foi possível abrir as ordens cifradas (arquivo alterado ou senha diferente).": "No se pudieron abrir las órdenes cifradas (archivo alterado o contraseña distinta).",
+ "Arquivo de ordens cifrado ilegível.": "Archivo de órdenes cifrado ilegible.",
+ "O cabeçalho das ordens cifradas não confere com o conteúdo.": "La cabecera de las órdenes cifradas no coincide con el contenido.",
+ "Ordens de {0}: {1}": "Órdenes de {0}: {1}"
 }

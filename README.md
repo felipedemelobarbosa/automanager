@@ -70,6 +70,9 @@ mercado é sorteada a cada semana. Equipes sem jogador ficam com a IA.
   `ordens/<jogador>.json`, a barra de baixo mostra o prazo e se o comissário recebeu (ou recusou, com o motivo) as
   ordens, e o jogo avisa quando a semana nova é publicada (abre sem pedir a senha de novo). O comissário importa
   sozinho (a cada 5 s). O arquivo do comissário nunca vai para a pasta compartilhada.
+- **Ordens cifradas**: o arquivo de ordens é cifrado com a chave do jogador (derivada da senha); na pasta
+  compartilhada, no Discord ou por e-mail os outros jogadores só veem de quem e de que semana ele é. Só o jogo do
+  comissário (e o do próprio jogador, para continuar editando) abre. Arquivos antigos, sem cifra, continuam aceitos.
 - **Rodar sozinha**: quando chegarem todas as ordens e/ou no prazo (o jogo do comissário precisa estar aberto).
 - **Prazo da semana**, **Importar todas de uma pasta...** (com o motivo de cada recusa) e **Histórico de envios**.
 
@@ -78,7 +81,9 @@ mercado é sorteada a cada semana. Equipes sem jogador ficam com a IA.
 `python -m automanager.bot_discord <pasta compartilhada> --config bot_discord.json` (requer
 `pip install -r requirements-bot.txt` e o token em `DISCORD_TOKEN`). Os jogadores mandam o arquivo de ordens no canal
 da liga (ou em mensagem privada); o bot grava na pasta compartilhada, publica cada semana nova com o arquivo da liga,
-responde `!status`, `!liga`, `!prazo`, `!ajuda` e lembra quem falta antes do prazo. Passo a passo:
+responde `!status`, `!liga`, `!prazo`, `!ajuda` e lembra quem falta antes do prazo. Com `pasta_ordens` na
+configuração, o bot grava as ordens numa pasta privada fora da pasta compartilhada (o comissário aponta a mesma pasta
+em *Pasta privada do bot...*). Passo a passo:
 [docs/BOT_DISCORD.md](docs/BOT_DISCORD.md).
 
 ## Estrutura

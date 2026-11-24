@@ -84,6 +84,65 @@ class TestPastaCompartilhada(Base):
             mp.entrar_com_chave(st_liga, self.ids["Bia"], mp.sessao(ana)["_chave"])
 
 
+class TestOrdensCifradas(Base):
+    """Na pasta compartilhada (ou no Discord) os outros jogadores não conseguem ler as ordens de ninguém."""
+
+    def test_outro_jogador_nao_le_e_comissario_le(self):
+        import base64
+        ana = self.jogador("Ana", "a")
+        livre = next(p for p in ana["pilotos"].values() if not p.get("contrato"))
+        mp.sessao(ana)["acoes"].append({"acao": "proposta_piloto", "piloto": livre["id"], "valor": 987654})
+        caixa.entregar_ordens(ana, self.pasta)
+        with open(caixa.caminho_ordens(self.pasta, self.ids["Ana"]), encoding="utf-8") as f:
+            bruto = f.read()
+        arq = json.loads(bruto)
+        self.assertEqual(set(arq), set(mp.CABECALHO_CIFRADO) | {"cifrado"})        # só de quem e de que semana
+        self.assertNotIn("987654", bruto)
+        self.assertNotIn(livre["id"], bruto)
+        self.assertNotIn(b"987654", base64.b64decode(arq["cifrado"]["dados"]))
+        bia = self.jogador("Bia", "b")
+        with self.assertRaises(mp.ErroLiga):
+            mp.abrir_ordens(mp.sessao(bia)["_chave"], arq)                         # a chave da Bia não abre
+        self.assertEqual(mp.abrir_ordens(mp.sessao(ana)["_chave"], arq)["acoes"][0]["valor"], 987654)
+
+    def test_comissario_importa_e_recusa_alteradas(self):
+        ana = self.jogador("Ana", "a")
+        caixa.entregar_ordens(ana, self.pasta)
+        res = caixa.varrer(self.st, self.pasta, {})
+        self.assertEqual(res[0][2], "aceita")
+        self.assertEqual(caixa.varrer(self.st, self.pasta, {}), [])                # mesmo arquivo: não reimporta
+        bia = self.jogador("Bia", "b")
+        arq = mp.ordens_para_arquivo(bia)
+        dados = bytearray(__import__("base64").b64decode(arq["cifrado"]["dados"]))
+        dados[5] ^= 1                                                              # um bit alterado
+        arq["cifrado"]["dados"] = __import__("base64").b64encode(bytes(dados)).decode()
+        with self.assertRaises(mp.ErroLiga) as e:
+            mp.importar_ordens(self.st, arq)
+        self.assertIn("Bia", str(e.exception))
+        self.assertIn("senha diferente", str(e.exception))
+        self.assertIsNotNone(mp.importar_ordens(self.st, mp.ordens_da_sessao(bia)))  # antigas, sem cifra: aceitas
+
+    def test_jogador_retoma_as_proprias_ordens(self):
+        from automanager import acoes
+        ana = self.jogador("Ana", "a")
+        self.assertIsNone(acoes.executar(ana, "emprestimo", valor=1000000, prazo=None))
+        caminho = caixa.entregar_ordens(ana, self.pasta)
+        de_novo = self.jogador("Ana", "a")
+        self.assertEqual(mp.retomar_ordens(de_novo, mp.ler_ordens(caminho)), [])
+        self.assertEqual([a["acao"] for a in mp.sessao(de_novo)["acoes"]], ["emprestimo"])
+
+    def test_pasta_privada_do_bot(self):
+        privada = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, privada)
+        b = bot_discord.NucleoBot(self.pasta, {"pasta_ordens": privada})
+        arq = json.dumps(mp.ordens_para_arquivo(self.jogador("Ana", "a"))).encode()
+        self.assertTrue(b.arquivo_recebido("ana.json", arq, 1).startswith("✅"))
+        self.assertEqual(os.listdir(privada), [f"{self.ids['Ana']}.json"])
+        self.assertFalse(os.listdir(os.path.join(self.pasta, caixa.PASTA_ORDENS)))   # nada na pasta compartilhada
+        res = caixa.varrer(self.st, self.pasta, {}, privada)
+        self.assertEqual([(j, r) for _, j, r in res], [(self.ids["Ana"], "aceita")])
+
+
 class TestCaixaDeEntrada(Base):
     def test_prazo_atraso_e_rodar_sozinha(self):
         self.assertIsNone(caixa.prazo(self.st))

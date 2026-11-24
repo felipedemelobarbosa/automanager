@@ -138,13 +138,24 @@ def escrever_status(st, pasta, recusas=None):
         "politica": m["politica"], "atualizado_em": agora(), "jogadores": jogadores})
 
 
-def varrer(st, pasta, vistos):
-    """Comissário: importa as ordens novas da pasta compartilhada. `vistos` ({arquivo: (mtime, tamanho)}) evita
-    reprocessar o mesmo arquivo. Retorna [(arquivo, jid, resultado)] dos arquivos novos ou alterados; ordens de
-    outra semana (antigas) são ignoradas sem aviso."""
-    d = os.path.join(pasta, PASTA_ORDENS)
-    if not os.path.isdir(d):
-        return []
+def _marca_ordens(d):
+    """Identifica um arquivo de ordens (o MAC se cifrado, o checksum se não) para não importar duas vezes."""
+    d = d or {}
+    return (d.get("cifrado") or {}).get("mac") or d.get("checksum")
+
+
+def varrer(st, pasta, vistos, privada=None):
+    """Comissário: importa as ordens novas da pasta compartilhada (ordens/) e da pasta privada do bot, se houver.
+    `vistos` ({arquivo: (mtime, tamanho)}) evita reprocessar o mesmo arquivo. Retorna [(arquivo, jid, resultado)]
+    dos arquivos novos ou alterados; ordens de outra semana (antigas) são ignoradas sem aviso."""
+    novos = []
+    for d in [os.path.join(pasta, PASTA_ORDENS) if pasta else None, privada]:
+        if d and os.path.isdir(d):
+            novos += _novos_em(st, d, vistos)
+    return importar_arquivos(st, novos)
+
+
+def _novos_em(st, d, vistos):
     novos = []
     for n in sorted(os.listdir(d)):
         if not n.lower().endswith(".json") or n.endswith(".tmp"):
@@ -160,11 +171,14 @@ def varrer(st, pasta, vistos):
         dados = _ler_json(c)
         if isinstance(dados, dict) and (dados.get("ano"), dados.get("semana")) != (st["ano"], st["semana"]):
             continue                                       # ordens de uma semana que já passou
-        rec = (st["multiplayer"].get("recebidas") or {}).get((dados or {}).get("jogador"))
-        if rec and rec.get("checksum") == (dados or {}).get("checksum"):
+        m = st["multiplayer"]
+        jid = (dados or {}).get("jogador")
+        rec = (m.get("recebidas") or {}).get(jid)
+        marca = (m.get("recebidas_mac") or {}).get(jid) or _marca_ordens(rec) if rec else None
+        if marca and marca == _marca_ordens(dados):
             continue                                       # já importadas
         novos.append(c)
-    return importar_arquivos(st, novos)
+    return novos
 
 
 def recusas_da_semana(st):
@@ -201,17 +215,18 @@ def semana_publicada(pasta):
     return (s["ano"], s["semana"]) if s and "ano" in s else None
 
 
-def caminho_ordens(pasta, jid):
-    return os.path.join(pasta, PASTA_ORDENS, f"{jid}.json")
+def caminho_ordens(pasta, jid, privada=None):
+    """ordens/<jogador>.json na pasta compartilhada ou, com `privada`, na pasta privada do bot."""
+    return os.path.join(privada, f"{jid}.json") if privada else os.path.join(pasta, PASTA_ORDENS, f"{jid}.json")
 
 
 def entregar_ordens(st_jogador, pasta):
     """Jogador: grava as ordens desta semana na pasta compartilhada (substitui as anteriores dele)."""
     jid = mp.sessao(st_jogador)["jogador"]
-    return _gravar_json(caminho_ordens(pasta, jid), mp.ordens_da_sessao(st_jogador))
+    return _gravar_json(caminho_ordens(pasta, jid), mp.ordens_para_arquivo(st_jogador))
 
 
-def entregar_bytes(pasta, conteudo):
+def entregar_bytes(pasta, conteudo, privada=None):
     """Bot: confere um arquivo de ordens recebido (formato, liga, jogador e semana, pelo status.json) e grava na
     pasta. A assinatura (senha) é conferida pelo comissário ao importar. Retorna (jid, None) ou (None, motivo)."""
     try:
@@ -231,5 +246,5 @@ def entregar_bytes(pasta, conteudo):
     if (dados.get("ano"), dados.get("semana")) != (s["ano"], s["semana"]):
         return None, f"as ordens são da semana {dados.get('semana')}/{dados.get('ano')}; a liga está na semana " \
                      f"{s['semana']}/{s['ano']}."
-    _gravar_json(caminho_ordens(pasta, jid), dados)
+    _gravar_json(caminho_ordens(pasta, jid, privada), dados)
     return jid, None

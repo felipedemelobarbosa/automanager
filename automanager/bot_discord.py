@@ -11,7 +11,10 @@ Uso:  DISCORD_TOKEN=... python -m automanager.bot_discord <pasta compartilhada> 
 Requer:  pip install "discord.py>=2.5"  (só para o bot; o jogo não depende dele). Passo a passo: docs/BOT_DISCORD.md.
 
 Configuração (JSON, opcional): {"canal": <id do canal>, "jogadores": {"<id do jogador na liga>": <id do usuário no
-Discord>}, "lembrete_horas": 12, "prefixo": "!", "idioma": "pt"|"en"|"es"}.
+Discord>}, "lembrete_horas": 12, "prefixo": "!", "idioma": "pt"|"en"|"es", "pasta_ordens": "<pasta privada>"}.
+pasta_ordens: grava as ordens recebidas numa pasta fora da pasta compartilhada (o comissário aponta a mesma pasta em
+"Pasta privada do bot..."); sem ela, vão para ordens/ na pasta compartilhada. As ordens já vêm cifradas com a chave
+de cada jogador: mesmo postadas no canal, só o comissário consegue ler.
 """
 import argparse
 import asyncio
@@ -22,7 +25,7 @@ import time
 from . import caixa_liga, i18n
 
 ESTADO = ".bot_discord_estado.json"
-PADRAO = {"canal": None, "jogadores": {}, "lembrete_horas": 12, "prefixo": "!", "idioma": "pt"}
+PADRAO = {"canal": None, "jogadores": {}, "lembrete_horas": 12, "prefixo": "!", "idioma": "pt", "pasta_ordens": None}
 
 
 def t(texto):
@@ -58,7 +61,7 @@ class NucleoBot:
         dono = self.cfg["jogadores"].get(str(jid)) if jid else None
         if dono is not None and autor_id is not None and int(autor_id) != dono:
             return f"❌ {nome}: " + t("estas ordens são de outro jogador da liga.")
-        jid, erro = caixa_liga.entregar_bytes(self.pasta, conteudo)
+        jid, erro = caixa_liga.entregar_bytes(self.pasta, conteudo, self.cfg.get("pasta_ordens"))
         if erro:
             return f"❌ {nome}: {t(erro)}"
         s = self.status() or {}

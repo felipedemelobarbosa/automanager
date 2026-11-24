@@ -80,11 +80,13 @@ class TestOrdens(unittest.TestCase):
         return sj, mp.ordens_da_sessao(sj)
 
     def test_ida_e_volta_identica(self):
-        """O que o comissário guarda é byte a byte o que o jogador exportou; o checksum confere de novo."""
+        """O que o comissário guarda é byte a byte o que o jogador exportou; o checksum confere de novo.
+        O arquivo vai cifrado: decifrado com a chave do jogador, é exatamente o que ele gerou."""
         sj, o = self._ordens(faz=lambda s: jogada_aleatoria(s, random.Random(1)))
         caminho = mp.salvar_ordens(sj, os.path.join(self.pasta, "o.json"))
         lido = mp.ler_ordens(caminho)
-        self.assertEqual(lido, o)
+        self.assertTrue(mp.cifradas(lido))
+        self.assertEqual(mp.abrir_ordens(mp.sessao(sj)["_chave"], lido), o)
         mp.importar_ordens(self.st, lido)
         guardado = self.st["multiplayer"]["recebidas"]["ana"]
         self.assertEqual(mp._canonico(guardado), mp._canonico(o))

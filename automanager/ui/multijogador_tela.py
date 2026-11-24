@@ -216,6 +216,7 @@ class TelaComissario(tk.Frame):
         self.lbl_pasta.pack(side="left", fill="x", expand=True)
         w.Botao(lc, "Pasta compartilhada...", self.escolher_pasta, padx=6).pack(side="left", padx=2)
         w.Botao(lc, "Desligar", self.desligar_pasta, padx=6).pack(side="left")
+        w.Botao(lc, "Pasta privada do bot...", self.escolher_privada, padx=6).pack(side="left", padx=(8, 0))
         lc2 = tk.Frame(gc)
         lc2.pack(fill="x", pady=(4, 0))
         auto = m.setdefault("auto", {})
@@ -295,8 +296,10 @@ class TelaComissario(tk.Frame):
             self.tv.insert("", "end", iid=jid, image=w.chip_equipe(eq, eq.get("nacionalidade")),
                            values=(nome, eqn, est), tags=("cinza",) if j.get("eliminado") else ())
         pasta = self.pasta()
-        self.lbl_pasta.configure(text=f"Pasta compartilhada: {pasta}" if pasta else
-                                 "Sem pasta compartilhada: os arquivos vão e voltam à mão (ou pelo bot).")
+        privada = m.get("pasta_ordens_privada")
+        self.lbl_pasta.configure(text=(f"Pasta compartilhada: {pasta}" if pasta else
+                                       "Sem pasta compartilhada: os arquivos vão e voltam à mão (ou pelo bot).")
+                                 + (f"\nPasta privada do bot: {privada}" if privada else ""))
         pr = caixa.prazo(st)
         self.lbl_prazo.configure(text=f"Prazo: {pr}" + (" (vencido)" if caixa.atrasado(st) else "") if pr
                                  else "Sem prazo nesta semana.")
@@ -336,6 +339,24 @@ class TelaComissario(tk.Frame):
                                                    f"liga.json dessa pasta; as ordens deles voltam para a subpasta "
                                                    f"ordens e são importadas sozinhas.", parent=self)
 
+    def escolher_privada(self):
+        """Pasta onde o bot do Discord grava as ordens recebidas, fora da pasta compartilhada (só o comissário vê).
+        Vazio (cancelar) tira a pasta privada."""
+        d = filedialog.askdirectory(parent=self, title="Pasta privada onde o bot grava as ordens (fora da pasta "
+                                                       "compartilhada)")
+        m = self.st["multiplayer"]
+        if not d:
+            m.pop("pasta_ordens_privada", None)
+        elif self.pasta() and os.path.commonpath([os.path.abspath(d), os.path.abspath(self.pasta())]) == \
+                os.path.abspath(self.pasta()):
+            messagebox.showwarning("Pasta privada do bot", "A pasta privada tem de ficar fora da pasta compartilhada.",
+                                   parent=self)
+            return
+        else:
+            m["pasta_ordens_privada"] = d
+        self.salvar()
+        self.atualizar()
+
     def desligar_pasta(self):
         self.st["multiplayer"].pop("pasta_compartilhada", None)
         self.salvar()
@@ -359,11 +380,13 @@ class TelaComissario(tk.Frame):
         except tk.TclError:
             return
         pasta = self.pasta()
-        if pasta and os.path.isdir(pasta):
-            res = caixa.varrer(self.st, pasta, self.vistos)
+        privada = self.st["multiplayer"].get("pasta_ordens_privada")
+        if (pasta and os.path.isdir(pasta)) or privada:
+            res = caixa.varrer(self.st, pasta, self.vistos, privada)
             if res:
                 self.salvar()
-                caixa.escrever_status(self.st, pasta, caixa.recusas_da_semana(self.st))
+                if pasta:
+                    caixa.escrever_status(self.st, pasta, caixa.recusas_da_semana(self.st))
                 nomes = self.st["multiplayer"]["jogadores"]
                 self.status_msg("; ".join(f"{nomes[j]['nome'] if j in nomes else os.path.basename(c)}: "
                                           f"{'ordens recebidas' if r == 'aceita' else r}" for c, j, r in res))
