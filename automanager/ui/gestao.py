@@ -54,6 +54,14 @@ class TelaGestao(tk.Frame):
             w.Botao(rod, "Próximo evento", self.proximo_evento, largura=15).pack(side="right", padx=2)
         self.status = w.BarraStatus(rod)
         self.status.pack(side="left", fill="x", expand=True)
+        if self.jogador:                                  # multijogador: o que falta fazer nesta semana
+            self.g_passos = tk.Frame(self, bg=w.AMARELO_INFO, relief="sunken", bd=1, padx=6, pady=3)
+            self.g_passos.pack(fill="x", side="bottom", padx=6)
+            tk.Label(self.g_passos, text="Próximos passos desta semana", bg=w.AMARELO_INFO,
+                     font=w.FONTE_NEGRITO).pack(anchor="w")
+            self.lbl_passos = [tk.Label(self.g_passos, text="", bg=w.AMARELO_INFO, anchor="w") for _ in range(3)]
+            for l in self.lbl_passos:
+                l.pack(anchor="w")
         self.st_data = self.status.campo("", 22)
         self.st_cat = self.status.campo("", 26)
         self.st_msg = self.status.campo("", expandir=True)
@@ -90,6 +98,7 @@ class TelaGestao(tk.Frame):
         bp = tk.Frame(g_pil)
         bp.pack(fill="x", pady=(4, 0))
         w.Botao(bp, "Rescindir contrato...", self.rescindir).pack(side="left")
+        w.Botao(bp, "Promover a titular", self.promover, padx=6).pack(side="left", padx=4)
         self.lbl_pil_futuro = tk.Label(bp, text="", anchor="w", justify="left", fg=w.AZUL)
         self.lbl_pil_futuro.pack(side="left", fill="x", padx=8)
         # --- notícias
@@ -110,8 +119,10 @@ class TelaGestao(tk.Frame):
         self.atualizar()
         self._avisou_semana = False
         self._agendado_pasta = None
+        self._agendado_passos = None
         if self.jogador:
             self._vigiar_pasta()
+            self._atualizar_passos()
 
     # ------------------------------------------------------------------ menu
     def _menu(self):
@@ -125,6 +136,7 @@ class TelaGestao(tk.Frame):
         if self.jogador:
             arq.add_command(label="Salvar ordens...", command=self.salvar_ordens, accelerator="Ctrl+S")
             arq.add_command(label="Plano do evento...", command=self.plano_evento)
+            arq.add_command(label="Guia do multijogador...", command=self.guia_multijogador)
             arq.add_separator()
             arq.add_command(label="Exportar para HTML...", command=self.exportar_html)
             arq.add_separator()
@@ -202,6 +214,7 @@ class TelaGestao(tk.Frame):
         elif not tem_logo and self.logo_visivel:
             self.logo.pack_forget()
         self.logo_visivel = tem_logo
+        self.after_idle(self._oferecer_reserva)
         self.st_data.configure(text=f"Semana {st['semana']} / {routines.SEMANAS_POR_TEMPORADA} – {st['ano']}")
         self.lbl_semana.configure(text=f"SEMANA {st['semana']} / {routines.SEMANAS_POR_TEMPORADA}")
         prox = state.proximo_evento(st, cid)
@@ -387,6 +400,46 @@ class TelaGestao(tk.Frame):
         p = self.st["pilotos"].get(sel[0]) if sel else None
         self.foto_pil.definir((p or {}).get("imagem"))
 
+    def promover(self):
+        """O piloto de testes selecionado assume um carro (no lugar de um titular lesionado ou numa vaga aberta)."""
+        sel = self.tv_pil.selection()
+        p = self.st["pilotos"].get(sel[0]) if sel else None
+        if not p or (p.get("contrato") or {}).get("situacao") != "teste":
+            messagebox.showinfo("Promover a titular", "Selecione o piloto de testes na lista de pilotos da equipe.",
+                                parent=self)
+            return
+        erro = acoes.executar(self.st, "promover_piloto", piloto=p["id"])
+        if erro:
+            messagebox.showwarning("Promover a titular", erro, parent=self)
+        self.atualizar()
+
+    def _oferecer_reserva(self):
+        """Titular lesionado sem substituto e um piloto de testes disponível: pergunta (uma vez) se ele assume."""
+        try:
+            if not self.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        u = self.st["usuario"]
+        ausente = mercado.lesionado_sem_substituto(self.st, u["categoria"], u["equipe"])
+        reservas = mercado.reservas_disponiveis(self.st, u["categoria"], u["equipe"])
+        if not ausente or not reservas:
+            return
+        perguntadas = self.app.__dict__.setdefault("_reserva_perguntada", set())
+        chave = (self.st["ano"], ausente["id"], ausente["lesao"].get("evento"))
+        if chave in perguntadas:
+            return
+        perguntadas.add(chave)
+        r = reservas[0]
+        if messagebox.askyesno("Piloto lesionado", f"{ausente['nome']} está lesionado e fica fora de "
+                                                   f"{ausente['lesao'].get('corridas', '?')} corrida(s).\n\n"
+                                                   f"Colocar o piloto de testes {r['nome']} no carro até ele voltar?",
+                               parent=self):
+            erro = acoes.executar(self.st, "promover_piloto", piloto=r["id"])
+            if erro:
+                messagebox.showwarning("Piloto lesionado", erro, parent=self)
+            self.atualizar()
+
     def rescindir(self):
         sel = self.tv_pil.selection()
         if not sel or sel[0] not in self.st["pilotos"]:
@@ -502,6 +555,7 @@ class TelaGestao(tk.Frame):
                 messagebox.showerror("Salvar ordens", f"Não foi possível gravar na pasta compartilhada:\n{e}",
                                      parent=self)
                 return
+            self._registrar_salvas(pasta)
             messagebox.showinfo("Salvar ordens", f"{resumo_jogador(self.st)}\n\nEntregues na pasta compartilhada:\n"
                                                  f"{caminho}\n\nO comissário recebe sozinho; a situação aparece na "
                                                  f"barra de baixo. Você pode continuar mexendo e salvar de novo (vale a "
@@ -515,9 +569,15 @@ class TelaGestao(tk.Frame):
         if not caminho:
             return
         multiplayer.salvar_ordens(self.st, caminho)
-        messagebox.showinfo("Salvar ordens", f"{resumo_jogador(self.st)}\n\nArquivo:\n{caminho}\n\n"
-                                             "Envie este arquivo ao comissário. Você pode continuar mexendo e salvar "
-                                             "de novo (vale o último arquivo importado).", parent=self)
+        self._registrar_salvas(None)
+        if messagebox.askyesno("Salvar ordens", f"{resumo_jogador(self.st)}\n\nArquivo:\n{caminho}\n\n"
+                                                "Agora mande este arquivo ao comissário: anexe no canal da liga no "
+                                                "Discord (ou em mensagem privada ao bot) ou por e-mail. Ele vai "
+                                                "cifrado: só o comissário consegue ler.\n\nVocê pode continuar "
+                                                "mexendo e salvar de novo (vale o último arquivo que o comissário "
+                                                "importar).\n\nAbrir a pasta do arquivo?", parent=self):
+            from .guia_multijogador import abrir_no_sistema
+            abrir_no_sistema(os.path.dirname(caminho))
 
     # ------------------------------------------------------------------ ação
     def _minimo_de_pilotos(self):
@@ -534,7 +594,8 @@ class TelaGestao(tk.Frame):
             return True
         minimo = mercado.minimo_pilotos(self.st, u["categoria"])
         messagebox.showwarning("Pilotos", f"A categoria exige {minimo} pilotos titulares por equipe e sua equipe tem "
-                                          f"{minimo - falta} para o {ev['nome']}.\n\nContrate em Mercado > Pilotos. "
+                                          f"{minimo - falta} para o {ev['nome']}.\n\nContrate em Mercado > Pilotos (ou promova seu piloto de "
+                                          f"testes em Pilotos da equipe > Promover a titular). "
                                           f"Com a corrida nesta semana, os pilotos respondem às propostas quando "
                                           f"você clica em Continuar.", parent=self)
         self.atualizar()
@@ -654,6 +715,30 @@ class TelaGestao(tk.Frame):
         self.atualizar()
         self.st_msg.configure(text=f"Temporada {ano} simulada. Começa a temporada {self.st['ano']}.")
 
+    def guia_multijogador(self):
+        from .guia_multijogador import DialogoGuia
+        DialogoGuia(self, "jogador").modal()
+
+    def _atualizar_passos(self):
+        """Quadro 'Próximos passos' do jogador (decisões, plano do evento, ordens salvas). A cada 2 s."""
+        from .guia_multijogador import passos_do_jogador
+        try:
+            if not self.winfo_exists():
+                return
+        except tk.TclError:
+            return
+        linhas, _ = passos_do_jogador(self.st, getattr(self.app, "_ordens_salvas", None))
+        for lbl, (feito, texto) in zip(self.lbl_passos, linhas):
+            lbl.configure(text=("✔  " if feito else "➜  ") + texto, fg="#006000" if feito else w.PRETO)
+        self._agendado_passos = self.after(2000, self._atualizar_passos)
+
+    def _registrar_salvas(self, pasta):
+        import time
+        from .guia_multijogador import passos_do_jogador
+        _, conteudo = passos_do_jogador(self.st, None)
+        self.app._ordens_salvas = {"ano": self.st["ano"], "semana": self.st["semana"],
+                                   "quando": time.strftime("%H:%M"), "conteudo": conteudo, "pasta": bool(pasta)}
+
     def _vigiar_pasta_agora(self):
         if self._agendado_pasta:
             try:
@@ -663,6 +748,12 @@ class TelaGestao(tk.Frame):
         self._vigiar_pasta()
 
     def destroy(self):
+        for k in ("_agendado_passos",):
+            if getattr(self, k, None):
+                try:
+                    self.after_cancel(getattr(self, k))
+                except tk.TclError:
+                    pass
         if getattr(self, "_agendado_pasta", None):
             try:
                 self.after_cancel(self._agendado_pasta)

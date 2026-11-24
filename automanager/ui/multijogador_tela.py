@@ -97,6 +97,9 @@ class TelaCriarLiga(tk.Frame):
         messagebox.showinfo("Nova liga", f"Liga criada.\n\nArquivo do comissário (guarde, não distribua):\n{caminho}"
                                          f"\n\nArquivo para enviar aos jogadores:\n{dist}", parent=self)
         self.app.comissario(self.st, caminho)
+        from .guia_multijogador import DialogoGuia, guia_oculto
+        if not guia_oculto("comissario"):
+            DialogoGuia(self.app.root, "comissario").modal()
 
 
 class DialogoJogador(w.Dialogo):
@@ -205,6 +208,8 @@ class TelaComissario(tk.Frame):
         w.Botao(b, "Pular jogador (IA nesta semana)", self.pular, padx=6).pack(side="left", padx=4)
         w.Botao(b, "Exportar arquivo para os jogadores...", self.exportar, padx=6).pack(side="left")
         w.Botao(b, "Exportar para HTML...", self.exportar_html, padx=6).pack(side="left", padx=4)
+        self.lbl_passo = tk.Label(g, text="", fg=w.AZUL, font=w.FONTE_NEGRITO, anchor="w", justify="left")
+        self.lbl_passo.pack(fill="x")
         self.lbl_pol = tk.Label(g, text="", fg=w.CINZA_ESCURO, anchor="w", justify="left")
         self.lbl_pol.pack(fill="x")
         # --- caixa de entrada: pasta compartilhada, prazo, importação em lote, histórico
@@ -272,7 +277,14 @@ class TelaComissario(tk.Frame):
         hist.add_command(label="Pontuação total (hall da fama)...",
                          command=lambda: historico_tela.JanelaTotal(self, st).modal())
         mb.add_cascade(label="Histórico", menu=hist, underline=0)
+        aj = tk.Menu(mb)
+        aj.add_command(label="Guia do multijogador...", command=self.guia)
+        mb.add_cascade(label="Ajuda", menu=aj, underline=0)
         app.root.config(menu=mb)
+
+    def guia(self):
+        from .guia_multijogador import DialogoGuia
+        DialogoGuia(self, "comissario").modal()
 
     def atualizar(self):
         st, m = self.st, self.st["multiplayer"]
@@ -303,6 +315,17 @@ class TelaComissario(tk.Frame):
         pr = caixa.prazo(st)
         self.lbl_prazo.configure(text=f"Prazo: {pr}" + (" (vencido)" if caixa.atrasado(st) else "") if pr
                                  else "Sem prazo nesta semana.")
+        falta = [m["jogadores"][j]["nome"] for j in mp.faltando(st) if j not in m.get("pular", [])]
+        if not pasta and not m.get("pasta_ordens_privada"):
+            passo = ("Próximo passo: mande a liga aos jogadores – Caixa de entrada > Pasta compartilhada... (melhor) "
+                     "ou Exportar arquivo para os jogadores...")
+        elif falta:
+            passo = f"Próximo passo: aguardar as ordens de {', '.join(falta)}" + (f" (prazo {pr})" if pr else "") + "."
+        else:
+            passo = "Próximo passo: todas as ordens chegaram – clique em Rodar semana."
+        if pasta and falta and not caixa.prazo(st):
+            passo += " Dica: marque o prazo da semana."
+        self.lbl_passo.configure(text=passo)
         rot, ajuda = NOMES_POLITICA[m["politica"]]
         self.lbl_pol.configure(text=f"Política para ordens ausentes: {rot} – {ajuda}"
                                     + (f"\nEventos desta semana: {', '.join(eventos)}" if eventos else ""))

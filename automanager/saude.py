@@ -118,8 +118,12 @@ def substituir(st, cid, eid, ausente):
     if not eq:
         return
     if de_jogador(st, cid, eid):
-        noticia(st, f"ATENÇÃO: {eq['nome']} está sem {ausente['nome']}. Contrate um piloto (Mercado) – sem isso o "
-                    f"carro não corre.", cid, "usuario", equipe=eid)
+        tem_reserva = any(p["contrato"]["situacao"] == "teste" and not lesionado(p)
+                          for p in pilotos_da_equipe(st, cid, eid))
+        noticia(st, f"ATENÇÃO: {eq['nome']} está sem {ausente['nome']}. "
+                    + ("Coloque o piloto de testes no carro (Pilotos da equipe > Promover a titular) ou contrate um "
+                       "piloto (Mercado)" if tem_reserva else "Contrate um piloto (Mercado)")
+                    + " – sem isso o carro não corre.", cid, "usuario", equipe=eid)
         return
     teste = [p for p in pilotos_da_equipe(st, cid, eid)
              if p["contrato"]["situacao"] == "teste" and not lesionado(p)]

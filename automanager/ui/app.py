@@ -46,7 +46,12 @@ class App:
     # ------------------------------------------------------------ multijogador
     def multi_comissario(self):
         r = DialogoEscolha(self.root, "Multijogador – comissário", "O que deseja fazer?",
-                           [("nova", "Criar uma liga nova"), ("abrir", "Abrir uma liga (arquivo do comissário)")]).modal()
+                           [("nova", "Criar uma liga nova"), ("abrir", "Abrir uma liga (arquivo do comissário)"),
+                            ("guia", "Ver o guia passo a passo")]).modal()
+        if r == "guia":
+            from .guia_multijogador import DialogoGuia
+            DialogoGuia(self.root, "comissario").modal()
+            return self.multi_comissario()
         if r == "nova":
             from .novo_jogo import TelaNovoJogo
             self.criando_liga = True
@@ -84,14 +89,47 @@ class App:
         self.trocar(TelaComissario, estado, caminho)
 
     def multi_jogador(self):
+        """Jogador: guia passo a passo (pode ser ocultado) com os dois jeitos de abrir a liga."""
+        from .guia_multijogador import DialogoGuia, guia_oculto
+        abrir = [("Abrir a pasta compartilhada da liga...", self._abrir_pasta_liga),
+                 ("Abrir arquivo da liga...", self._abrir_arquivo_liga)]
+        if guia_oculto("jogador"):
+            r = DialogoEscolha(self.root, "Multijogador – jogador", "Como você recebeu a liga?",
+                               [("pasta", "Numa pasta compartilhada (Drive, Dropbox...)"),
+                                ("arquivo", "Num arquivo (e-mail, Discord)"), ("guia", "Ver o guia passo a passo")]
+                               ).modal()
+            f = {"pasta": self._abrir_pasta_liga, "arquivo": self._abrir_arquivo_liga}.get(r)
+            if r == "guia":
+                f = DialogoGuia(self.root, "jogador", abrir).modal()
+        else:
+            f = DialogoGuia(self.root, "jogador", abrir).modal()
+        if f:
+            f()
+
+    def _abrir_pasta_liga(self):
         from tkinter import filedialog
+        import os
+        from .. import caixa_liga
+        d = filedialog.askdirectory(parent=self.root, title="Pasta compartilhada da liga")
+        if not d:
+            return
+        if not caixa_liga.eh_pasta_da_liga(d):
+            messagebox.showwarning("AutoManager", "Esta pasta não tem o arquivo da liga (liga.json). Escolha a pasta "
+                                                  "que o comissário compartilhou.", parent=self.root)
+            return
+        self._entrar_na_liga(os.path.join(d, caixa_liga.LIGA))
+
+    def _abrir_arquivo_liga(self):
+        from tkinter import filedialog
+        caminho = filedialog.askopenfilename(parent=self.root, title="Arquivo da liga (recebido do comissário)",
+                                             filetypes=[("Liga (JSON)", "*.json"), ("Todos", "*.*")])
+        if caminho:
+            self._entrar_na_liga(caminho)
+
+    def _entrar_na_liga(self, caminho):
         import os
         from .. import multiplayer as mp
         from .multijogador_tela import DialogoEntrar, caminho_ordens_padrao
-        caminho = filedialog.askopenfilename(parent=self.root, title="Arquivo da liga (recebido do comissário)",
-                                             filetypes=[("Liga (JSON)", "*.json"), ("Todos", "*.*")])
-        if not caminho:
-            return
         try:
             st_liga = mp.carregar_liga(caminho)
         except (OSError, ValueError, KeyError, db.ErroDatabase, mp.ErroLiga) as e:

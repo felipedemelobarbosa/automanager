@@ -7,6 +7,7 @@ com aplicar(), no contexto da equipe do jogador (como()).
 Ações (campos):
   proposta_piloto   piloto, situacao, valor, duracao, unidade, inicio ("agora"|"proxima"|ano de início)
   rescindir_piloto  piloto
+  promover_piloto   piloto (de testes): assume o carro de um titular lesionado ou uma vaga de titular aberta
   contratar_parte   parte ("chassis"|"motor"), id, duracao, unidade, inicio ("agora"|"proxima"|ano), rescindir (bool)
   proposta_parte    parte, id, valor, duracao, unidade, inicio, rescindir – com negociação de chassis/motor ligada
   rescindir_parte   parte
@@ -83,6 +84,8 @@ def aplicar(st, acao, d):
                 return "O piloto não tem contrato com a equipe."
             mercado.rescindir_piloto(st, d["piloto"])
             return None
+        if acao == "promover_piloto":
+            return mercado.promover_reserva(st, cid, eq, d["piloto"])
         if acao == "proposta_parte":
             return mercado.fazer_proposta_parte(st, cid, eq, d["parte"], d["id"], float(d["valor"]), int(d["duracao"]),
                                                 d["unidade"], d["inicio"], rescindir=bool(d.get("rescindir")))

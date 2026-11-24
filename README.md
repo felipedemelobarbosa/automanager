@@ -59,6 +59,8 @@ Um **comissário** e vários **jogadores**; cada semana é um turno.
 3. Comissário: *Importar ordens...*, eventualmente *Pular jogador*, e *Rodar semana*. A liga é salva e o novo
    arquivo para os jogadores é gerado na pasta da liga.
 
+Na primeira vez, o jogo mostra um **guia passo a passo** (jogador e comissário; depois em *Ajuda > Guia do multijogador*), e a tela do jogador tem o quadro **Próximos passos desta semana** (decisões, plano do evento, ordens salvas/entregues).
+
 Ordens alteradas, de outra liga/semana ou de outro jogador são recusadas. A ordem em que os jogadores agem no
 mercado é sorteada a cada semana. Equipes sem jogador ficam com a IA.
 

@@ -105,10 +105,25 @@ class TestMinimo(unittest.TestCase):
             self.assertEqual(mercado.aptos_para_corrida(st, ALFA, eid, ev["id"]), 2, eid)
         self.assertLessEqual(len([p for p in titulares(st, "ventura") if not p.get("lesao")]), 2)
 
+    def test_sem_piloto_livre_usa_a_reserva(self):
+        st = jogo(eid=None, minimo=2)
+        ev = ir_para_corrida(st)
+        titulares(st, "vortex")[0]["contrato"] = None
+        reserva = next(p for p in state.pilotos_da_equipe(st, ALFA, "vortex") if p["contrato"]["situacao"] == "teste")
+        for p in st["pilotos"].values():
+            if not p.get("contrato"):
+                p["lesao"] = {"corridas": 9, "ano": 2026, "evento": "x"}    # ninguém livre e apto
+        mercado.garantir_minimo(st, random.Random(1))
+        self.assertEqual(mercado.aptos_para_corrida(st, ALFA, "vortex", ev["id"]), 2)
+        self.assertEqual(reserva["contrato"]["situacao"], "principal")        # a reserva antes de um piloto novo
+
     def test_sem_piloto_livre_o_jogo_cria_um(self):
         st = jogo(eid=None, minimo=2)
         ev = ir_para_corrida(st)
         titulares(st, "vortex")[0]["contrato"] = None
+        for p in state.pilotos_da_equipe(st, ALFA, "vortex"):
+            if p["contrato"]["situacao"] == "teste":
+                p["contrato"] = None                                          # sem reserva também
         for p in st["pilotos"].values():
             if not p.get("contrato"):
                 p["lesao"] = {"corridas": 9, "ano": 2026, "evento": "x"}    # ninguém livre e apto

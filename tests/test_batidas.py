@@ -146,7 +146,8 @@ class TestLesaoEMorte(unittest.TestCase):
         st = jogo()
         p = self._principal(st, "tucano")
         saude.lesionar(st, CID, p, random.Random(1))
-        self.assertTrue(any("ATENÇÃO" in n["texto"] and "Contrate" in n["texto"] for n in st["noticias"]))
+        # o aviso oferece a reserva (Promover a titular) ou contratar no mercado
+        self.assertTrue(any("ATENÇÃO" in n["texto"] and "contrate" in n["texto"].lower() for n in st["noticias"]))
         pista = next(e for e in st["categorias"][CID]["calendario"] if e["especie"] == "corrida")
         tucano = [i for i in montar_inscritos(st, CID, None, pista) if i["equipe"]["id"] == "tucano"]
         self.assertEqual(len(tucano), 1)                            # só um carro

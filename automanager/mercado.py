@@ -387,6 +387,8 @@ def rotina_pilotos(st, rng=random):
             if eh_usuario(st, cid, eq["id"]):
                 _avisar_usuario(st, cid, eq, vag_atual, vag_prox, mp)
                 continue
+            if vag_atual.get("principal") and _promover_reserva_ia(st, cid, eq):
+                vag_atual, vag_prox = vagas(st, cid, eq)              # a reserva subiu: abre a vaga de testes
             pedidos = [("atual", s, st["ano"]) for s, q in vag_atual.items() for _ in range(q)]
             from .saude import de_jogador
             if de_jogador(st, cid, eq["id"]):
@@ -1392,6 +1394,8 @@ def _completar_equipe(st, cid, eq, ev, rng):
     piso = mp["salario_minimo_por_corrida"]
     teto = teto_salario(st, cid, eq)
     tentados = set()
+    while minimo_pilotos(st, cid) > aptos_para_corrida(st, cid, eq["id"], ev["id"]) and _promover_reserva_ia(st, cid, eq):
+        pass
     for _rodada in range(6):
         falta = minimo_pilotos(st, cid) - aptos_para_corrida(st, cid, eq["id"], ev["id"])
         if falta <= 0 or vagas(st, cid, eq)[0].get("principal", 0) <= 0:
@@ -1416,6 +1420,9 @@ def _completar_equipe(st, cid, eq, ev, rng):
                                  "perspectiva": perspectiva_equipe(st, cid, eq), "usuario": False,
                                  "compra_contrato": False}]
         _pilotos_decidem(st, ofertas, rng)
+    while minimo_pilotos(st, cid) > aptos_para_corrida(st, cid, eq["id"], ev["id"]) \
+            and _promover_reserva_ia(st, cid, eq, exigir_nivel=False):
+        pass                                     # ninguém livre aceitou: a reserva antes de um piloto novo
     falta = minimo_pilotos(st, cid) - aptos_para_corrida(st, cid, eq["id"], ev["id"])
     vagas_livres = vagas(st, cid, eq)[0].get("principal", 0)
     if falta > 0 and vagas_livres > 0:
@@ -1426,3 +1433,70 @@ def _completar_equipe(st, cid, eq, ev, rng):
                              "ano_inicio": st["ano"], "valor_por_corrida": round(max(pedido, piso), -2),
                              "pedido": pedido, "duracao": 1, "unidade": "temporadas", "perspectiva": 0.5,
                              "usuario": False, "compra_contrato": False}, rng)
+
+
+# ====================================================================== piloto de testes (reserva) -> titular
+MARGEM_RESERVA = 3          # o PC promove a reserva se ela for no máximo 3 pontos pior que o melhor livre que cabe no caixa
+
+
+def reservas_disponiveis(st, cid, eid):
+    """Pilotos de testes da equipe que podem assumir um carro (sem lesão e sem já estar substituindo alguém)."""
+    return [p for p in pilotos_da_equipe(st, cid, eid)
+            if p["contrato"]["situacao"] == "teste" and not p.get("lesao")]
+
+
+def lesionado_sem_substituto(st, cid, eid):
+    """Titular lesionado cujo carro ainda não tem substituto (ou None)."""
+    pil = pilotos_da_equipe(st, cid, eid)
+    cobertos = {p["contrato"].get("substituto_de") for p in pil}
+    return next((p for p in pil if p["contrato"]["situacao"] == "principal" and p.get("lesao")
+                 and p["id"] not in cobertos), None)
+
+
+def promover_reserva(st, cid, eq, pid):
+    """O piloto de testes assume um carro: no lugar de um titular lesionado (volta a ser de testes quando ele voltar)
+    ou, com uma vaga de titular aberta, em definitivo. Retorna None ou a mensagem de erro."""
+    p = st["pilotos"].get(pid)
+    ct = (p or {}).get("contrato") or {}
+    if ct.get("categoria") != cid or ct.get("equipe") != eq["id"] or ct.get("situacao") != "teste":
+        return "Escolha um piloto de testes da equipe."
+    if p.get("lesao"):
+        return "O piloto está lesionado."
+    ausente = lesionado_sem_substituto(st, cid, eq["id"])
+    if ausente:
+        ct["situacao"] = "principal"
+        ct["situacao_original"] = "teste"
+        ct["substituto_de"] = ausente["id"]
+        noticia(st, f"{quem(st, cid, eq['id'])}: o piloto de testes {p['nome']} assume o carro de {ausente['nome']} "
+                    f"enquanto ele se recupera.", cid, "usuario" if eh_usuario(st, cid, eq["id"]) else "piloto",
+                equipe=eq["id"])
+        return None
+    if vagas(st, cid, eq)[0].get("principal", 0) <= 0:
+        return "A equipe não tem vaga de titular: os carros já têm piloto."
+    ct["situacao"] = "principal"
+    ct.pop("situacao_original", None)
+    noticia(st, f"{quem(st, cid, eq['id'])} promove o piloto de testes {p['nome']} a titular.", cid,
+            "usuario" if eh_usuario(st, cid, eq["id"]) else "contratacao", equipe=eq["id"])
+    return None
+
+
+def _promover_reserva_ia(st, cid, eq, exigir_nivel=True):
+    """PC com vaga de titular aberta na temporada: promove a melhor reserva se ela for boa o bastante (até
+    MARGEM_RESERVA pontos pior que o melhor piloto livre que a equipe pode pagar). True se promoveu."""
+    if vagas(st, cid, eq)[0].get("principal", 0) <= 0:
+        return False
+    categoria = st["categorias"][cid]["categoria"]
+    reservas = sorted(reservas_disponiveis(st, cid, eq["id"]),
+                      key=lambda p: -ratings.nota_geral_piloto(p, categoria))
+    if not reservas:
+        return False
+    if exigir_nivel:
+        teto = teto_salario(st, cid, eq)
+        livres = [ratings.nota_geral_piloto(p, categoria) - penalidade_idade(categoria, p.get("idade", 25))
+                  for p in st["pilotos"].values()
+                  if not p.get("contrato") and not p.get("lesao") and not acima_da_idade(categoria, p.get("idade", 25))
+                  and salario_pedido(p, categoria) <= teto * 1.1]
+        nota_res = ratings.nota_geral_piloto(reservas[0], categoria) - penalidade_idade(categoria, reservas[0].get("idade", 25))
+        if livres and nota_res < max(livres) - MARGEM_RESERVA:
+            return False
+    return promover_reserva(st, cid, eq, reservas[0]["id"]) is None
