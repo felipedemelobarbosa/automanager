@@ -1,132 +1,141 @@
+<div align="center">
+  <a href="README.md">English</a> | 
+  <a href="README.pt-br.md">Português</a> | 
+  <a href="README.es.md">Español</a>
+</div>
+
 # AutoManager
 
-Jogo manager simples de automobilismo, com interface no estilo Windows 9x (Python + Tkinter).
+A simple motorsport management game with a Windows 9x-style interface (Python + Tkinter).
 
-## Requisitos
+## Requirements
 
-- Python 3.10 ou superior, com Tkinter (no Windows já vem junto; no Linux: `sudo apt install python3-tk`)
-- Pillow (`pip install pillow`) para as imagens (fotos, logotipos e pistas). Sem ela o jogo funciona, mas só
-  mostra imagens PNG sem redimensionar e o editor não converte as fotos da Wikipedia (que vêm em JPG)
+- Python 3.10 or later, with Tkinter (included on Windows; on Linux: `sudo apt install python3-tk`)
+- Pillow (`pip install pillow`) for images (photos, logos and tracks). The game works without it, but it only
+  shows PNG images without resizing, and the editor can't convert Wikipedia photos (which come as JPG)
 
-## Como executar
+## How to run
 
 ```bash
-python main.py               # o jogo
-python evento_prototipo.py   # protótipo da tela de evento (isolado do jogo)
+python main.py               # the game
+python evento_prototipo.py   # event screen prototype (separate from the game)
 python -m unittest discover tests
 ```
 
-O importador da Wikipedia (Editor > Importar da Wikipedia) e a busca de imagens precisam de acesso à internet.
-O jogo em si só usa arquivos locais.
+The Wikipedia importer (Editor > Import from Wikipedia) and the image search need internet access.
+The game itself only uses local files.
 
-## Instaladores (.exe, .dmg, .deb)
+## Installers (.exe, .dmg, .deb)
 
-Gerados no GitHub Actions (`.github/workflows/build.yml`), com PyInstaller, nas máquinas Windows, macOS e Linux
-do GitHub:
+Built on GitHub Actions (`.github/workflows/build.yml`) with PyInstaller, on GitHub's Windows, macOS and Linux
+machines:
 
-- Manualmente: aba **Actions** > **Build** > **Run workflow**. Ao terminar, os arquivos ficam em **Artifacts**, na
-  página da execução.
-- Criando uma tag `v*` (ex.: `v0.1` em Releases > Draft a new release): além disso, publica uma Release com os três
-  arquivos.
+- Manually: **Actions** tab > **Build** > **Run workflow**. When it finishes, the files are under **Artifacts** on
+  the run's page.
+- By creating a `v*` tag (e.g. `v0.1` in Releases > Draft a new release): this also publishes a Release with the
+  three files.
 
-Os testes rodam antes; se falharem, nada é gerado. No programa instalado, jogos salvos, ligas, configurações, a
-database editada e as imagens baixadas ficam na pasta do usuário (Windows: `%APPDATA%\AutoManager`; macOS:
-`~/Library/Application Support/AutoManager`; Linux: `~/.local/share/automanager`); a database que vem com o jogo
-é copiada para lá na 1ª execução (numa versão nova, só os arquivos novos). Rodando pelo código (`python main.py`),
-tudo continua na pasta do jogo. Os programas não são assinados: o Windows (SmartScreen) e o macOS (Gatekeeper)
-avisam na 1ª vez (no macOS: botão direito no app > Abrir). O `.dmg` é para Macs com chip Apple (M1 ou mais novo).
+The tests run first; if they fail, nothing is built. In the installed program, saved games, leagues, settings, the
+edited database and downloaded images are kept in the user folder (Windows: `%APPDATA%\AutoManager`; macOS:
+`~/Library/Application Support/AutoManager`; Linux: `~/.local/share/automanager`); the database that ships with the
+game is copied there on first run (on a new version, only the new files). When running from source
+(`python main.py`), everything stays in the game folder. The programs are not signed: Windows (SmartScreen) and
+macOS (Gatekeeper) show a warning the first time (on macOS: right-click the app > Open). The `.dmg` is for Macs with
+Apple silicon (M1 or newer).
 
-## Idiomas
+## Languages
 
-Português, inglês e espanhol: escolha no menu inicial ("Idioma / Language / Idioma"). A escolha fica em
-`config.json`. As traduções estão em `lang/en.json` e `lang/es.json` ({"texto em português": "tradução"});
-mensagens com valores usam modelos (`"{0} vence o {1}."`). Nomes da database (pilotos, equipes, pistas) não
-são traduzidos; países, pneus, clima e sessões são.
+Portuguese, English and Spanish: choose in the main menu ("Idioma / Language / Idioma"). The choice is saved in
+`config.json`. Translations are in `lang/en.json` and `lang/es.json` ({"Portuguese text": "translation"});
+messages with values use templates (`"{0} vence o {1}."`). Database names (drivers, teams, tracks) are not
+translated; countries, tyres, weather and sessions are.
 
-## Multijogador (por arquivos)
+## Multiplayer (file-based)
 
-Um **comissário** e vários **jogadores**; cada semana é um turno.
+One **commissioner** and several **players**; each week is a turn.
 
-1. Comissário: menu inicial > *Multijogador – comissário* > *Criar uma liga nova*: escolhe as categorias,
-   cadastra os jogadores (nome, equipe, senha) e a política para quem não mandar o arquivo (IA joga o turno /
-   repetir as últimas ordens / bloquear o turno). São gravados, em `ligas/<nome>/`, o arquivo do comissário
-   (`…_comissario.json`, não distribuir) e o arquivo para os jogadores (`…_<ano>_sNN_liga.json`).
-2. Jogador: *Multijogador – jogador* > abre o arquivo da liga > escolhe o nome e digita a senha. Toma as
-   decisões da semana como no jogo de um jogador (propostas a pilotos, chassis/motor, patrocínios, empréstimos,
-   desenvolvimento) e, se houver evento, define o *Plano do evento* (acerto, pneus, ordens e paradas por piloto,
-   para treinos, classificação e corrida). *Salvar ordens* gera o arquivo assinado com a senha para mandar ao
-   comissário (pode salvar de novo; vale o último importado).
-3. Comissário: *Importar ordens...*, eventualmente *Pular jogador*, e *Rodar semana*. A liga é salva e o novo
-   arquivo para os jogadores é gerado na pasta da liga.
+1. Commissioner: main menu > *Multiplayer – commissioner* > *Create a new league*: choose the series, register the
+   players (name, team, password) and the policy for players who don't send their file (AI plays the turn /
+   repeat last orders / block the turn). Saved in `ligas/<name>/` are the commissioner's file
+   (`…_comissario.json`, do not share it) and the file for the players (`…_<year>_sNN_liga.json`).
+2. Player: *Multiplayer – player* > open the league file > choose your name and enter your password. Make the
+   week's decisions as in the single-player game (driver offers, chassis/engine, sponsors, loans,
+   development) and, if there is an event, set the *Event plan* (setup, tyres, orders and pit stops per driver,
+   for practice, qualifying and race). *Save orders* creates the password-signed file to send to the
+   commissioner (you can save again; the last one imported counts).
+3. Commissioner: *Import orders...*, *Skip player* if needed, and *Run week*. The league is saved and the new
+   file for the players is created in the league folder.
 
-Na primeira vez, o jogo mostra um **guia passo a passo** (jogador e comissário; depois em *Ajuda > Guia do multijogador*), e a tela do jogador tem o quadro **Próximos passos desta semana** (decisões, plano do evento, ordens salvas/entregues).
+The first time, the game shows a **step-by-step guide** (player and commissioner; later under *Help > Multiplayer guide*), and the player screen has a **Next steps this week** panel (decisions, event plan, orders saved/delivered).
 
-Ordens alteradas, de outra liga/semana ou de outro jogador são recusadas. A ordem em que os jogadores agem no
-mercado é sorteada a cada semana. Equipes sem jogador ficam com a IA.
+Orders that were altered, or that belong to another league/week or another player, are refused. The order in which
+players act in the market is drawn at random each week. Teams without a player are run by the AI.
 
-### Caixa de entrada e pasta compartilhada
+### Inbox and shared folder
 
-- **Pasta compartilhada** (Google Drive, Dropbox, OneDrive, Syncthing...): na tela do comissário, *Caixa de entrada
-  da liga > Pasta compartilhada...*. A cada semana o jogo publica nela o `liga.json` (versão dos jogadores), uma cópia
-  em `semanas/` e o `status.json`. O jogador abre o `liga.json` dessa pasta: *Salvar ordens* entrega direto em
-  `ordens/<jogador>.json`, a barra de baixo mostra o prazo e se o comissário recebeu (ou recusou, com o motivo) as
-  ordens, e o jogo avisa quando a semana nova é publicada (abre sem pedir a senha de novo). O comissário importa
-  sozinho (a cada 5 s). O arquivo do comissário nunca vai para a pasta compartilhada.
-- **Ordens cifradas**: o arquivo de ordens é cifrado com a chave do jogador (derivada da senha); na pasta
-  compartilhada, no Discord ou por e-mail os outros jogadores só veem de quem e de que semana ele é. Só o jogo do
-  comissário (e o do próprio jogador, para continuar editando) abre. Arquivos antigos, sem cifra, continuam aceitos.
-- **Rodar sozinha**: quando chegarem todas as ordens e/ou no prazo (o jogo do comissário precisa estar aberto).
-- **Prazo da semana**, **Importar todas de uma pasta...** (com o motivo de cada recusa) e **Histórico de envios**.
+- **Shared folder** (Google Drive, Dropbox, OneDrive, Syncthing...): on the commissioner screen, *League inbox >
+  Shared folder...*. Each week the game publishes `liga.json` (the players' version), a copy in `semanas/` and
+  `status.json` there. The player opens the `liga.json` in that folder: *Save orders* delivers straight to
+  `ordens/<player>.json`, the bottom bar shows the deadline and whether the commissioner received (or refused, with
+  the reason) the orders, and the game tells you when the new week is published (it opens without asking for the
+  password again). The commissioner imports automatically (every 5 s). The commissioner's file never goes into the
+  shared folder.
+- **Encrypted orders**: the orders file is encrypted with the player's key (derived from the password); in the
+  shared folder, on Discord or by email, other players can only see whose file it is and which week it's for. Only
+  the commissioner's game (and the player's own, to keep editing) can open it. Older, unencrypted files are still
+  accepted.
+- **Run by itself**: when all orders are in and/or at the deadline (the commissioner's game must be open).
+- **This week's deadline**, **Import all from a folder...** (with the reason for each refusal) and **Submission history**.
 
-### Bot do Discord (opcional)
+### Discord bot (optional)
 
-`python -m automanager.bot_discord <pasta compartilhada> --config bot_discord.json` (requer
-`pip install -r requirements-bot.txt` e o token em `DISCORD_TOKEN`). Os jogadores mandam o arquivo de ordens no canal
-da liga (ou em mensagem privada); o bot grava na pasta compartilhada, publica cada semana nova com o arquivo da liga,
-responde `!status`, `!liga`, `!prazo`, `!ajuda` e lembra quem falta antes do prazo. Com `pasta_ordens` na
-configuração, o bot grava as ordens numa pasta privada fora da pasta compartilhada (o comissário aponta a mesma pasta
-em *Pasta privada do bot...*). Passo a passo:
+`python -m automanager.bot_discord <shared folder> --config bot_discord.json` (requires
+`pip install -r requirements-bot.txt` and the token in `DISCORD_TOKEN`). Players send their orders file in the
+league channel (or by private message); the bot saves it to the shared folder, posts each new week with the league
+file, answers `!status`, `!liga`, `!prazo`, `!ajuda` and reminds whoever is missing before the deadline. With
+`pasta_ordens` in the configuration, the bot saves orders to a private folder outside the shared folder (the
+commissioner points to the same folder in *Bot's private folder...*). Step by step:
 [docs/BOT_DISCORD.md](docs/BOT_DISCORD.md).
 
-## Estrutura
+## Structure
 
 ```
-main.py                     jogo
-evento_prototipo.py         protótipo do evento
-database/<ano>/*.json       categorias (uma por arquivo: <categoria>_<ano>.json)
-database/<ano>/novos_pilotos_<ano>.json   pilotos que entram no mercado naquele ano (opcional)
-database/nomes.json         nomes para pilotos e patrocinadores fictícios
-database/imagens/           fotos de pilotos, logotipos (equipes, chassis, motores), pistas e bandeiras (PNG)
-lang/                       traduções (en, es)
-ligas/                      ligas multijogador (criadas pelo comissário)
-saves/                      jogos salvos
-docs/CONTROLE.md            o que já está definido, feito, suposto ou pendente
-tests/                      testes automáticos (inclui uma página da Wikipedia salva para o importador)
-docs/DATABASE.md            referência de todos os campos da database
-docs/GUIA_DATABASE.md       guia de edição da database (editor e todas as opções)
+main.py                     game
+evento_prototipo.py         event prototype
+database/<year>/*.json      series (one per file: <series>_<year>.json)
+database/<year>/novos_pilotos_<year>.json   drivers who enter the market that year (optional)
+database/nomes.json         names for fictional drivers and sponsors
+database/imagens/           driver photos, logos (teams, chassis, engines), tracks and flags (PNG)
+lang/                       translations (en, es)
+ligas/                      multiplayer leagues (created by the commissioner)
+saves/                      saved games
+docs/CONTROLE.md            what is already defined, done, assumed or pending
+tests/                      automated tests (includes a saved Wikipedia page for the importer)
+docs/DATABASE.md            reference for every database field
+docs/GUIA_DATABASE.md       database editing guide (editor and every option)
 automanager/
-  db.py                     leitura, busca e validação da database
-  state.py                  estado do jogo, criação de equipe, save/load
-  routines.py               rotinas semanais (corridas, finanças, nova temporada)
-  mercado.py                pilotos (tiers), chassis/motores, patrocinadores
-  desenvolvimento.py        carro desta temporada / da próxima, IA
-  campeonato.py             resultados, classificação e histórico
-  carreira.py               curva de habilidades, aposentadoria e novos pilotos
-  imagens.py                leitura das imagens (database/imagens) e importação de pasta local
-  multiplayer.py            liga, senhas, arquivos de ordens, rodar semana, políticas de ausência
-  acoes.py                  ações de gestão (gravadas no arquivo de ordens do jogador)
-  i18n.py                   idiomas (tradução de tudo o que a interface mostra)
-  paises.py                 nomes de países (inglês/português) e bandeiras
-  economia.py               orçamento do PC, empréstimos e falência
-  contratos.py              contratos por temporadas ou por corridas
-  editor/                   leitura de tabelas HTML e importador da Wikipedia
-  ratings.py                notas de piloto/chassis/motor pela matriz de ponderação
-  event/                    simulação de evento (clima, modelo de volta, sessões)
-  ui/                       telas (tema Win9x, menu, novo jogo, gestão, evento, mercado,
-                            desenvolvimento, histórico, editor)
-tools/gerar_db_exemplo.py   gera as categorias fictícias de exemplo
+  db.py                     database loading, lookup and validation
+  state.py                  game state, team creation, save/load
+  routines.py               weekly routines (races, finances, new season)
+  mercado.py                drivers (tiers), chassis/engines, sponsors
+  desenvolvimento.py        this season's / next season's car, AI
+  campeonato.py             results, standings and history
+  carreira.py               skill curve, retirement and new drivers
+  imagens.py                image loading (database/imagens) and import from a local folder
+  multiplayer.py            league, passwords, orders files, run week, absence policies
+  acoes.py                  management actions (recorded in the player's orders file)
+  i18n.py                   languages (translation of everything the interface shows)
+  paises.py                 country names (English/Portuguese) and flags
+  economia.py               AI budget, loans and bankruptcy
+  contratos.py              contracts by seasons or by races
+  editor/                   HTML table reading and Wikipedia importer
+  ratings.py                driver/chassis/engine ratings from the weighting matrix
+  event/                    event simulation (weather, lap model, sessions)
+  ui/                       screens (Win9x theme, menu, new game, management, event, market,
+                            development, history, editor)
+tools/gerar_db_exemplo.py   generates the fictional sample series
 ```
 
-As duas categorias de exemplo (Fórmula Alfa e Fórmula Beta) são fictícias e têm regras diferentes:
-chassis próprio × chassis comprado, pilotos de teste, reabastecimento, formato do evento.
-Elas servem para testar a maleabilidade da estrutura.
+The two sample series (Fórmula Alfa and Fórmula Beta) are fictional and have different rules:
+own chassis × bought chassis, test drivers, refuelling, event format.
+They are there to test how flexible the structure is.
