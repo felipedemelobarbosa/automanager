@@ -47,6 +47,11 @@ def preparar_piloto(p, ano, rng=random):
     if not p.get("potencial"):
         anos_ate_pico = max(0, p["ano_pico"] - ano)
         p["potencial"] = int(clamp(media + anos_ate_pico * rng.uniform(1.0, 3.0), media, 97))
+    if "pref_acerto" not in p:
+        # preferência escondida de acerto do piloto (desvios padronizados; a categoria dá a escala em
+        # simulacao.preferencia_acerto_piloto): o acerto perfeito de um não é o do companheiro
+        from .event.modelo import PARAMETROS_ACERTO
+        p["pref_acerto"] = {k: round(rng.gauss(0, 1), 2) for k in PARAMETROS_ACERTO}
     p.setdefault("ano_inicio_carreira", ano)
     p.setdefault("atributos_iniciais", dict(p["atributos"]))
     p.setdefault("temporadas_sem_contrato", 0)

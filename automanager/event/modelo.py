@@ -12,6 +12,7 @@ como no modelo de referência cf.dc·(1,5 − 0,316·√cons)·Rnd() (consistên
 Os ratings de chassis, motor e piloto são calculados para a sessão, a pista e o
 clima atuais (ponderação da matriz do JSON da categoria), portanto não são estáticos.
 """
+import random
 import math
 
 from .. import ratings
@@ -144,9 +145,9 @@ def multiplicador_acerto(carro, ideal, sim, pesos=None):
     return 1 + sim.get("penalidade_maxima_acerto", 0.018) * min(1.0, efetiva / 0.45) ** 1.5
 
 
-def acerto_ia(carro, pista, clima_estado, rng):
-    """Equipes do PC acertam o carro com erro que diminui com recursos, piloto e aprendizado."""
-    ideal = acerto_ideal(pista, clima_estado)
+def acerto_ia(carro, ideal, rng):
+    """Equipes do PC (e o engenheiro do jogador no multijogador) acertam o carro mirando o ideal real do evento,
+    com erro que diminui com recursos, piloto e aprendizado."""
     sigma = 28 * (1 - 0.5 * carro.equipe.get("recursos", 50) / 100) * (1 - 0.5 * carro.atr("acerto_carro") / 100)
     sigma *= (1 - 0.6 * carro.conhecimento)
     return {k: int(clamp(ideal[k] + rng.gauss(0, sigma), 0, 100)) for k in PARAMETROS_ACERTO}
@@ -249,11 +250,21 @@ def multiplicador_pneu(categoria, composto, clima_estado, uso, idade):
 
 
 # ---------------------------------------------------------------------------- tempo de volta
+def sortear_desvio_acerto(categoria, rng_evento):
+    """Anti-trapaça: deslocamento escondido do acerto ideal neste evento (um para pista seca, outro para chuva).
+    Com ele, a fórmula pública (acerto_ideal) só diz a região do ideal; o ponto exato se acha no treino, pelos
+    comentários dos pilotos. Sorteado sem consumir o rng do evento (as simulações não mudam por isso)."""
+    sigma = float(categoria["simulacao"].get("variacao_acerto_evento", 12))
+    r = random.Random(hash(rng_evento.getstate()[1]))
+    return {clima: {k: round(r.gauss(0, sigma), 1) for k in PARAMETROS_ACERTO} for clima in ("seco", "chuva")}
+
+
 class ModeloVolta:
-    def __init__(self, categoria, pista, rng):
+    def __init__(self, categoria, pista, rng, desvio=None):
         self.cat = categoria
         self.pista = pista
         self.rng = rng
+        self.desvio = desvio or sortear_desvio_acerto(categoria, rng)
         self.sim = categoria["simulacao"]
         self.regras = categoria["regras"]
         self.pond = categoria["ponderacao"]
@@ -267,6 +278,15 @@ class ModeloVolta:
         self.spread_piloto = base * (0.8 + 0.4 * dif) * (1.1 if pista.get("tipo_pista") == "rua" else 1.0)
         self.part_motor = ratings.participacao_motor(pista, self.pond)
         self.pesos_acerto = pesos_acerto(pista)
+
+    def ideal(self, carro, clima_estado):
+        """Acerto ideal real deste carro neste evento: a fórmula da pista + o deslocamento escondido do evento + a
+        preferência (escondida) do piloto. É o que os comentários dos pilotos e os engenheiros perseguem."""
+        base = acerto_ideal(self.pista, clima_estado)
+        d = self.desvio["seco" if clima_estado == "seco" else "chuva"]
+        escala = float(self.sim.get("preferencia_acerto_piloto", 5))
+        pref = (getattr(carro, "piloto", None) or {}).get("pref_acerto") or {}
+        return {k: clamp(base[k] + d.get(k, 0) + escala * pref.get(k, 0), 0, 100) for k in PARAMETROS_ACERTO}
 
     def ratings(self, carro, sessao, clima):
         chave = (sessao, clima.estado)
@@ -300,7 +320,7 @@ class ModeloVolta:
         m_motor = 1 + self.spread * cw * es * ef["peso_motor"] * (0.5 - pot_ef / 100)
         m_piloto = 1 + self.spread_piloto * dw * ef["peso_piloto"] * (0.5 - nota_p / 100)
 
-        ideal = acerto_ideal(self.pista, clima.estado)
+        ideal = self.ideal(carro, clima.estado)
         m_acerto = multiplicador_acerto(carro, ideal, self.sim, self.pesos_acerto)
 
         m_pneu = multiplicador_pneu(self.cat, carro.pneu, clima.estado, carro.uso_pneu, carro.idade_pneu)

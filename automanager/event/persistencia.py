@@ -45,6 +45,7 @@ def serializar(ev, categoria_id):
         "pista": ev.pista["id"],
         "rng": [estado_rng[0], list(estado_rng[1]), estado_rng[2]],
         "clima": {"estado": ev.clima.estado, "_acumulado": ev.clima._acumulado, "mudancas": ev.clima.mudancas},
+        "desvio_acerto": ev.modelo.desvio,
         "indice": ev.indice,
         "ordem_campeonato": list(ev.ordem_campeonato),
         "programacao": [list(x) for x in ev.programacao],
@@ -78,7 +79,7 @@ def restaurar(dados, st):
     ev.rng.setstate((r[0], tuple(r[1]), r[2]))                               # ...por isso o estado vem depois
     for k, v in dados["clima"].items():
         setattr(ev.clima, k, v)
-    ev.modelo = ModeloVolta(ev.cat, pista, ev.rng)
+    ev.modelo = ModeloVolta(ev.cat, pista, ev.rng, dados.get("desvio_acerto"))   # o mesmo ideal escondido
     ev.voltas_pista = dados.get("voltas_pista", 0.0)
     ev.vitimas = list(dados.get("vitimas", []))
     ev.notas = list(dados.get("notas", []))

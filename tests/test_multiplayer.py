@@ -90,6 +90,8 @@ class TestLiga(unittest.TestCase):
         pneus = st["categorias"][CID]["categoria"]["pneus"]["compostos"]
         comp = [k for k, v in pneus.items() if v["tipo"] == "seco"]         # corrida seca: plano com pneus secos
         ev["prob_chuva"] = 0.0                       # na chuva as paradas forçadas pelo clima mudariam o plano
+        pn = st["categorias"][CID]["categoria"]["pneus"]
+        pn["desgaste_critico"] = pn["desgaste_quebra"] = 999   # nem furo por desgaste (stint longo, agressivo)
         voltas = ev["voltas_corrida"]
 
         def faz(s):

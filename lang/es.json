@@ -2176,5 +2176,11 @@
  "{0} promove o piloto de testes {1} a titular.": "{0} asciende al piloto de pruebas {1} a titular.",
  "ATENÇÃO: {0} está sem {1}. Coloque o piloto de testes no carro (Pilotos da equipe > Promover a titular) ou contrate um piloto (Mercado) – sem isso o carro não corre.": "ATENCIÓN: {0} está sin {1}. Pon al piloto de pruebas en el coche (Pilotos del equipo > Ascender a titular) o contrata un piloto (Mercado) – si no, el coche no corre.",
  "Contrate em Mercado > Pilotos (ou promova seu piloto de testes em Pilotos da equipe > Promover a titular). Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Contrata en Mercado > Pilotos (o asciende a tu piloto de pruebas en Pilotos del equipo > Ascender a titular). Con la carrera esta semana, los pilotos responden a las ofertas cuando haces clic en Continuar.",
- "O quadro 'Próximos passos', na parte de baixo da tela, mostra o que falta.": "El cuadro 'Próximos pasos', abajo en la pantalla, muestra lo que falta."
+ "O quadro 'Próximos passos', na parte de baixo da tela, mostra o que falta.": "El cuadro 'Próximos pasos', abajo en la pantalla, muestra lo que falta.",
+ "Acerto: variação escondida por evento": "Puesta a punto: variación oculta por evento",
+ "Anti-trapaça: o acerto ideal real de cada evento = fórmula da pista + desvio sorteado no evento (desvio-padrão, em pontos); só se acha pelo treino. Padrão 12. 0 = desliga.": "Antitrampas: la puesta a punto ideal real de cada evento = fórmula de la pista + desvío sorteado en el evento (desviación estándar, en puntos); solo se encuentra en los libres. Por defecto 12. 0 = desactivado.",
+ "Acerto: preferência de cada piloto": "Puesta a punto: preferencia de cada piloto",
+ "Desvio pessoal do ideal (desvio-padrão, em pontos): o acerto perfeito de um piloto não é o do companheiro. Padrão 5. 0 = desliga.": "Desvío personal del ideal (desviación estándar, en puntos): la puesta a punto perfecta de un piloto no es la de su compañero. Por defecto 5. 0 = desactivado.",
+ "Engenheiro acerta pelo treino": "El ingeniero ajusta según los libres",
+ "Valores fixos:": "Valores fijos:"
 }

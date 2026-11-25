@@ -185,6 +185,12 @@ Todos opcionais (entre parênteses, o padrão). Em `simulacao`:
 - `fator_erro_classificacao` (0,5), `trafego_volta_rapida` (0,05), `limites_pista` (0,012): erros, tráfego e voltas apagadas na classificação
 - `ar_sujo` (0,01), `ultrapassagem_base` (0,3): tráfego na corrida
 - ultrapassagem pela pista: fator = (retas / `ultrapassagem_retas_referencia` (0,4)) ^ `ultrapassagem_expoente_retas` (2), × `fator_ultrapassagem_rua` (0,6) em pista de rua; pista rápida (muita reta) = fácil, lenta e travada = difícil. `ultrapassagem_sensibilidade_ritmo` (1,2) e `ultrapassagem_expoente_ritmo` (2): chance × (0,05 + sensibilidade × diferença de ritmo em %^expoente) – com ritmo parecido quase não se passa; com diferença grande (pneu novo, carro bem melhor), sim
+- `variacao_acerto_evento` (12) e `preferencia_acerto_piloto` (5) – anti-trapaça: o acerto ideal real de cada evento é
+  a fórmula da pista (`acerto_ideal`) + um desvio sorteado no próprio evento (desvio-padrão em pontos, um para seco e
+  outro para chuva; não fica no save antes do evento e, no multijogador, só existe no jogo do comissário) + a
+  preferência escondida do piloto (`pref_acerto`, criada pelo jogo, fora do arquivo da database e tirada do arquivo
+  dos jogadores no multijogador). Os comentários dos pilotos no treino, a IA e o modo "engenheiro" do plano de evento
+  miram esse ideal real. 0 = desliga.
 - `variacao_estrategia_s` (6): as equipes do PC escolhem entre as estratégias perto da ótima por sorteio (mais recursos = mais perto da ótima; 0 = todas seguem a ótima); `variacao_stint` (0,1): variação do tamanho dos stints. A estratégia automática do jogador é sempre a ótima calculada
 - `dano_para_reparo` (0,006): dano (fração do tempo de volta) que leva o carro ao box
 - `prob_sc_acidente` (0,45, ×1,35 em pista de rua), `fracao_sc` (0,65), `prob_vsc_quebra` (0,3), `ritmo_sc` (1,4),
@@ -284,7 +290,8 @@ ovais): pelo raio, as curvas de um superspeedway (~300 m) contam como curvas e e
 - `compressao_pelotao` (0,6): no superspeedway o vácuo e o limite de potência aproximam o ritmo dos carros
 - `piso_ultrapassagem_pelotao` (0,4) e `custo_disputa_pelotao` (0,3): no pelotão passa-se mesmo com o mesmo ritmo e
   a briga custa pouco tempo
-- `multiplicador_batida_pelotao` (6) e `carros_max_pelotao` (12): o "Big One" (batida grave com muitos carros)
+- `multiplicador_batida_pelotao` (6) e `carros_max_pelotao` (12): o "Big One" (batida grave com muitos carros); no
+  máximo um por corrida e com no máximo um terço dos carros que ainda correm (depois dele, batidas graves comuns)
 - amarelas: toda batida chama safety car (`prob_amarela_acidente` 0,9; quebra `prob_amarela_quebra` 0,35), nunca VSC;
   `amarelas_detritos_por_corrida` (6, × (0,8·(1 + (`amarelas_oval_curto` − 1)·curto) + 0,4·pelotão), independe do nº
   de voltas); `amarelas_oval_curto` (2): no oval curto pleno, o dobro de amarelas; `voltas_amarela` [4, 7]

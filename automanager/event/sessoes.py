@@ -231,7 +231,7 @@ class Evento:
         s = self.sessao
         for c in self.carros:
             if not c.usuario:
-                c.acerto = acerto_ia(c, self.pista, self.clima.estado, self.rng)
+                c.acerto = acerto_ia(c, self.modelo.ideal(c, self.clima.estado), self.rng)
                 c.ordens = {"agressividade": 0, "uso_motor": 0, "uso_carro": 0}
             if isinstance(s, SessaoCorrida):
                 if not c.usuario:
@@ -661,7 +661,7 @@ class SessaoCronometrada:
         # volta para a garagem
         c.status = "garagem"
         if c.usuario and self.tipo in ("treino", "classificacao"):     # o acerto vale da 1ª sessão até a corrida
-            ideal = acerto_ideal(self.ev.pista, self.ev.clima.estado)
+            ideal = self.ev.modelo.ideal(c, self.ev.clima.estado)      # o ideal real (com o desvio escondido)
             diffs = avaliar_acerto(c, ideal, self.ev.rng)
             texto = texto_feedback(diffs)
             c.feedback = {"sessao": self.nome, "volta": c.voltas, "nota": nota_acerto(diffs), "texto": texto,
@@ -1366,7 +1366,8 @@ class SessaoCorrida:
         vivos = sorted(self.correndo(), key=lambda c: c.tempo_total)
         oval = ev.perfil_oval()
         cmax = int(bg["carros_max"])
-        if oval and len(vivos) > 1:
+        big_one = bool(oval and oval["pelotao"] > 0 and not getattr(self, "_big_one_feito", False))
+        if big_one and len(vivos) > 1:
             # "Big One": no pelotão do superspeedway, carros colados multiplicam o risco e o tamanho da batida
             colados = sum(1 for a, b in zip(vivos, vivos[1:]) if b.tempo_total - a.tempo_total < 0.5) / (len(vivos) - 1)
             p *= 1 + (oval["multiplicador_batida_pelotao"] - 1) * oval["pelotao"] * colados
@@ -1375,7 +1376,15 @@ class SessaoCorrida:
             return False
         if len(vivos) < max(2, int(bg["carros_min"])):
             return False
-        n = ev.rng.randint(max(2, int(bg["carros_min"])), min(cmax, len(vivos)))
+        teto = min(cmax, len(vivos))
+        if big_one:
+            # um "Big One" por corrida, com no máximo um terço dos carros que ainda correm: a corrida sempre
+            # termina com carros na pista (depois dele, batidas graves voltam a ser as comuns)
+            teto = min(teto, max(int(bg["carros_min"]), len(vivos) // 3))
+            self._big_one_feito = True
+        if teto < max(2, int(bg["carros_min"])):
+            return False
+        n = ev.rng.randint(max(2, int(bg["carros_min"])), teto)
         i = ev.rng.randrange(0, len(vivos) - n + 1)
         envolvidos = vivos[i:i + n]                     # carros próximos na pista
         for c in envolvidos:

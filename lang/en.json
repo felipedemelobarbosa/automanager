@@ -2177,5 +2177,11 @@
  "{0} promove o piloto de testes {1} a titular.": "{0} promotes test driver {1} to race driver.",
  "ATENÇÃO: {0} está sem {1}. Coloque o piloto de testes no carro (Pilotos da equipe > Promover a titular) ou contrate um piloto (Mercado) – sem isso o carro não corre.": "WARNING: {0} is without {1}. Put the test driver in the car (Team drivers > Promote to race driver) or hire a driver (Market) – otherwise the car doesn't race.",
  "Contrate em Mercado > Pilotos (ou promova seu piloto de testes em Pilotos da equipe > Promover a titular). Com a corrida nesta semana, os pilotos respondem às propostas quando você clica em Continuar.": "Hire in Market > Drivers (or promote your test driver in Team drivers > Promote to race driver). With the race this week, drivers answer your offers when you click Continue.",
- "O quadro 'Próximos passos', na parte de baixo da tela, mostra o que falta.": "The 'Next steps' box at the bottom of the screen shows what is left to do."
+ "O quadro 'Próximos passos', na parte de baixo da tela, mostra o que falta.": "The 'Next steps' box at the bottom of the screen shows what is left to do.",
+ "Acerto: variação escondida por evento": "Setup: hidden variation per event",
+ "Anti-trapaça: o acerto ideal real de cada evento = fórmula da pista + desvio sorteado no evento (desvio-padrão, em pontos); só se acha pelo treino. Padrão 12. 0 = desliga.": "Anti-cheat: each event's real ideal setup = the track formula + a shift drawn at the event (standard deviation, in points); only found in practice. Default 12. 0 = off.",
+ "Acerto: preferência de cada piloto": "Setup: each driver's preference",
+ "Desvio pessoal do ideal (desvio-padrão, em pontos): o acerto perfeito de um piloto não é o do companheiro. Padrão 5. 0 = desliga.": "Personal shift of the ideal (standard deviation, in points): one driver's perfect setup isn't his teammate's. Default 5. 0 = off.",
+ "Engenheiro acerta pelo treino": "Engineer sets up from practice",
+ "Valores fixos:": "Fixed values:"
 }

@@ -702,6 +702,15 @@ class DialogoPlanoEvento(w.Dialogo):
             r = 0
             tk.Label(g, text="Acerto", font=w.FONTE_NEGRITO).grid(row=r, column=0, sticky="w")
             r += 1
+            # o acerto ideal real do evento é escondido: o engenheiro acerta pelo que aprende no treino
+            modo = dados.get("acerto_modo") or ("fixo" if plano.get(grupo) else "engenheiro")
+            v["acerto_modo"] = tk.StringVar(value=modo)
+            ttk.Radiobutton(g, text="Engenheiro acerta pelo treino", value="engenheiro",
+                            variable=v["acerto_modo"]).grid(row=r, column=0, columnspan=2, sticky="w")
+            r += 1
+            ttk.Radiobutton(g, text="Valores fixos:", value="fixo",
+                            variable=v["acerto_modo"]).grid(row=r, column=0, columnspan=2, sticky="w")
+            r += 1
             for k in PARAMETROS_ACERTO:
                 var = tk.IntVar(value=dados["acerto"].get(k, 50))
                 tk.Label(g, text=NOMES_ACERTO[k], anchor="w").grid(row=r, column=0, sticky="w")
@@ -767,7 +776,8 @@ class DialogoPlanoEvento(w.Dialogo):
 
     def _ler(self, v, grupo):
         inv = {n: k for k, n in self.nomes_comp.items()}
-        d = {"acerto": {k: int(x.get()) for k, x in v["acerto"].items()},
+        d = {"acerto_modo": v["acerto_modo"].get(),
+             "acerto": {k: int(x.get()) for k, x in v["acerto"].items()},
              "ordens": {k: int(x.get()) for k, x in v["ordens"].items()},
              "pneu": inv.get(v["pneu"].get(), "auto")}
         if grupo == "corrida":

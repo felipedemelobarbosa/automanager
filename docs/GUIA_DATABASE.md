@@ -329,6 +329,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Reference straights / straights exponent for overtaking | `ultrapassagem_retas_referencia` / `ultrapassagem_expoente_retas` | Track factor = (straights / reference)^exponent (0.4 / 2): fast tracks easy, slow tracks hard. |
 | Overtaking: weight / exponent of the pace gap | `ultrapassagem_sensibilidade_ritmo` / `ultrapassagem_expoente_ritmo` | With the same pace you hardly pass (1.2 / 2). |
 | Teams' strategy variation (s), Stint length variation | `variacao_estrategia_s`, `variacao_stint` | 0 = all follow the best strategy (6 / 0.1). |
+| Setup: hidden variation per event, Setup: each driver's preference | `variacao_acerto_evento`, `preferencia_acerto_piloto` | Anti-cheat. The real ideal setup at each event = the track formula + a shift drawn at the event (standard deviation in points, 12) + the driver's own hidden preference (5). The public formula then only gives the area of the ideal; the exact point is found in practice through the drivers' feedback. Computer teams and the multiplayer "engineer" mode aim at the same hidden ideal. 0 = off. |
 | Damage that brings the car in | `dano_para_reparo` | (0.006) |
 | Safety car after an accident, SC vs VSC, VSC after a breakdown | `prob_sc_acidente`, `fracao_sc`, `prob_vsc_quebra` | (0.45, ×1.35 on street tracks / 0.65 / 0.3) |
 | Pace under SC / VSC, Pit stop under SC / VSC | `ritmo_sc`, `ritmo_vsc`, `pit_sob_sc`, `pit_sob_vsc` | (1.4 / 1.35 / 0.55 / 0.7) |
@@ -483,3 +484,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-23 | Editor: calendar Location split into Town + Country (list); sponsor Preference value is a list (countries or positions, by type). |
 | 2026-11-23 | Ovals: track tracer defaults to the speed criterion on ovals (`mapa_pista.criterio_oval`); short oval now depends only on slow corners; new `oval.amarelas_oval_curto` (2) and `oval.ultrapassagem_oval_curto` (0.7). |
 | 2026-11-23 | Sample database (Fórmula Alfa and Beta): two new ovals, inactive in 2026 – Copper Valley 500 (short, 48/15/37, joins in 2027) and Riverbend 400 (intermediate, 50/49/1, joins in 2028), via `anos_entrada`. |
+| 2026-11-25 | Simulation: anti-cheat `variacao_acerto_evento` (12) and `preferencia_acerto_piloto` (5); drivers get a hidden `pref_acerto` (in the save, not in the file). Oval: at most one "Big One" per race, with at most a third of the running cars. |

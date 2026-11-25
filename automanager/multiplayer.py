@@ -238,6 +238,8 @@ def versao_jogadores(st):
     for j in mp["jogadores"].values():
         j.pop("chave", None)
     mp["papel"] = "jogador"
+    for p in list(d.get("pilotos", {}).values()) + list(d.get("aposentados", {}).values()):
+        p.pop("pref_acerto", None)                    # anti-trapaça: a preferência de acerto fica com o comissário
     return d
 
 

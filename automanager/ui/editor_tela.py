@@ -1055,6 +1055,12 @@ class AbaCategoria(ttk.Notebook):
              "Com o mesmo ritmo quase não se passa. Padrão 1,2."),
             ("ultrapassagem_expoente_ritmo", "Ultrapassagem: expoente da diferença de ritmo",
              "2 = diferença pequena quase nunca basta, grande (pneu novo, carro melhor) sim. Padrão 2."),
+            ("variacao_acerto_evento", "Acerto: variação escondida por evento",
+             "Anti-trapaça: o acerto ideal real de cada evento = fórmula da pista + desvio sorteado no evento "
+             "(desvio-padrão, em pontos); só se acha pelo treino. Padrão 12. 0 = desliga."),
+            ("preferencia_acerto_piloto", "Acerto: preferência de cada piloto",
+             "Desvio pessoal do ideal (desvio-padrão, em pontos): o acerto perfeito de um piloto não é o do companheiro. "
+             "Padrão 5. 0 = desliga."),
             ("variacao_estrategia_s", "Variação de estratégia das equipes (s)",
              "0 = todas seguem a ótima. Equipes com mais recursos variam menos. Padrão 6."),
             ("variacao_stint", "Variação do tamanho dos stints", "Fração. Padrão 0,1."),

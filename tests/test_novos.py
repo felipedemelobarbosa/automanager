@@ -219,7 +219,9 @@ class TestSalvarNoMeioDoEvento(unittest.TestCase):
         from automanager.event.sessoes import Evento
         from automanager.event.inscritos import montar_inscritos
         from automanager.event import persistencia
-        st = novo(cid="formula_alfa", eid="tucano")
+        # mesma semente nos dois jogos: o jogo sorteia a preferência de acerto de cada piloto
+        st = state.novo_jogo(db.arquivos_do_ano(2026), semente=9)
+        state.escolher_equipe(st, "formula_alfa", "tucano")
         c = st["categorias"]["formula_alfa"]
         ev = Evento(c["categoria"], c["calendario"][2], montar_inscritos(st, "formula_alfa", "tucano"), random.Random(9))
         passo = 0

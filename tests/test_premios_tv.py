@@ -63,6 +63,11 @@ class TestPremiosTV(unittest.TestCase):
         st = state.novo_jogo(db.arquivos_do_ano(2026), semente=2)
         st["usuario"] = {"categoria": None, "equipe": None}
         c = st["categorias"][CID]
+        # corrida interrompida (chuva ou bandeira vermelha após batida grave) dá meia pontuação e meio prêmio
+        for e in c["calendario"]:
+            e["prob_chuva"] = 0.0
+        c["categoria"]["regras"]["batida_grave"] = dict(c["categoria"]["regras"].get("batida_grave") or {},
+                                                        prob_encerrar_sessao=0.0)
         eq = next(e for e in c["equipes"].values() if e.get("ativa"))
         sem_premio = dict(c["categoria"]["regras"]["premios_corrida"], ativa=False)
         com = economia.receita_prevista(st, CID, eq)

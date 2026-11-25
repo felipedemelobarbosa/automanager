@@ -1,7 +1,8 @@
 """Plano de evento: o que o jogador do multijogador decide antes de um evento que não acompanha ao vivo.
 
 Por piloto (id global), um bloco por grupo de sessão:
-  {"treino":        {"acerto": {aerodinamica, cambio, suspensao, freios: 0-100}, "pneu": composto|"auto",
+  {"treino":        {"acerto_modo": "engenheiro"|"fixo", "acerto": {aerodinamica, cambio, suspensao, freios: 0-100},
+                     "pneu": composto|"auto",
                      "ordens": {agressividade, uso_motor, uso_carro: -2..2}},
    "classificacao": {... igual ao treino},
    "corrida":       {... + "combustivel": voltas|None (automático),
@@ -18,7 +19,10 @@ LIMITE_ORDEM = 2
 
 
 def grupo_padrao(grupo):
-    g = {"acerto": {k: 50 for k in PARAMETROS_ACERTO}, "pneu": "auto", "ordens": {k: 0 for k in ORDENS}}
+    # engenheiro: a equipe acerta o carro a cada sessão pelo que aprende no treino (como as do PC) – o ideal real
+    # do evento é escondido, então valores fixos são um chute; fixo: usa os valores de "acerto"
+    g = {"acerto_modo": "engenheiro", "acerto": {k: 50 for k in PARAMETROS_ACERTO}, "pneu": "auto",
+         "ordens": {k: 0 for k in ORDENS}}
     if grupo == "corrida":
         g.update({"combustivel": None, "paradas": "auto"})
     return g
@@ -37,6 +41,9 @@ def normalizar(plano, compostos, troca_de_pneus=True):
         if not isinstance(g, dict):
             continue
         n = grupo_padrao(grupo)
+        # planos antigos (sem o modo) tinham valores digitados: continuam fixos
+        n["acerto_modo"] = g["acerto_modo"] if g.get("acerto_modo") in ("engenheiro", "fixo") else \
+            ("fixo" if "acerto" in g else "engenheiro")
         for k in PARAMETROS_ACERTO:
             try:
                 n["acerto"][k] = max(0, min(100, int((g.get("acerto") or {}).get(k, 50))))
@@ -84,7 +91,11 @@ def aplicar(ev, planos):
             c.usuario = False
             continue
         c.usuario = True
-        c.acerto = dict(g["acerto"])
+        if g.get("acerto_modo") == "engenheiro":
+            from .modelo import acerto_ia
+            c.acerto = acerto_ia(c, ev.modelo.ideal(c, ev.clima.estado), ev.rng)
+        else:
+            c.acerto = dict(g["acerto"])
         c.ordens = dict(g["ordens"])
         pneu = g.get("pneu") if g.get("pneu") in compostos else None
         c.pneu_inicial = pneu
