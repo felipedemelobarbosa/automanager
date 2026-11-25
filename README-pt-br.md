@@ -1,3 +1,9 @@
+<div align="center">
+  <a href="README.md">English</a> | 
+  <a href="README.pt-br.md">Português</a> | 
+  <a href="README.es.md">Español</a>
+</div>
+
 # AutoManager
 
 Jogo manager simples de automobilismo, com interface no estilo Windows 9x (Python + Tkinter).
