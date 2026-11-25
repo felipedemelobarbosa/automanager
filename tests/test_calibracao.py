@@ -13,7 +13,7 @@ CID = "formula_alfa"
 
 class TestCalibracao(unittest.TestCase):
     def test_fatores_gravados_e_nivel_alvo(self):
-        st = state.novo_jogo(db.arquivos_do_ano(2026))
+        st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
         cfg = st["categorias"][CID]["categoria"]["desenvolvimento"]
         cal = cfg["calibracao"]
         for parte in ("chassis", "motor"):
@@ -28,7 +28,7 @@ class TestCalibracao(unittest.TestCase):
         self.assertIsNone(st["categorias"]["formula_beta"]["categoria"].get("desenvolvimento"))
 
     def test_pode_desligar(self):
-        st = state.novo_jogo(db.arquivos_do_ano(2026))
+        st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
         cfg = st["categorias"][CID]["categoria"]["desenvolvimento"]
         cfg.pop("calibracao")
         cfg["calibracao_automatica"] = False
@@ -57,6 +57,30 @@ class TestCalibracao(unittest.TestCase):
             derivas.append(media_final - media0)
             self.assertTrue(all(0 < v <= 100 for h in historico for v in h.values()))
         self.assertLess(abs(sum(derivas) / len(derivas)), 8)                        # sem deriva forte
+
+
+    def test_caixa_inicial_nao_faz_o_carro_saltar(self):
+        """O caixa inicial acima da reserva é investido aos poucos (uso_do_excedente por temporada) e a calibração
+        conta com ele: o nível médio de motor e chassis próprios não salta na 1ª temporada."""
+        fab = ("mot_kraft", "mot_rhone")
+        st = state.novo_jogo(db.arquivos_do_ano(2026), semente=2)
+        st["usuario"] = {"categoria": None, "equipe": None}
+        c = st["categorias"][CID]
+
+        def niveis():
+            motor = [m["potencia"] for k, m in c["motores"].items() if k not in fab]
+            chassis = [dev._nivel(dev._entidade(st, CID, e, "chassis"), "chassis") for e in c["equipes"].values()
+                       if e.get("ativa") and dev.pode(st, CID, e, "chassis")]
+            return sum(motor) / len(motor), sum(chassis) / len(chassis)
+        m0, c0 = niveis()
+        rng = random.Random(3)
+        while st["ano"] == 2026:
+            routines.avancar_semana(st, rng)
+        m1, c1 = niveis()
+        self.assertLess(abs(m1 - m0), 5)          # antes: +10,7 (o caixa inicial ia quase todo na 1ª temporada)
+        self.assertLess(abs(c1 - c0), 7)          # antes: +14,7
+        caixa = [e["financas"]["caixa"] for e in c["equipes"].values() if e.get("ativa")]
+        self.assertGreater(min(caixa), c["categoria"]["regras"]["orcamento_medio"] * 0.15)   # sobra excedente
 
 
 if __name__ == "__main__":

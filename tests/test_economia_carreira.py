@@ -10,7 +10,7 @@ from automanager import db, state, routines, mercado, economia, carreira  # noqa
 
 
 def novo(cid="formula_alfa", eid="tucano"):
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
     state.escolher_equipe(st, cid, eid)
     return st
 

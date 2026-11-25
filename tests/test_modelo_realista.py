@@ -17,7 +17,7 @@ CID = "formula_alfa"
 
 
 def base():
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
     c = st["categorias"][CID]
     pista = dict(next(e for e in c["calendario"] if e["especie"] == "corrida" and e["tipo_pista"] == "mista"),
                  prob_chuva=0.0)

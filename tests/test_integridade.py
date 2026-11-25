@@ -20,7 +20,7 @@ JOGADORES = [("ana", "tucano", "a1"), ("bruno", "vortex", "b2"), ("carla", "vent
 
 
 def nova_liga(politica="ia"):
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
     mp.criar_liga(st, "Liga Integridade", [{"nome": n.capitalize(), "categoria": CID, "equipe": e, "senha": s}
                                           for n, e, s in JOGADORES], politica)
     return st

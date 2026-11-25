@@ -30,7 +30,7 @@ class TestDatabase(unittest.TestCase):
 
 class TestJogo(unittest.TestCase):
     def setUp(self):
-        self.st = state.novo_jogo(db.arquivos_do_ano(2026))
+        self.st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
 
     def test_multiplas_categorias_pool_de_pilotos(self):
         self.assertEqual(len(self.st["categorias"]), 2)
@@ -40,7 +40,7 @@ class TestJogo(unittest.TestCase):
     def test_criar_equipe_orcamento(self):
         regras = self.st["categorias"]["formula_alfa"]["categoria"]["regras"]
         for i in range(20):
-            st = state.novo_jogo(db.arquivos_do_ano(2026))
+            st = state.novo_jogo(db.arquivos_do_ano(2026), semente=i)
             eq = state.criar_equipe(st, "formula_alfa", f"Teste {i}", "Brasil", random.Random(i))
             self.assertGreaterEqual(eq["financas"]["caixa"], regras["orcamento_medio"] * 0.7 - 1000)
             self.assertLessEqual(eq["financas"]["caixa"], regras["orcamento_medio"] * 1.2 + 1000)
@@ -69,7 +69,7 @@ class TestJogo(unittest.TestCase):
 
 class TestEvento(unittest.TestCase):
     def _rodar(self, arquivo, idx, seed):
-        st = state.novo_jogo([arquivo])
+        st = state.novo_jogo([arquivo], semente=seed)
         cid = list(st["categorias"])[0]
         c = st["categorias"][cid]
         corridas = [e for e in c["calendario"] if e["especie"] == "corrida"]
@@ -81,7 +81,7 @@ class TestEvento(unittest.TestCase):
 
     def test_evento_completo_todas_as_pistas(self):
         for arq in db.arquivos_do_ano(2026):
-            st = state.novo_jogo([arq])
+            st = state.novo_jogo([arq], semente=1)
             n = sum(1 for e in list(st["categorias"].values())[0]["calendario"] if e["especie"] == "corrida")
             for i in range(n):
                 ev = self._rodar(arq, i, i)
@@ -105,7 +105,7 @@ class TestEvento(unittest.TestCase):
 
     def test_classificacao_com_fases_elimina(self):
         arq = [a for a in db.arquivos_do_ano(2026) if "alfa" in a][0]
-        st = state.novo_jogo([arq])
+        st = state.novo_jogo([arq], semente=1)
         c = st["categorias"]["formula_alfa"]
         ev = Evento(c["categoria"], c["calendario"][2], montar_inscritos(st, "formula_alfa", None), random.Random(1))
         for _ in range(3):
@@ -121,7 +121,7 @@ class TestEvento(unittest.TestCase):
 
     def test_acerto_influencia_tempo(self):
         arq = [a for a in db.arquivos_do_ano(2026) if "alfa" in a][0]
-        st = state.novo_jogo([arq])
+        st = state.novo_jogo([arq], semente=1)
         c = st["categorias"]["formula_alfa"]
         from automanager.event.modelo import acerto_ideal
         pista = c["calendario"][2]

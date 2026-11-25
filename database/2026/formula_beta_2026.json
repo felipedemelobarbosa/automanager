@@ -102,7 +102,7 @@
   },
   "financas": {
    "reserva_minima": 0.15,
-   "uso_do_excedente": 0.5,
+   "uso_do_excedente": 0.33,
    "juros_anual": 0.08,
    "limite_emprestimo": 0.5,
    "prazo_temporadas": 3,

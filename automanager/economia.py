@@ -2,7 +2,8 @@
 
 Configuração em categoria["financas"] (valores padrão entre parênteses):
   reserva_minima          fração do orçamento médio que o PC tenta manter em caixa (0.15)
-  uso_do_excedente        fração do caixa acima da reserva que o PC investe por temporada (0.5)
+  uso_do_excedente        fração do caixa acima da reserva que o PC investe por temporada (0.33 ≈ o excedente
+                          gasto ao longo de umas 3 temporadas)
   juros_anual             juros dos empréstimos (0.08)
   limite_emprestimo       teto da dívida = fator × orçamento médio × (0.5 + recursos/100) (0.5)
   prazo_temporadas        prazo padrão dos empréstimos, em temporadas (3)
@@ -12,7 +13,7 @@ from . import campeonato
 from .state import noticia, lancar, pilotos_da_equipe, eh_humana, quem
 from .util import dinheiro
 
-PADRAO = {"reserva_minima": 0.15, "uso_do_excedente": 0.5, "juros_anual": 0.08, "limite_emprestimo": 0.5,
+PADRAO = {"reserva_minima": 0.15, "uso_do_excedente": 0.33, "juros_anual": 0.08, "limite_emprestimo": 0.5,
           "prazo_temporadas": 3, "semanas_para_falencia": 8}
 
 
@@ -120,6 +121,13 @@ def despesas_fixas_previstas(st, cid, eq):
     return total
 
 
+def excedente_por_temporada(st, cid, eq):
+    """Quanto do caixa acima da reserva o PC investe numa temporada inteira (0 sem excedente)."""
+    c = cfg(st, cid)
+    orc = st["categorias"][cid]["categoria"]["regras"]["orcamento_medio"]
+    return max(0.0, eq["financas"]["caixa"] - orc * c["reserva_minima"]) * c["uso_do_excedente"]
+
+
 def planejar_temporada(st, cid, eq):
     """Verba semanal de desenvolvimento do PC até o fim da temporada (recalculada a cada 13 semanas):
     (receita - despesas fixas) do que ainda falta da temporada + ajuste pelo caixa acima/abaixo da reserva."""
@@ -129,7 +137,9 @@ def planejar_temporada(st, cid, eq):
     frac = contratos.corridas_restantes(st, cid) / corridas(st, cid)
     sobra = (receita_prevista(st, cid, eq) - despesas_fixas_previstas(st, cid, eq)) * frac
     excesso = eq["financas"]["caixa"] - orc * c["reserva_minima"]
-    ajuste = excesso * (c["uso_do_excedente"] if excesso > 0 else 1.0)
+    # acima da reserva: investe `uso_do_excedente` do excedente por temporada (proporcional ao que falta dela – o
+    # plano é refeito a cada 13 semanas); abaixo: corta o que falta para voltar à reserva
+    ajuste = excesso * c["uso_do_excedente"] * frac if excesso > 0 else excesso
     semanas = max(1, 53 - st["semana"])
     eq["verba_semanal_dev"] = max(0.0, sobra + ajuste) / semanas
 

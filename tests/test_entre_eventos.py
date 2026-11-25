@@ -20,7 +20,7 @@ CONSTANTES = ("regras", "pneus", "clima", "formato_evento", "ponderacao", "simul
 
 
 def jogo_ia():
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
     st["usuario"] = {"categoria": None, "equipe": None}
     return st
 

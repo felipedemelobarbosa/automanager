@@ -459,9 +459,22 @@ def _pesos_ia(st, cid, eq):
     return {"chassis": 0.7, "motor": 0.3} if len(partes) == 2 else {p: 1.0 for p in partes}
 
 
+TEMPORADAS_EXCEDENTE = 3
+
+
+def _excedente_medio(st, cid, eq):
+    """Média, nas primeiras TEMPORADAS_EXCEDENTE temporadas, do caixa acima da reserva que o PC investe (cada
+    temporada usa `uso_do_excedente` do que sobrou)."""
+    from . import economia
+    e0 = economia.excedente_por_temporada(st, cid, eq)
+    u = economia.cfg(st, cid)["uso_do_excedente"]
+    return e0 * sum((1 - u) ** k for k in range(TEMPORADAS_EXCEDENTE)) / TEMPORADAS_EXCEDENTE
+
+
 def calibrar_custos(st, rng=None):
     """Ajusta, no início do jogo, o custo por ponto de chassis e motor de cada categoria com desenvolvimento,
-    para que a verba anual sustentável das equipes (receita prevista − despesas fixas) reconstrua, em média,
+    para que a verba anual das equipes (receita prevista − despesas fixas + o caixa acima da reserva que o PC
+    investe, em média, nas primeiras temporadas) reconstrua, em média,
     o nível de chassis/motor da database. Sem isso o nível de longo prazo depende só dos números de custo
     e orçamento, e as peças se afastam da database depois da 1ª temporada. Grava o fator em
     desenvolvimento['calibracao'] (não altera o arquivo da database). Desligue com
@@ -483,6 +496,7 @@ def calibrar_custos(st, rng=None):
                 if not ent:
                     continue
                 verba = max(0.0, economia.receita_prevista(st, cid, eq) - economia.despesas_fixas_previstas(st, cid, eq))
+                verba += _excedente_medio(st, cid, eq)        # o caixa inicial acima da reserva também é investido
                 amostra.append((verba * _pesos_ia(st, cid, eq)[parte], _nivel(ent, parte)))
             if not amostra or sum(v for v, _ in amostra) <= 0:
                 continue

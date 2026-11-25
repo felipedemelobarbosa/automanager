@@ -22,7 +22,7 @@ def jogo(d):
     caminho = os.path.join(pasta, "formula_alfa_2026.json")
     with open(caminho, "w", encoding="utf-8") as f:
         json.dump(d, f)
-    st = state.novo_jogo([caminho])
+    st = state.novo_jogo([caminho], semente=1)
     state.escolher_equipe(st, "formula_alfa", "vortex")
     return st
 
@@ -119,7 +119,7 @@ class TestImportadorRevezamento(unittest.TestCase):
         caminho = os.path.join(pasta_tmp, "formula_1_2026.json")
         with open(caminho, "w", encoding="utf-8") as f:
             json.dump(d, f)
-        st = state.novo_jogo([caminho])
+        st = state.novo_jogo([caminho], semente=1)
         state.escolher_equipe(st, "formula_1", "alpine")
         rng = random.Random(3)
         for _ in range(52):

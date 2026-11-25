@@ -15,7 +15,7 @@ from automanager.event import planos as planos_evento  # noqa: E402
 
 
 def ate_a_corrida(cid="formula_alfa", ajustar=None, eid=None, semente=5, clima="seco"):
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=semente)
     c = st["categorias"][cid]
     cat = c["categoria"]
     cat["clima"]["estabilidade_por_10min"] = 1.0          # clima não muda sozinho durante o teste

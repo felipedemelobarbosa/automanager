@@ -16,7 +16,7 @@ BETA = [a for a in db.arquivos_do_ano(2026) if "beta" in a][0]
 
 
 def novo(arqs=None, cid="formula_alfa", eid="vortex"):
-    st = state.novo_jogo(arqs or db.arquivos_do_ano(2026))
+    st = state.novo_jogo(arqs or db.arquivos_do_ano(2026), semente=1)
     state.escolher_equipe(st, cid, eid)
     return st
 
@@ -194,7 +194,7 @@ class TestWikipedia(unittest.TestCase):
             caminho = os.path.join(tmp, "formula_1_2005.json")
             with open(caminho, "w", encoding="utf-8") as f:
                 json.dump(d, f)
-            st = state.novo_jogo([caminho])
+            st = state.novo_jogo([caminho], semente=1)
             state.escolher_equipe(st, "formula_1", "minardi")
             pista = next(e for e in st["categorias"]["formula_1"]["calendario"])
             reg = campeonato.simular_em_segundo_plano(st, "formula_1", pista, random.Random(1))
@@ -275,7 +275,7 @@ class TestImportadorGenerico(unittest.TestCase):
                     caminho = os.path.join(tmp, f"importada_{chave[:4]}.json")
                     with open(caminho, "w", encoding="utf-8") as f:
                         json.dump(d, f)
-                    st = state.novo_jogo([caminho])
+                    st = state.novo_jogo([caminho], semente=1)
                     reg = campeonato.simular_em_segundo_plano(st, "importada", st["categorias"]["importada"]
                                                               ["calendario"][0], random.Random(1))
                     self.assertTrue(reg and reg["resultado"])

@@ -16,7 +16,7 @@ ALFA = [a for a in db.arquivos_do_ano(2026) if "alfa" in a][0]
 
 
 def evento(classificacao, corrida_extra=None, seed=3, parar_apos=None):
-    st = state.novo_jogo([ALFA])
+    st = state.novo_jogo([ALFA], semente=seed)
     c = st["categorias"]["formula_alfa"]
     cat = copy.deepcopy(c["categoria"])
     cat["formato_evento"]["treinos_livres"] = []
@@ -104,7 +104,7 @@ class TestPneus(unittest.TestCase):
         self.assertLess(duro[28], m[28])                                 # ...mas dura mais
 
     def test_pista_abrasiva_pede_mais_paradas(self):
-        st = state.novo_jogo([ALFA])
+        st = state.novo_jogo([ALFA], semente=1)
         c = st["categorias"]["formula_alfa"]
         ins = montar_inscritos(st, "formula_alfa", None)
         paradas = {}

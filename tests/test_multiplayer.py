@@ -15,7 +15,7 @@ CID = "formula_alfa"
 
 
 def nova_liga(politica="ia"):
-    st = state.novo_jogo(db.arquivos_do_ano(2026))
+    st = state.novo_jogo(db.arquivos_do_ano(2026), semente=1)
     mp.criar_liga(st, "Liga Teste", [
         {"nome": "Ana", "categoria": CID, "equipe": "tucano", "senha": "a1"},
         {"nome": "Bruno", "categoria": CID, "equipe": "vortex", "senha": "b2"}], politica)
@@ -115,7 +115,7 @@ class TestLiga(unittest.TestCase):
         st = nova_liga("bloquear")
         mp.importar_ordens(st, ordens(st, "ana", "a1"))
         with self.assertRaises(mp.ErroLiga):
-            mp.rodar_semana(st)
+            mp.rodar_semana(st, random.Random(4))
         mp.pular(st, "bruno")
         r = mp.rodar_semana(st, random.Random(4))
         self.assertEqual(r["ia"], ["bruno"])
