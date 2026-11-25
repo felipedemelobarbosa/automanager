@@ -59,12 +59,15 @@ class TestCalibracao(unittest.TestCase):
         self.assertLess(abs(sum(derivas) / len(derivas)), 8)                        # sem deriva forte
 
 
-    def test_caixa_inicial_nao_faz_o_carro_saltar(self):
+    def test_caixa_inicial_nao_faz_o_carro_saltar_nem_afundar(self):
         """O caixa inicial acima da reserva é investido aos poucos (uso_do_excedente por temporada) e a calibração
-        conta com ele: o nível médio de motor e chassis próprios não salta na 1ª temporada."""
+        conta com ele: o nível médio de motor e chassis próprios não salta na 1ª temporada; na 2ª, a IA planeja com a
+        receita real da temporada passada e a correção da calibração é suave, e o chassis não afunda."""
         fab = ("mot_kraft", "mot_rhone")
         st = state.novo_jogo(db.arquivos_do_ano(2026), semente=2)
         st["usuario"] = {"categoria": None, "equipe": None}
+        for cc in st["categorias"].values():       # sem mudança de regulamento sorteada: mede só a economia
+            (cc["categoria"].get("regulamento") or {})["ativo"] = False
         c = st["categorias"][CID]
 
         def niveis():
@@ -81,6 +84,11 @@ class TestCalibracao(unittest.TestCase):
         self.assertLess(abs(c1 - c0), 7)          # antes: +14,7
         caixa = [e["financas"]["caixa"] for e in c["equipes"].values() if e.get("ativa")]
         self.assertGreater(min(caixa), c["categoria"]["regras"]["orcamento_medio"] * 0.15)   # sobra excedente
+        while st["ano"] == 2027:
+            routines.avancar_semana(st, rng)
+        m2, c2 = niveis()
+        self.assertLess(abs(m2 - m0), 5)
+        self.assertLess(abs(c2 - c0), 4)          # 2ª temporada: antes −7 (previsão de receita baixa + correção forte)
 
 
 if __name__ == "__main__":

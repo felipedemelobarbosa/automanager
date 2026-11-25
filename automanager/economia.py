@@ -128,6 +128,15 @@ def excedente_por_temporada(st, cid, eq):
     return max(0.0, eq["financas"]["caixa"] - orc * c["reserva_minima"]) * c["uso_do_excedente"]
 
 
+def receita_para_planejar(st, cid, eq):
+    """Receita com que o PC planeja o desenvolvimento: a maior entre a prevista pelos contratos e a real da
+    temporada passada. No começo da temporada os patrocínios que acabaram ainda não foram renovados e a previsão
+    cai (~25%), o que cortava o desenvolvimento só naquele ano."""
+    prev = receita_prevista(st, cid, eq)
+    ant = st["categorias"][cid].get("historico_financas", {}).get(eq["id"], {}).get(str(st["ano"] - 1))
+    return max(prev, sum(ant["receitas"].values())) if ant else prev
+
+
 def planejar_temporada(st, cid, eq):
     """Verba semanal de desenvolvimento do PC até o fim da temporada (recalculada a cada 13 semanas):
     (receita - despesas fixas) do que ainda falta da temporada + ajuste pelo caixa acima/abaixo da reserva."""
@@ -135,7 +144,7 @@ def planejar_temporada(st, cid, eq):
     c = cfg(st, cid)
     orc = st["categorias"][cid]["categoria"]["regras"]["orcamento_medio"]
     frac = contratos.corridas_restantes(st, cid) / corridas(st, cid)
-    sobra = (receita_prevista(st, cid, eq) - despesas_fixas_previstas(st, cid, eq)) * frac
+    sobra = (receita_para_planejar(st, cid, eq) - despesas_fixas_previstas(st, cid, eq)) * frac
     excesso = eq["financas"]["caixa"] - orc * c["reserva_minima"]
     # acima da reserva: investe `uso_do_excedente` do excedente por temporada (proporcional ao que falta dela – o
     # plano é refeito a cada 13 semanas); abaixo: corta o que falta para voltar à reserva

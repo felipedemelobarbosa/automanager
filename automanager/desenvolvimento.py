@@ -531,11 +531,16 @@ def calibrar_custos(st, rng=None):
                                         "nivel_alvo": round(alvo, 1), "equipes": len(amostra)}
 
 
+# correção proporcional ao desvio (expoente 1), no máximo ±10% por temporada: com o cubo e −15%/+20%, a sobra da
+# 1ª temporada encarecia demais a 2ª e o chassis afundava (~−7 pontos) antes de voltar
+AJUSTE_EXPOENTE, AJUSTE_MIN, AJUSTE_MAX = 1, 0.9, 1.1
+
+
 def ajustar_calibracao(st):
     """Virada de temporada: a previsão de receita do início do jogo não conta os patrocínios que as equipes
     fecham depois, então o nível real pode se afastar do da database. Corrige aos poucos: se o nível médio da
-    categoria ficou acima do alvo, o ponto fica mais caro; abaixo, mais barato (no máximo −15%/+20% por
-    temporada)."""
+    categoria ficou acima do alvo, o ponto fica mais caro; abaixo, mais barato (proporcional ao desvio, no máximo
+    ±10% por temporada)."""
     for cid, c in st["categorias"].items():
         cfg = config(st, cid)
         cal = (cfg or {}).get("calibracao")
@@ -553,7 +558,7 @@ def ajustar_calibracao(st):
             if not niveis or not info.get("nivel_alvo"):
                 continue
             rel = (sum(niveis) / len(niveis)) / info["nivel_alvo"]
-            ajuste = min(1.2, max(0.85, rel ** 3))
+            ajuste = min(AJUSTE_MAX, max(AJUSTE_MIN, rel ** AJUSTE_EXPOENTE))
             info["fator"] = round(info["fator"] * ajuste, 4)
             cfg[parte]["custo_por_ponto"] = info["custo_original"] * info["fator"]
 
