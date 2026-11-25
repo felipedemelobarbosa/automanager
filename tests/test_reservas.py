@@ -89,5 +89,68 @@ class TestPC(unittest.TestCase):
                 self.assertEqual(sit, "teste")                                  # mercado, não a reserva fraca
 
 
+class TestCadeiaDeSubstitutos(unittest.TestCase):
+    """O substituto de um titular lesionado também se lesiona e outra reserva entra no lugar dele."""
+
+    def setUp(self):
+        self.st = jogo(eid=None, semente=7)
+        self.titular = da_equipe(self.st, "vortex", "principal")[0]
+        self.r1 = da_equipe(self.st, "vortex", "teste")[0]
+        self.r2 = next(p for p in self.st["pilotos"].values() if not p.get("contrato") and not p.get("lesao"))
+        self.r2["contrato"] = {"categoria": ALFA, "equipe": "vortex", "situacao": "teste", "valor_por_corrida": 1,
+                               "temporadas": 1}
+        for k in self.r1["atributos"]:                  # a reserva 1 é a melhor: entra primeiro
+            self.r1["atributos"][k] = 90
+        rng = random.Random(1)
+        saude.lesionar(self.st, ALFA, self.titular, rng)
+        saude.lesionar(self.st, ALFA, self.r1, rng)
+
+    def corridas(self, titular, r1):
+        self.titular["lesao"]["corridas"], self.r1["lesao"]["corridas"] = titular, r1
+
+    def em_condicoes(self):
+        return [p["id"] for p in da_equipe(self.st, "vortex", "principal") if not p.get("lesao")]
+
+    def test_cadeia_montada(self):
+        self.assertEqual(self.r1["contrato"]["substituto_de"], self.titular["id"])
+        self.assertEqual(self.r2["contrato"]["substituto_de"], self.r1["id"])
+        self.assertEqual(len(self.em_condicoes()), 2)
+
+    def test_titular_volta_primeiro_os_dois_voltam_a_reserva(self):
+        self.corridas(1, 5)
+        saude.fim_de_corrida(self.st, ALFA)
+        self.assertEqual((self.r1["contrato"]["situacao"], self.r2["contrato"]["situacao"]), ("teste", "teste"))
+        self.assertNotIn("substituto_de", self.r2["contrato"])
+        self.assertIn(self.titular["id"], self.em_condicoes())
+        self.assertEqual(len(self.em_condicoes()), 2)
+
+    def test_substituto_volta_primeiro_e_a_segunda_reserva_sai(self):
+        self.corridas(5, 1)
+        saude.fim_de_corrida(self.st, ALFA)
+        self.assertEqual(self.r2["contrato"]["situacao"], "teste")
+        self.assertEqual(self.r1["contrato"]["substituto_de"], self.titular["id"])
+        self.assertEqual(len(self.em_condicoes()), 2)
+        self.titular["lesao"]["corridas"] = 1
+        saude.fim_de_corrida(self.st, ALFA)
+        self.assertEqual(self.r1["contrato"]["situacao"], "teste")
+        self.assertEqual(len(self.em_condicoes()), 2)
+
+    def test_substituto_morre_e_a_segunda_reserva_herda_a_vaga(self):
+        saude.falecer(self.st, ALFA, self.r1)
+        self.assertEqual(self.r2["contrato"]["substituto_de"], self.titular["id"])
+        self.assertEqual(len(self.em_condicoes()), 2)
+        self.titular["lesao"]["corridas"] = 1
+        saude.fim_de_corrida(self.st, ALFA)
+        self.assertEqual(self.r2["contrato"]["situacao"], "teste")
+        self.assertEqual(len(self.em_condicoes()), 2)
+
+    def test_titular_deixa_a_equipe_na_virada(self):
+        self.titular["contrato"] = None
+        saude.substitutos_sem_titular(self.st)
+        for r in (self.r1, self.r2):
+            self.assertEqual(r["contrato"]["situacao"], "teste")
+            self.assertNotIn("substituto_de", r["contrato"])
+
+
 if __name__ == "__main__":
     unittest.main()

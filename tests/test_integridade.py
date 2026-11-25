@@ -232,7 +232,7 @@ class TestMultiTemporada(unittest.TestCase):
                 lesionados = [p for p in principais if p.get("lesao")]
                 ativos = [p for p in principais if not p.get("lesao")]
                 self.assertLessEqual(len(ativos), regras["pilotos_principais_por_equipe"], eq["id"])
-                substitutos = [p for p in ativos if p["contrato"].get("substituto_de")]
+                substitutos = [p for p in principais if p["contrato"].get("substituto_de")]   # lesionado também
                 self.assertLessEqual(len(principais) - len(substitutos), regras["pilotos_principais_por_equipe"],
                                      (eq["id"], [p["nome"] for p in principais]))
                 self.assertLessEqual(len(substitutos), len(lesionados) + 0, eq["id"])

@@ -99,14 +99,21 @@ def falecer(st, cid, p, onde=""):
     noticia(st, f"LUTO: {p['nome']} ({eq.get('nome', 'sem equipe')}) morre em consequência da batida grave"
                 f"{(' do ' + onde) if onde else ''}.", cid, "usuario" if _da_pessoa(st, ct) else "piloto",
             equipe=ct.get("equipe"))
-    for o in st["pilotos"].values():                      # quem o substituía agora fica (sem titular a esperar)
+    titular = st["pilotos"].get(ct.get("substituto_de"))   # ele próprio substituía um titular lesionado?
+    herdeiro = False
+    for o in st["pilotos"].values():
         oc = o.get("contrato") or {}
-        if oc.get("substituto_de") == p["id"]:
+        if oc.get("substituto_de") != p["id"]:
+            continue
+        if titular:                                       # quem o substituía passa a substituir o titular
+            oc["substituto_de"] = titular["id"]
+            herdeiro = True
+        else:                                             # agora fica (sem titular a esperar)
             oc.pop("substituto_de", None)
             if oc.get("situacao_original"):
                 oc["situacao"] = oc.pop("situacao_original")
-    if ct.get("situacao") == "principal" and ct.get("categoria") in st["categorias"]:
-        substituir(st, ct["categoria"], ct["equipe"], p)
+    if ct.get("situacao") == "principal" and ct.get("categoria") in st["categorias"] and not herdeiro:
+        substituir(st, ct["categoria"], ct["equipe"], titular or p)
 
 
 def _da_pessoa(st, ct):
@@ -167,36 +174,48 @@ def fim_de_corrida(st, cid, evento_id=None):
                 noticia(st, f"ATENÇÃO: {c['equipes'][ct['equipe']]['nome']} tem {len(titulares)} pilotos titulares "
                             f"e só {limite} carros. Decida quem dispensar (Mercado > Pilotos); até lá correm os "
                             f"contratos mais antigos.", ct["categoria"], "usuario", equipe=ct["equipe"])
-        for o in st["pilotos"].values():
-            oc = o.get("contrato") or {}
-            if oc.get("substituto_de") != p["id"]:
-                continue
-            if oc.get("situacao_original"):
-                oc["situacao"] = oc.pop("situacao_original")
-                oc.pop("substituto_de")
-            else:
-                o["contrato"] = None
-                o["categoria_atual"] = oc.get("categoria")
-                eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
-                noticia(st, f"{o['nome']} deixa a {eq.get('nome', '?')} com a volta de {p['nome']} (era substituto).",
-                        cid, "usuario" if _da_pessoa(st, oc) else "contrato", equipe=oc.get("equipe"))
+        _encerrar_substituicoes(st, cid, p["id"], p)
+
+
+def _encerrar_substituicoes(st, cid, ausente_id, quem_volta):
+    """Quem substituía `ausente_id` deixa o carro (o piloto de testes volta a ser de testes; o contratado como
+    substituto sai). Em cadeia: quem substituía esse substituto (ele também se lesionou) sai junto."""
+    for o in list(st["pilotos"].values()):
+        oc = o.get("contrato") or {}
+        if oc.get("substituto_de") != ausente_id:
+            continue
+        if oc.get("situacao_original"):
+            oc["situacao"] = oc.pop("situacao_original")
+            oc.pop("substituto_de")
+        else:
+            o["contrato"] = None
+            o["categoria_atual"] = oc.get("categoria")
+            eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
+            noticia(st, f"{o['nome']} deixa a {eq.get('nome', '?')} com a volta de {quem_volta['nome']} (era "
+                        f"substituto).", cid, "usuario" if _da_pessoa(st, oc) else "contrato", equipe=oc.get("equipe"))
+        _encerrar_substituicoes(st, cid, o["id"], quem_volta)
 
 
 def substitutos_sem_titular(st):
     """Virada de temporada: quem substituía um titular lesionado que deixou a equipe (contrato terminou, trocou de
     equipe ou se aposentou) deixa de ser substituto – o piloto de testes volta a ser de testes (senão a equipe
     ficaria com mais titulares que carros); o contratado no mercado segue com o próprio contrato."""
-    for o in st["pilotos"].values():
-        oc = o.get("contrato") or {}
-        alvo_id = oc.get("substituto_de")
-        if not alvo_id:
-            continue
-        ac = (st["pilotos"].get(alvo_id) or {}).get("contrato") or {}
-        if ac.get("categoria") == oc.get("categoria") and ac.get("equipe") == oc.get("equipe"):
-            continue                                       # o titular ainda é da equipe: segue substituindo
-        oc.pop("substituto_de")
-        if oc.get("situacao_original"):
-            oc["situacao"] = oc.pop("situacao_original")
-            eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
-            noticia(st, f"{o['nome']} volta a ser piloto de testes da {eq.get('nome', '?')}.", oc.get("categoria"),
-                    "usuario" if _da_pessoa(st, oc) else "piloto", equipe=oc.get("equipe"))
+    mudou = True
+    while mudou:                                           # em cadeia: o substituto de um substituto que saiu
+        mudou = False
+        for o in st["pilotos"].values():
+            oc = o.get("contrato") or {}
+            alvo_id = oc.get("substituto_de")
+            if not alvo_id:
+                continue
+            ac = (st["pilotos"].get(alvo_id) or {}).get("contrato") or {}
+            if ac.get("categoria") == oc.get("categoria") and ac.get("equipe") == oc.get("equipe") \
+                    and ac.get("situacao") == "principal":
+                continue                                   # o titular ainda é da equipe: segue substituindo
+            oc.pop("substituto_de")
+            mudou = True
+            if oc.get("situacao_original"):
+                oc["situacao"] = oc.pop("situacao_original")
+                eq = st["categorias"].get(oc.get("categoria"), {}).get("equipes", {}).get(oc.get("equipe"), {})
+                noticia(st, f"{o['nome']} volta a ser piloto de testes da {eq.get('nome', '?')}.", oc.get("categoria"),
+                        "usuario" if _da_pessoa(st, oc) else "piloto", equipe=oc.get("equipe"))
