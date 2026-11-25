@@ -2183,5 +2183,7 @@
  "Acerto: preferência de cada piloto": "Setup: each driver's preference",
  "Desvio pessoal do ideal (desvio-padrão, em pontos): o acerto perfeito de um piloto não é o do companheiro. Padrão 5. 0 = desliga.": "Personal shift of the ideal (standard deviation, in points): one driver's perfect setup isn't his teammate's. Default 5. 0 = off.",
  "Engenheiro acerta pelo treino": "Engineer sets up from practice",
- "Valores fixos:": "Fixed values:"
+ "Valores fixos:": "Fixed values:",
+ "{0} promove o piloto de testes {1} a titular até o fim da temporada (os carros da próxima já têm pilotos contratados).": "{0} promotes test driver {1} to race driver until the end of the season (next season's cars already have drivers signed).",
+ "{0} volta a ser piloto de testes da {1}: os carros da temporada já têm titulares.": "{0} goes back to being {1}'s test driver: this season's cars already have race drivers."
 }

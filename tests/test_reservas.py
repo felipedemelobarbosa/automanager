@@ -7,7 +7,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from automanager import db, state, mercado, acoes, saude, multiplayer as mp  # noqa: E402
+from automanager import db, state, mercado, acoes, saude, routines, multiplayer as mp  # noqa: E402
 
 ALFA = "formula_alfa"
 
@@ -87,6 +87,58 @@ class TestPC(unittest.TestCase):
                 self.assertTrue(any("promove o piloto de testes" in n["texto"] for n in st["noticias"]))
             else:
                 self.assertEqual(sit, "teste")                                  # mercado, não a reserva fraca
+
+
+class TestPromocaoSoNestaTemporada(unittest.TestCase):
+    """Reserva assume uma vaga livre no meio da temporada (morte, saída) quando a próxima já tem titulares."""
+
+    def preparar(self, eid="vortex", user=None, futuros=2):
+        st = jogo(eid=user, semente=8)
+        ano = st["ano"]
+        tit = da_equipe(st, eid, "principal")
+        reserva = da_equipe(st, eid, "teste")[0]
+        reserva["idade"] = 22
+        reserva["contrato"].update(temporadas=2, inicio_ano=ano)
+        reserva["contrato"].pop("corridas", None)
+        for p in tit:
+            p["contrato"].update(temporadas=1)
+            p["contrato"].pop("corridas", None)
+            p["idade"] = 25
+        livres = [p for p in st["pilotos"].values() if not p.get("contrato") and not p.get("contrato_futuro")
+                  and not p.get("lesao")][:futuros]
+        for p in livres:
+            p["idade"] = 25
+            p["contrato_futuro"] = {"categoria": ALFA, "equipe": eid, "situacao": "principal", "inicio_ano": ano + 1,
+                                    "temporadas": 1, "valor_por_corrida": 1}
+        return st, tit, reserva, livres
+
+    def test_morte_reserva_fica_ate_o_fim_e_volta(self):
+        st, tit, reserva, livres = self.preparar()
+        eq = st["categorias"][ALFA]["equipes"]["vortex"]
+        saude.falecer(st, ALFA, tit[0])
+        ct = reserva["contrato"]
+        self.assertEqual((ct["situacao"], ct["reserva_ate"]), ("principal", st["ano"]))
+        self.assertEqual(mercado.vagas_no_ano(st, ALFA, eq, st["ano"] + 1)["principal"], 0)
+        routines.nova_temporada(st, random.Random(1))
+        self.assertEqual(reserva["contrato"]["situacao"], "teste")
+        self.assertNotIn("reserva_ate", reserva["contrato"])
+        self.assertEqual(sorted(p["id"] for p in da_equipe(st, "vortex", "principal")),
+                         sorted(p["id"] for p in livres))
+
+    def test_proxima_temporada_com_vaga_e_definitivo(self):
+        st, tit, reserva, _ = self.preparar(futuros=1)
+        saude.falecer(st, ALFA, tit[0])
+        self.assertEqual(reserva["contrato"]["situacao"], "principal")
+        self.assertNotIn("reserva_ate", reserva["contrato"])
+        routines.nova_temporada(st, random.Random(1))
+        self.assertEqual(reserva["contrato"]["situacao"], "principal")
+
+    def test_jogador_promove_e_e_avisado(self):
+        st, tit, reserva, _ = self.preparar(eid="tucano", user="tucano")
+        tit[0]["contrato"] = None
+        self.assertIsNone(acoes.aplicar(st, "promover_piloto", {"piloto": reserva["id"]}))
+        self.assertEqual(reserva["contrato"]["reserva_ate"], st["ano"])
+        self.assertTrue(any("até o fim da temporada" in n["texto"] for n in st["noticias"]))
 
 
 class TestCadeiaDeSubstitutos(unittest.TestCase):

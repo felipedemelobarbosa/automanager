@@ -203,6 +203,7 @@ def nova_temporada(st, rng=random):
         p["idade"] = p.get("idade", 20) + 1
     mercado.aplicar_idade_maxima(st)
     carreira.virada(st, rng)
+    mercado.fim_das_promocoes_da_temporada(st)     # titular só até o fim da temporada passada volta à reserva
     saude.substitutos_sem_titular(st)              # depois dos fins de contrato e das aposentadorias
     mercado.atualizar_precos_chassis(st)
     noticia(st, f"Começa a temporada {st['ano']}.", None, "temporada")

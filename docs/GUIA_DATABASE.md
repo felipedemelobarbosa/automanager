@@ -138,7 +138,7 @@ a tree (double-click a value to edit). Settings that have no form field are edit
 | Major crash: factor in practice/qualifying | `regras.batida_grave.fator_treinos` | Default 0.5. |
 | Major crash: minimum / maximum cars | `regras.batida_grave.carros_min` / `carros_max` | Default 2 / 5. |
 | Major crash: chance of ending the session | `regras.batida_grave.prob_encerrar_sessao` | Otherwise red flag and restart. Default 0.2. |
-| Major crash: chance of injury / death (per driver) | `regras.batida_grave.prob_lesao` / `prob_morte` | Default 0.06 / 0.002. |
+| Major crash: chance of injury / death (per driver) | `regras.batida_grave.prob_lesao` / `prob_morte` | Default 0.06 / 0.002. The test driver takes the car (for an injury, until the driver returns; if the stand-in is injured too, another reserve takes over and both step back when the driver returns). After a death, if next season's seats are already signed, the reserve races only until the end of the season. |
 | Injury: races missed (min., max.) | `regras.batida_grave.lesao_corridas` | E.g. 1, 6. |
 | Injury: loss per attribute (min., max.) | `regras.batida_grave.lesao_perda_atributos` | Permanent points lost in fitness, concentration and driving. E.g. 1, 6. |
 
@@ -485,3 +485,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-23 | Ovals: track tracer defaults to the speed criterion on ovals (`mapa_pista.criterio_oval`); short oval now depends only on slow corners; new `oval.amarelas_oval_curto` (2) and `oval.ultrapassagem_oval_curto` (0.7). |
 | 2026-11-23 | Sample database (Fórmula Alfa and Beta): two new ovals, inactive in 2026 – Copper Valley 500 (short, 48/15/37, joins in 2027) and Riverbend 400 (intermediate, 50/49/1, joins in 2028), via `anos_entrada`. |
 | 2026-11-25 | Simulation: anti-cheat `variacao_acerto_evento` (12) and `preferencia_acerto_piloto` (5); drivers get a hidden `pref_acerto` (in the save, not in the file). Oval: at most one "Big One" per race, with at most a third of the running cars. |
+| 2026-11-25 | Injuries/deaths: chained stand-ins step back together; a reserve promoted to a free seat mid-season (death or open seat) races only until the season ends when next season's seats are already signed (`reserva_ate` in the contract). |

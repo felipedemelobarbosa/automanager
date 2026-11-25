@@ -138,12 +138,13 @@ def substituir(st, cid, eid, ausente):
         return                                            # o mercado do PC contrata (vaga aberta)
     p = max(teste, key=lambda x: sum(x["atributos"].values()))
     ct = p["contrato"]
-    ct["situacao_original"] = "teste"
-    ct["situacao"] = "principal"
     if "lesao" in ausente:
+        ct["situacao_original"] = "teste"
+        ct["situacao"] = "principal"
         ct["substituto_de"] = ausente["id"]
-    else:
-        ct.pop("situacao_original")                       # falecimento: o piloto de testes vira titular
+    else:                                                 # falecimento: o piloto de testes vira titular (só até o
+        from .mercado import promover_a_titular           # fim da temporada se a próxima já tem titulares)
+        promover_a_titular(st, cid, eq, p)
     noticia(st, f"{eq['nome']}: o piloto de testes {p['nome']} assume o carro de {ausente['nome']}.", cid, "piloto",
             equipe=eid)
 

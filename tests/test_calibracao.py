@@ -39,7 +39,7 @@ class TestCalibracao(unittest.TestCase):
         fab = ("mot_kraft", "mot_rhone")
         derivas = []
         for semente in (3, 5):                      # média de duas sementes: uma só oscila demais com o acaso
-            st = state.novo_jogo(db.arquivos_do_ano(2026))
+            st = state.novo_jogo(db.arquivos_do_ano(2026), semente=semente)   # o jogo inicial também (senão varia)
             st["usuario"] = {"categoria": None, "equipe": None}
             c = st["categorias"][CID]
             inicio = {m["id"]: m["potencia"] for m in c["motores"].values()}

@@ -124,7 +124,8 @@ class TestBoxManual(unittest.TestCase):
 
     def test_box_a_qualquer_momento(self):
         _, ev = ate_a_corrida(eid="tucano")
-        meu = next(c for c in ev.carros if c.usuario)
+        ev.modelo.sim["taxa_quebra_base"] = ev.modelo.sim["taxa_acidente_base"] = 0.0   # o teste é do box: sem
+        meu = next(c for c in ev.carros if c.usuario)                                   # quebra/batida que tire o carro
         meu.estrategia_auto = False
         sequencia = {2: "chuva_leve", 4: "chuva_pesada", 7: "macio", 8: "medio", 12: "duro"}
         visto = []

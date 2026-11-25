@@ -93,7 +93,10 @@ def vagas_no_ano(st, cid, eq, ano):
     for p in st["pilotos"].values():
         c, f = p.get("contrato"), p.get("contrato_futuro")
         if c and c.get("categoria") == cid and c.get("equipe") == eq["id"] and fim_do_contrato(st, c) >= ano:
-            ocup[c["situacao"]] = ocup.get(c["situacao"], 0) + 1
+            sit = c["situacao"]
+            if c.get("reserva_ate") is not None and ano > c["reserva_ate"]:
+                sit = c.get("situacao_original", "teste")          # titular só até o fim desta temporada
+            ocup[sit] = ocup.get(sit, 0) + 1
         if f and f.get("categoria") == cid and f.get("equipe") == eq["id"] \
                 and int(f.get("inicio_ano") or st["ano"] + 1) <= ano <= fim_do_contrato(st, f):
             ocup[f["situacao"]] = ocup.get(f["situacao"], 0) + 1
@@ -1473,11 +1476,50 @@ def promover_reserva(st, cid, eq, pid):
         return None
     if vagas(st, cid, eq)[0].get("principal", 0) <= 0:
         return "A equipe não tem vaga de titular: os carros já têm piloto."
-    ct["situacao"] = "principal"
-    ct.pop("situacao_original", None)
-    noticia(st, f"{quem(st, cid, eq['id'])} promove o piloto de testes {p['nome']} a titular.", cid,
-            "usuario" if eh_usuario(st, cid, eq["id"]) else "contratacao", equipe=eq["id"])
+    if promover_a_titular(st, cid, eq, p):
+        noticia(st, f"{quem(st, cid, eq['id'])} promove o piloto de testes {p['nome']} a titular até o fim da "
+                    f"temporada (os carros da próxima já têm pilotos contratados).", cid,
+                "usuario" if eh_usuario(st, cid, eq["id"]) else "contratacao", equipe=eq["id"])
+    else:
+        noticia(st, f"{quem(st, cid, eq['id'])} promove o piloto de testes {p['nome']} a titular.", cid,
+                "usuario" if eh_usuario(st, cid, eq["id"]) else "contratacao", equipe=eq["id"])
     return None
+
+
+def promover_a_titular(st, cid, eq, p):
+    """O piloto de testes assume uma vaga de titular livre. Se o contrato dele vai além desta temporada e os
+    carros da próxima já têm titulares contratados, ele é titular só até o fim desta (volta a ser de testes na
+    virada). Retorna True nesse caso."""
+    ct = p["contrato"]
+    so_esta = fim_do_contrato(st, ct) > st["ano"] and vagas_no_ano(st, cid, eq, st["ano"] + 1).get("principal", 0) <= 0
+    ct["situacao"] = "principal"
+    if so_esta:
+        ct["situacao_original"] = "teste"
+        ct["reserva_ate"] = st["ano"]
+    else:
+        ct.pop("situacao_original", None)
+        ct.pop("reserva_ate", None)
+    return so_esta
+
+
+def fim_das_promocoes_da_temporada(st):
+    """Virada de temporada: quem foi titular só até o fim da temporada passada volta a ser piloto de testes se os
+    carros já têm titulares; se ainda sobra vaga (um contratado não veio), continua titular."""
+    for p in st["pilotos"].values():
+        ct = p.get("contrato") or {}
+        if ct.get("reserva_ate") is None or ct["reserva_ate"] >= st["ano"]:
+            continue
+        ct.pop("reserva_ate")
+        cid, eid = ct["categoria"], ct["equipe"]
+        limite = st["categorias"][cid]["categoria"]["regras"].get("pilotos_principais_por_equipe") or 99
+        outros = [x for x in pilotos_da_equipe(st, cid, eid) if x is not p
+                  and x["contrato"]["situacao"] == "principal" and not x["contrato"].get("substituto_de")]
+        if len(outros) < limite:
+            ct.pop("situacao_original", None)
+            continue
+        ct["situacao"] = ct.pop("situacao_original", "teste")
+        nome_eq = st["categorias"][cid]["equipes"].get(eid, {}).get("nome", "?")
+        noticia(st, f"{p['nome']} volta a ser piloto de testes da {nome_eq}: os carros da temporada já têm titulares.", cid, "usuario" if eh_usuario(st, cid, eid) else "piloto", equipe=eid)
 
 
 def _promover_reserva_ia(st, cid, eq, exigir_nivel=True):

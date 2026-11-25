@@ -2182,5 +2182,7 @@
  "Acerto: preferência de cada piloto": "Puesta a punto: preferencia de cada piloto",
  "Desvio pessoal do ideal (desvio-padrão, em pontos): o acerto perfeito de um piloto não é o do companheiro. Padrão 5. 0 = desliga.": "Desvío personal del ideal (desviación estándar, en puntos): la puesta a punto perfecta de un piloto no es la de su compañero. Por defecto 5. 0 = desactivado.",
  "Engenheiro acerta pelo treino": "El ingeniero ajusta según los libres",
- "Valores fixos:": "Valores fijos:"
+ "Valores fixos:": "Valores fijos:",
+ "{0} promove o piloto de testes {1} a titular até o fim da temporada (os carros da próxima já têm pilotos contratados).": "{0} asciende al piloto de pruebas {1} a titular hasta el final de la temporada (los coches de la próxima ya tienen pilotos contratados).",
+ "{0} volta a ser piloto de testes da {1}: os carros da temporada já têm titulares.": "{0} vuelve a ser piloto de pruebas de {1}: los coches de la temporada ya tienen titulares."
 }

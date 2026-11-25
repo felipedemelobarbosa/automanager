@@ -218,7 +218,11 @@ O motor de cada piloto fica em `equipe.motores` no jogo salvo (voltas de uso e m
   atributo de `atributos_afetados` (["fisico", "concentracao", "conducao"]), de forma permanente
 - substituição: equipe do PC promove o piloto de testes (até o titular voltar) ou contrata pelo mercado; equipe de
   jogador (individual e multijogador) recebe alerta e o carro não corre até contratar. Quem é contratado como
-  titular enquanto há titular lesionado é substituto (sai quando ele volta). Falecidos ficam em `st["falecidos"]`
+  titular enquanto há titular lesionado é substituto (sai quando ele volta). Substituto que também se lesiona:
+  outra reserva entra no lugar dele e, quando o titular volta, os dois saem (em cadeia). Morte: a reserva assume
+  o carro; se o contrato dela vai além da temporada e os carros da próxima já têm titulares contratados, ela é
+  titular só até o fim desta (contrato com `reserva_ate`) e volta a ser de testes na virada – vale também para
+  qualquer promoção de reserva a uma vaga livre (jogador ou PC). Falecidos ficam em `st["falecidos"]`
 
 `categoria.pontuacao.corrida_interrompida`: corrida encerrada antes do fim (chuva que não para no oval, batida
 grave): a partir de `distancia_minima` (0,5 = 50% das voltas) a pontuação é integral; abaixo, `pontos_parciais`
