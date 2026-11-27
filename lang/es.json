@@ -2184,5 +2184,12 @@
  "Engenheiro acerta pelo treino": "El ingeniero ajusta según los libres",
  "Valores fixos:": "Valores fijos:",
  "{0} promove o piloto de testes {1} a titular até o fim da temporada (os carros da próxima já têm pilotos contratados).": "{0} asciende al piloto de pruebas {1} a titular hasta el final de la temporada (los coches de la próxima ya tienen pilotos contratados).",
- "{0} volta a ser piloto de testes da {1}: os carros da temporada já têm titulares.": "{0} vuelve a ser piloto de pruebas de {1}: los coches de la temporada ya tienen titulares."
+ "{0} volta a ser piloto de testes da {1}: os carros da temporada já têm titulares.": "{0} vuelve a ser piloto de pruebas de {1}: los coches de la temporada ya tienen titulares.",
+ "Início da liga": "Inicio de la liga",
+ "Todos os pilotos começam livres": "Todos los pilotos empiezan libres",
+ "Com todos os pilotos livres, as equipes da database saem da categoria: {0} precisa criar uma equipe nova.": "Con todos los pilotos libres, los equipos de la base de datos salen de la categoría: {0} debe crear un equipo nuevo.",
+ "Com todos os pilotos livres, pelo menos um jogador precisa criar uma equipe nova.": "Con todos los pilotos libres, al menos un jugador debe crear un equipo nuevo.",
+ "A liga {0} começa do zero na {1}: só as equipes dos jogadores; todos os pilotos e patrocinadores estão livres.": "La liga {0} empieza de cero en {1}: solo los equipos de los jugadores; todos los pilotos y patrocinadores están libres.",
+ "Nas categorias em que os jogadores criam equipes novas, as equipes da database saem; pilotos, patrocinadores e fornecimentos de chassis/motor ficam livres.": "En las categorías en que los jugadores crean equipos nuevos, los equipos de la base de datos salen; pilotos, patrocinadores y suministros de chasis/motor quedan libres.",
+ "Liga do zero (cada jogador cria a própria equipe): marque 'Todos os pilotos começam livres'. Nas categorias com equipes novas, as equipes da database saem e todos os pilotos, patrocinadores e fornecimentos ficam livres para os jogadores contratarem.": "Liga desde cero (cada jugador crea su propio equipo): marque 'Todos los pilotos empiezan libres'. En las categorías con equipos nuevos, los equipos de la base de datos salen y todos los pilotos, patrocinadores y suministros quedan libres para que los jugadores los contraten."
 }

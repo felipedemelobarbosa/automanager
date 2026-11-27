@@ -316,8 +316,8 @@ def _virada_equipes(st, cid, rng):
 
 def _surge(st, c, eq, rng):
     """Equipe inativa surge: no ano definido (na equipe ou na lista da categoria) ou por sorteio."""
-    if eq.get("falida_em") == st["ano"] - 1:
-        return False
+    if eq.get("falida_em") == st["ano"] - 1 or eq.get("fora_da_liga"):
+        return False                                  # fora_da_liga: liga multijogador que começou do zero
     anos = [x.get("ano") for x in c["categoria"].get("novas_equipes", []) if x.get("equipe") == eq["id"]]
     if eq.get("ano_surgimento"):
         anos.append(eq["ano_surgimento"])

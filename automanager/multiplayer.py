@@ -138,18 +138,55 @@ def _slug(s):
 
 
 # ---------------------------------------------------------------- liga
-def criar_liga(st, nome, jogadores, politica="ia"):
+def criar_liga(st, nome, jogadores, politica="ia", todos_livres=False):
     """jogadores: [{"nome", "categoria", "equipe" ou "nova_equipe": {"nome", "nacionalidade", "cor",
-    "cor_secundaria"}, "senha"}]. Transforma o estado novo em liga (tudo ou nada)."""
-    antes = {"categorias": copy.deepcopy(st["categorias"]), "noticias": list(st.get("noticias", []))}
+    "cor_secundaria"}, "senha"}]. Transforma o estado novo em liga (tudo ou nada).
+    todos_livres: nas categorias em que os jogadores criam equipes novas, as equipes da database saem e todos os
+    pilotos (titulares, de testes e contratos futuros), patrocinadores e fornecimentos de chassis/motor ficam livres
+    – a liga começa do zero, só com as equipes dos jogadores."""
+    antes = {"categorias": copy.deepcopy(st["categorias"]), "noticias": list(st.get("noticias", [])),
+             "pilotos": copy.deepcopy(st["pilotos"])}
     try:
-        return _criar_liga(st, nome, jogadores, politica)
+        return _criar_liga(st, nome, jogadores, politica, todos_livres)
     except ErroLiga:
         st.update(antes)                         # desfaz equipes novas já criadas
         raise
 
 
-def _criar_liga(st, nome, jogadores, politica):
+def categorias_do_zero(jogadores):
+    """Categorias em que algum jogador cria uma equipe nova."""
+    return sorted({j["categoria"] for j in jogadores if j.get("nova_equipe")})
+
+
+def liberar_categoria(st, cid):
+    """Tira da categoria todas as equipes da database (não voltam a surgir) e deixa livres os pilotos delas
+    (contrato atual e futuro), os patrocinadores e os fornecimentos de chassis/motor."""
+    c = st["categorias"][cid]
+    ids = set(c["equipes"])
+    for eq in c["equipes"].values():
+        eq["ativa"] = False
+        eq["fora_da_liga"] = True
+        for parte in ("chassis", "motor"):
+            info = eq.get(parte) or {}
+            if info.get("origem") not in (None, "proprio"):
+                eq[parte] = None                  # fornecimento de outra equipe ou de fornecedor termina
+            eq.pop(f"{parte}_futuro", None)
+        eq.pop("projeto", None)
+        eq["emprestimos"] = []
+    for p in st["pilotos"].values():
+        for k in ("contrato", "contrato_futuro"):
+            ct = p.get(k)
+            if ct and ct.get("categoria") == cid and ct.get("equipe") in ids:
+                p[k] = None
+                p["categoria_atual"] = cid
+    for pat in c["patrocinadores"].values():
+        if pat.get("contrato") and pat["contrato"].get("equipe") in ids:
+            pat["contrato"] = None
+        if pat.get("contrato_futuro") and pat["contrato_futuro"].get("equipe") in ids:
+            pat["contrato_futuro"] = None
+
+
+def _criar_liga(st, nome, jogadores, politica, todos_livres=False):
     if politica not in POLITICAS:
         raise ErroLiga("Política inválida.")
     if not nome.strip():
@@ -160,6 +197,9 @@ def _criar_liga(st, nome, jogadores, politica):
     for j in jogadores:
         if not j.get("nome", "").strip() or not j.get("senha"):
             raise ErroLiga("Cada jogador precisa de nome e senha.")
+        if todos_livres and not j.get("nova_equipe") and j.get("categoria") in categorias_do_zero(jogadores):
+            raise ErroLiga(f"Com todos os pilotos livres, as equipes da database saem da categoria: {j['nome']} "
+                           f"precisa criar uma equipe nova.")
         if j.get("nova_equipe"):
             # vaga para equipe nova: quem cria (nome, país, cores) e faz o desenvolvimento inicial é o jogador,
             # ao abrir a liga – vai nas ordens dele (acoes 'criar_equipe' e 'dev_inicial')
@@ -181,10 +221,19 @@ def _criar_liga(st, nome, jogadores, politica):
         chave = _derivar(j["senha"], sal)
         js[jid] = {"nome": j["nome"].strip(), "categoria": j["categoria"], "equipe": j["equipe"], "sal": sal,
                    "chave": chave, "verificador": _verificador(chave)}
+    if todos_livres and not categorias_do_zero(jogadores):
+        raise ErroLiga("Com todos os pilotos livres, pelo menos um jogador precisa criar uma equipe nova.")
     st["multiplayer"] = {"id": secrets.token_hex(8), "nome": nome.strip(), "politica": politica,
                          "papel": "comissario", "criada_em": time.strftime("%Y-%m-%d %H:%M"), "jogadores": js,
                          "recebidas": {}, "ultimas": {}, "ultimo_plano": {}, "pular": [], "historico": []}
     st["usuario"] = {"categoria": None, "equipe": None}
+    if todos_livres:
+        st["multiplayer"]["todos_livres"] = categorias_do_zero(jogadores)
+        for cid in st["multiplayer"]["todos_livres"]:
+            liberar_categoria(st, cid)
+            state.noticia(st, f"A liga {nome.strip()} começa do zero na {st['categorias'][cid]['categoria']['nome']}: "
+                              f"só as equipes dos jogadores; todos os pilotos e patrocinadores estão livres.", cid,
+                          "usuario")
     for j in js.values():
         if not j["equipe"]:
             state.noticia(st, f"{j['nome']} entra na liga {nome.strip()} com uma equipe nova na "

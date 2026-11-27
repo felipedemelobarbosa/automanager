@@ -49,6 +49,8 @@ GUIA_COMISSARIO = [
     ("1. Criar a liga", [
         "Menu inicial > Multijogador – comissário > Criar uma liga nova: escolha as categorias, cadastre os "
         "jogadores (nome, equipe, senha) e a política para quem não mandar as ordens.",
+        "Liga do zero (cada jogador cria a própria equipe): marque 'Todos os pilotos começam livres'. Nas categorias"
+        " com equipes novas, as equipes da database saem e todos os pilotos, patrocinadores e fornecimentos ficam livres para os jogadores contratarem.",
         "O jogo grava o arquivo do comissário (…_comissario.json). Ele guarda as chaves dos jogadores: NÃO o "
         "distribua nem o coloque na pasta compartilhada.",
     ]),

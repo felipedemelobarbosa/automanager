@@ -47,6 +47,13 @@ class TelaCriarLiga(tk.Frame):
         for k, (rot, ajuda) in NOMES_POLITICA.items():
             ttk.Radiobutton(g, text=rot, value=k, variable=self.v_pol).pack(anchor="w")
             tk.Label(g, text="      " + ajuda, fg=w.CINZA_ESCURO).pack(anchor="w")
+        g3 = w.Grupo(corpo, "Início da liga")
+        g3.pack(fill="x", pady=(0, 6))
+        self.v_livres = tk.BooleanVar(value=False)
+        ttk.Checkbutton(g3, text="Todos os pilotos começam livres", variable=self.v_livres).pack(anchor="w")
+        tk.Label(g3, text="Nas categorias em que os jogadores criam equipes novas, as equipes da database saem; "
+                          "pilotos, patrocinadores e fornecimentos de chassis/motor ficam livres.",
+                 fg=w.CINZA_ESCURO, wraplength=740, justify="left").pack(anchor="w", padx=(24, 0))
         g2 = w.Grupo(corpo, "Jogadores (as demais equipes ficam com a IA)")
         g2.pack(fill="both", expand=True)
         fr, self.tv = w.tabela(g2, [("nome", "Jogador"), ("cat", "Categoria"), ("eq", "Equipe")], 8,
@@ -87,7 +94,8 @@ class TelaCriarLiga(tk.Frame):
 
     def criar(self):
         try:
-            mp.criar_liga(self.st, self.v_nome.get(), self.jogadores, self.v_pol.get())
+            mp.criar_liga(self.st, self.v_nome.get(), self.jogadores, self.v_pol.get(),
+                          todos_livres=bool(self.v_livres.get()))
         except mp.ErroLiga as e:
             messagebox.showwarning("Nova liga", str(e), parent=self)
             return
