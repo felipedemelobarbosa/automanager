@@ -418,7 +418,7 @@ Event constants (`simulacao.*`; all optional, default in brackets):
 | Straights, Fast corners, Slow corners | `retas`, `curvas_alta`, `curvas_baixa` | Shares (normalised). **Compute straights and corners from the track map...** fills them from a map. |
 | Tyre wear, Difficulty | `desgaste_pneus`, `dificuldade` | 50 = reference. |
 | Pit stop time loss (s), Chance of rain | `duracao_pitstop`, `prob_chuva` | Rain: share of rainy sessions in the long run. |
-| Chance of leaving / joining the calendar | `prob_inativar`, `prob_ativar` | Random, at each season change. |
+| Chance of leaving / joining the calendar | `prob_inativar`, `prob_ativar` | Random, at each season change. In a multiplayer league where the commissioner set next season's calendar (File > Next season calendar...), that calendar is used instead and these draws and the years below don't apply that season. |
 | Years it joins / leaves the calendar | `anos_entrada`, `anos_saida` | E.g. joins 2028, 2033; leaves 2030. In those years it's certain (the random chance doesn't apply). It can join and leave several times. A race doesn't join if the same track is already on the calendar. |
 
 ---
@@ -488,3 +488,4 @@ Not in the forms; edit them in **Advanced (tree)** or in the file (default in br
 | 2026-11-25 | Injuries/deaths: chained stand-ins step back together; a reserve promoted to a free seat mid-season (death or open seat) races only until the season ends when next season's seats are already signed (`reserva_ate` in the contract). |
 | 2026-11-25 | Economy: `uso_do_excedente` is now applied per season, as documented (it was applied every 13 weeks, so most of the starting cash went in season 1); default and sample database 0.5 → 0.33. The development cost calibration counts the surplus the AI will spend (average of the first 3 seasons). |
 | 2026-11-25 | Development: the AI plans its development budget with the larger of the contract-based income forecast and last season's real income; the yearly cost-calibration correction is proportional to the gap, at most ±10% per season (was cubic, −15%/+20%). Removes the chassis dip in the 2nd season. |
+| 2026-11-27 | Multiplayer: the commissioner can set next season's calendar with the editor's calendar form (turn events on/off, weeks, laps, new tracks); in that season it replaces the random calendar changes. New or re-timed tracks get the entered times as `tempos_por_ano` for that year. |

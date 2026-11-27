@@ -143,7 +143,10 @@ dificuldade, duracao_pitstop, prob_chuva, prob_inativar, prob_ativar, anos_entra
   (evento de reserva, inativo) são sorteados. Opcionais `anos_entrada` e `anos_saida` (listas de anos, depois do
   ano do arquivo; no ano do arquivo vale `ativo`): nesses anos a pista entra ou sai com certeza, no lugar do
   sorteio; a pista pode entrar e sair várias vezes (ex.: entra em 2028, sai em 2030, volta em 2033). Uma corrida
-  não entra se a mesma pista já estiver no calendário
+  não entra se a mesma pista já estiver no calendário. Multijogador: se o comissário definiu o calendário da
+  próxima temporada (Arquivo > Calendário da próxima temporada...), na virada ele substitui o da categoria e esses
+  sorteios e anos não valem naquele ano (guardado em `multiplayer.calendario_proximo` no save; pista nova ou com
+  tempo alterado recebe os tempos digitados em `tempos_por_ano` do ano novo)
 - `tipo_pista: "oval"` não admite chuva: se chover, bandeira vermelha e a sessão fica suspensa até a pista secar; se já estiver chovendo no início, a sessão é adiada; a corrida relarga atrás do safety car. Regras em `categoria.regras.bandeira_vermelha`: `relogio_durante_suspensao` (`"parado"`, padrão: a espera não tira tempo de pista nem conta para o tempo máximo da corrida; `"corre"`: conta), `limite_espera_sessao_min` (60) e `limite_espera_corrida_min` (120): passou do limite sem secar, a sessão é encerrada (valem os tempos feitos; as fases que faltam não acontecem e a ordem segue os tempos já feitos e, sem tempo, o campeonato) e a corrida termina na volta da bandeira vermelha (se nem largou, é cancelada: ninguém pontua e ela não conta no campeonato). 0 = sem limite
 - no editor, "Calcular retas e curvas pelo mapa da pista..." preenche `retas`, `curvas_alta` e `curvas_baixa`
   (somando 100) a partir do mapa do artigo do circuito na Wikipedia (`wikipedia`) ou de uma imagem do computador.

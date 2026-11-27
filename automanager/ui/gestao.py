@@ -136,6 +136,7 @@ class TelaGestao(tk.Frame):
         if self.jogador:
             arq.add_command(label="Salvar ordens...", command=self.salvar_ordens, accelerator="Ctrl+S")
             arq.add_command(label="Plano do evento...", command=self.plano_evento)
+            arq.add_command(label="Calendário (esta e a próxima temporada)...", command=self.ver_calendario)
             arq.add_command(label="Guia do multijogador...", command=self.guia_multijogador)
             arq.add_separator()
             arq.add_command(label="Exportar para HTML...", command=self.exportar_html)
@@ -475,6 +476,10 @@ class TelaGestao(tk.Frame):
             self.lbl_not.configure(text=n["texto"])
 
     # ------------------------------------------------------------------ multijogador (jogador)
+    def ver_calendario(self):
+        from .calendario_liga_tela import DialogoVerCalendario
+        DialogoVerCalendario(self, self.st, self.st["usuario"]["categoria"]).modal()
+
     def plano_evento(self):
         from .multijogador_tela import DialogoPlanoEvento
         DialogoPlanoEvento(self, self.st).modal()

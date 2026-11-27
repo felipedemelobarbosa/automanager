@@ -72,6 +72,8 @@ GUIA_COMISSARIO = [
         "prazo'.",
         "A semana nova é publicada na pasta compartilhada (ou gere o arquivo para os jogadores) e tudo recomeça.",
         "'Exportar para HTML...' gera um site com classificação, resultados e finanças para mostrar à liga.",
+        "Calendário: em Arquivo > Calendário da próxima temporada... edite o calendário do ano seguinte como no editor "
+        "(eventos, semanas, voltas, pistas novas). Os jogadores o veem assim que ele é salvo; sem calendário definido, a virada segue o sorteio normal.",
     ]),
 ]
 

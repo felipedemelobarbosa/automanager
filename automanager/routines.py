@@ -189,6 +189,8 @@ def nova_temporada(st, rng=random):
     desenvolvimento.aplicar_projetos(st, st["ano"])
     desenvolvimento.evoluir_fabricantes(st, rng)
     fornecedores.evoluir(st, rng)
+    from . import calendario_liga
+    definidos = calendario_liga.aplicar(st)           # multijogador: calendário do comissário (antes dos tempos)
     for cid in st["categorias"]:
         tempo_base.virada(st, cid)                     # antes do regulamento: usa a grande mudança anunciada
         regulamento.virada(st, cid)
@@ -198,7 +200,8 @@ def nova_temporada(st, rng=random):
         mercado.virada_partes(st, cid)
         _virada_patrocinadores(st, cid, rng)
         _virada_equipes(st, cid, rng)
-        _virada_calendario(st, cid, rng)
+        if cid not in definidos:
+            _virada_calendario(st, cid, rng)
     for p in st["pilotos"].values():
         p["idade"] = p.get("idade", 20) + 1
     mercado.aplicar_idade_maxima(st)

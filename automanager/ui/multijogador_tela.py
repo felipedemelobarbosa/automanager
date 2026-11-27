@@ -275,6 +275,7 @@ class TelaComissario(tk.Frame):
         arq.add_command(label="Exportar arquivo para os jogadores...", command=self.exportar)
         arq.add_separator()
         arq.add_command(label="Política para ordens ausentes...", command=self.politica)
+        arq.add_command(label="Calendário da próxima temporada...", command=self.calendario_proximo)
         arq.add_separator()
         arq.add_command(label="Fechar liga", command=app.fechar_jogo)
         mb.add_cascade(label="Arquivo", menu=arq, underline=0)
@@ -344,6 +345,14 @@ class TelaComissario(tk.Frame):
             self.lb.insert("end", f"[{n['ano']} S{n['semana']:02d}] {nome_cat + ': ' if nome_cat else ''}{n['texto']}")
             if n.get("tipo") == "usuario":
                 self.lb.itemconfigure("end", fg="#a00000")
+
+    def calendario_proximo(self):
+        from .calendario_liga_tela import DialogoCalendarioProximo
+        DialogoCalendarioProximo(self, self.st).modal()
+        if self.pasta():
+            self._publicar()                       # os jogadores veem o calendário assim que é salvo
+        self.salvar()
+        self.atualizar()
 
     def salvar(self):
         mp.salvar_liga(self.st, self.caminho)
